@@ -3,7 +3,7 @@ If not, [start here](https://leanprover-community.github.io/).
 
 To start your project, clone this repo with
 ```
-git clone https://github.com/mseri/lean-mathblib4-starter.git PICK_A_NAME
+git clone https://github.com/mseri/lean-mathlib4-starter.git PICK_A_NAME
 ```
 then enter the folder
 ```

@@ -1,4 +1,6 @@
 /build
 /lake-packages
 /.cache
+/.lake
+/lakefile.olean
 .DS_Store

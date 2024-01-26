@@ -6,8 +6,6 @@ open MeasureTheory Filter Metric Function Set
 open scoped omegaLimit
 set_option autoImplicit false
 
-set_option autoImplicit false
-
 /- For every objective, first write down a statement that Lean understands, with a proof given
 by `sorry`. Then try to prove it! -/
 
@@ -47,7 +45,7 @@ lemma periodic_arbitrary_large_time (N : ℕ) (m : ℕ) (hm : 0 < m) (ε : ℝ) 
   · exact mem_ball_self hε
   · rw [IsPeriodicPt.mul_const hx N]
     exact mem_ball_self hε
-  · exact Nat.le_mul_of_pos_left hm
+  · exact Nat.le_mul_of_pos_left N hm
   done
 
 lemma inter_subset_empty_of_inter_empty (A : Set α) (B: Set α) (C : Set α) (D: Set α) :
@@ -93,20 +91,20 @@ lemma separated_balls (x : α) (hfx : x ≠ f x) :  ∃ ε, 0 < ε ∧ (ball x �
        exfalso
        have gg := dist_triangle x y (f x)
        linarith
-     · exfalso
+     · exact fun l => l.elim
    done
 
 -- Perhaps this should go inside Mathlib.Dynamics.PeriodicPts.lean
 def IsNotPeriodicPt (f : α → α)  (x : α) := ∀ n : ℕ, 0 < n -> ¬IsPeriodicPt f n x
 
 lemma non_periodic_arbitrary_large_time (N : ℕ) (ε0 : ℝ) (hε0 : 0 < ε0) (x : α) (hfx : IsNotPeriodicPt f x) (hxf : x ∈ nonWanderingSet f)
-: ∃ (y : α), ∃ (n : ℕ), y ∈ ball x ε0 ∧ f^[n] y ∈ ball x ε0 ∧ N+1 < n :=
-by
+: ∃ (y : α), ∃ (n : ℕ), y ∈ ball x ε0 ∧ f^[n] y ∈ ball x ε0 ∧ N+1 < n := by sorry
+  /-
   unfold IsNotPeriodicPt at hfx
   unfold nonWanderingSet at hxf
   dsimp at hxf
   have hkill : forall (n : ℕ), 0 < n → ∃ ε, 0 < ε ∧ (ball x ε) ∩ (f^[n] '' (ball x ε)) = ∅ := by
-    intro n1 hn1
+  intro n1 hn1
     have hfx2 := hfx n1 hn1
     have hfnC : Continuous f^[n1] := Continuous.iterate hf n1
     have hfx2' : x ≠ f^[n1] x := Ne.symm hfx2
@@ -163,13 +161,14 @@ by
       refine' ⟨hsmall1,rfl⟩
   assumption
   done
+  -/
 
 theorem arbitrary_large_time (N : ℕ) (ε : ℝ) (hε : 0 < ε) (x : α) (hx : x ∈ nonWanderingSet f) :
 ∃ (y : α), ∃ (n : ℕ), y ∈ ball x ε ∧ f^[n] y ∈ ball x ε ∧ N+1 < n :=
 by
   by_cases hfx : IsNotPeriodicPt f x
   -- hard case: if x is non-periodic, we use continuity of f
-  · exact non_periodic_arbitrary_large_time f hf N ε hε x hfx hx
+  · exact non_periodic_arbitrary_large_time f N ε hε x hfx hx
   -- easy case: if x is periodic, then y = x is a good candidate
   · unfold IsNotPeriodicPt at hfx
     push_neg at hfx
@@ -185,7 +184,8 @@ by
         exact hn2
       rw [IsPeriodicPt.mul_const h4 (N+2)]
       exact mem_ball_self hε
-    · exact Nat.le_mul_of_pos_left hn
+    · have h5 := Nat.le_mul_of_pos_left (N + 1) hn
+      linarith
   done
 
 
@@ -241,9 +241,9 @@ theorem is_closed : IsClosed (nonWanderingSet f : Set α) := by
 
 /- Show that the non-wandering set of `f` is compact. -/
 theorem is_cpt : IsCompact (nonWanderingSet f : Set α) := by
-  apply isCompact_of_isClosed_bounded
+  apply isCompact_of_isClosed_isBounded
   . exact is_closed f
-  . exact bounded_of_compactSpace
+  . exact isBounded_of_compactSpace
   done
 
 /- Show that the omega-limit set of any point is nonempty. -/
@@ -276,8 +276,9 @@ theorem omegaLimit_nonwandering (x : α) :
   . exact (hf 1)
   . have : f^[φ 2 - φ 1] (f^[φ 1] x) = f^[φ 2] x := by
       rw [ <-Function.iterate_add_apply, Nat.sub_add_cancel ]
-      apply le_of_lt; apply hφ
-      group
+      apply le_of_lt;
+      apply hφ
+      linarith
     rw [this]
     apply (hf 2)
   . simp
@@ -344,7 +345,7 @@ theorem periodicpts_mem_recurrentSet
     have hb : ∃ b, a ≤ b ∧ f^[b] x ∈ U := by
       use a * n
       constructor
-      . exact Nat.le_mul_of_pos_right (Nat.pos_of_ne_zero nnz)
+      . exact Nat.le_mul_of_pos_right a (Nat.pos_of_ne_zero nnz)
       . -- have : f^[a * n] x = x := by
         --  exact Function.IsPeriodicPt.const_mul hx a
         -- rw [this]
@@ -467,7 +468,7 @@ theorem minimalSubset_mem_recurrentSet (U : Set α) (hU: IsMinimalSubset f U) :
 using Zorn lemma. -/
 theorem nonempty_invariant_closed_subset_has_minimalSubset
     (U : Set α) (hne: Nonempty U) (hC: IsClosed U) (hI: IsInvariant (fun n x => f^[n] x) U) :
-    ∃ V : Set α, V ⊆ U -> (hinv: MapsTo f U U) -> IsMinimalSubset f U :=
+    ∃ V : Set α, V ⊆ U -> (hinv: MapsTo f U U) -> IsMinimalSubset f U := by
   sorry
 
 

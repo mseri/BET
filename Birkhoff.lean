@@ -97,78 +97,111 @@ lemma separated_balls (x : α) (hfx : x ≠ f x) :  ∃ ε, 0 < ε ∧ (ball x �
 -- Perhaps this should go inside Mathlib.Dynamics.PeriodicPts.lean
 def IsNotPeriodicPt (f : α → α)  (x : α) := ∀ n : ℕ, 0 < n -> ¬IsPeriodicPt f n x
 
-lemma non_periodic_arbitrary_large_time (N : ℕ) (ε0 : ℝ) (hε0 : 0 < ε0) (x : α) (hfx : IsNotPeriodicPt f x) (hxf : x ∈ nonWanderingSet f)
-: ∃ (y : α), ∃ (n : ℕ), y ∈ ball x ε0 ∧ f^[n] y ∈ ball x ε0 ∧ N+1 < n := by sorry
-  /-
-  unfold IsNotPeriodicPt at hfx
-  unfold nonWanderingSet at hxf
-  dsimp at hxf
-  have hkill : forall (n : ℕ), 0 < n → ∃ ε, 0 < ε ∧ (ball x ε) ∩ (f^[n] '' (ball x ε)) = ∅ := by
-  intro n1 hn1
-    have hfx2 := hfx n1 hn1
-    have hfnC : Continuous f^[n1] := Continuous.iterate hf n1
-    have hfx2' : x ≠ f^[n1] x := Ne.symm hfx2
-    exact separated_balls (f^[n1]) hfnC x hfx2'
+lemma separated_ball_image_ball (n : ℕ) (hn : 0 < n) (x : α) (hfx : IsNotPeriodicPt f x) :  ∃ (ε : ℝ), 0 < ε ∧ (ball x ε) ∩ (f^[n] '' (ball x ε)) = ∅ := by
+    have hfx2 := hfx n hn
+    have hfnC : Continuous f^[n] := Continuous.iterate hf n
+    have hfx2' : x ≠ f^[n] x := Ne.symm hfx2
+    exact separated_balls (f^[n]) hfnC x hfx2'
+
+lemma separated_balls_along_non_periodic_orbit (N : ℕ) (x : α) (hfx : IsNotPeriodicPt f x) : ∃ δ, (δ > 0) ∧ ∀ (n : ℕ), (0 < n) ∧ (n ≤ N + 1) → (ball x δ) ∩ (f^[n] '' ball x δ) = ∅ := by
+  have hkill : ∀ (n : ℕ), 0 < n → ∃ ε, 0 < ε ∧ (ball x ε) ∩ (f^[n] '' (ball x ε)) = ∅ := by
+    intro n hnpos
+    obtain ⟨ε,hε⟩ := separated_ball_image_ball f hf n hnpos x hfx
+    use ε
   choose! ε2 hε2 h'ε2 using hkill
   have A : Finset.Nonempty ((Finset.Icc 1 (N+1)).image ε2) := by simp
   let δ := ((Finset.Icc 1 (N+1)).image ε2).min' A
-  let δ2 := min δ ε0
   have δmem: δ ∈ (Finset.Icc 1 (N+1)).image ε2 := Finset.min'_mem _ _
   simp at δmem
   rcases δmem with ⟨n, ⟨npos, _⟩, h'n⟩
   change ε2 n = δ at h'n
-  have hδ0 : 0 < δ := by
-    rw [← h'n]
-    exact hε2 n npos
-  have hδ20 : 0 < δ2 := by
+  use δ
+  constructor
+  exact Eq.trans_gt h'n (hε2 n npos)
+  intro  n2 hnrange
+  have hA : δ ≤ ε2 n2 := by
+    apply Finset.min'_le
+    simp
+    use n2
+    refine' ⟨_, rfl⟩
+    apply hnrange
+  have hbigball := h'ε2 n2 hnrange.left
+  apply inter_subset_empty_of_inter_empty (ball x δ) (f^[n2] '' ball x δ) (ball x (ε2 n2)) (f^[n2] '' ball x (ε2 n2))
+  · exact ball_subset_ball (x := x) hA
+  · exact image_subset (f^[n2]) (ball_subset_ball (x := x) hA)
+  · exact hbigball
+  done
+
+
+theorem ball_non_periodic_arbitrary_large_time (ε : ℝ) (hε : 0 < ε) (x : α) (hx : x ∈ nonWanderingSet f)  (hfx : IsNotPeriodicPt f x) :
+ ∀ (N : ℕ), ∃ (n : ℕ), N+1 < n ∧ (f^[n] '' ball x ε) ∩ ball x ε ≠ ∅ := by
+  -- Suppose, for sake of contradiction, `∃ N, ∀ (n : ℕ), N + 1 < n → f^[n] '' ball x ε ∩ ball x ε = ∅`
+  by_contra h₁
+  push_neg at h₁
+  -- Since x is not periodic, ∃ ε₂ > 0 such that, ∀ (n : ℕ), 0 < n ∧ n ≤ N + 1 → ball x ε₂ ∩ f^[n] '' ball x ε₂ = ∅.
+  obtain ⟨N,h₂⟩ := h₁
+  choose ε₂ h₃ using separated_balls_along_non_periodic_orbit f hf N x hfx
+  obtain ⟨h₈,h₉⟩ := h₃
+  -- Choose ε₃ less than ε and ε₂.
+  let ε₃ := min ε ε₂
+  have h₅ : ε₃ ≤ ε₂ := min_le_right ε ε₂
+  have h₆ : ε₃ ≤ ε := min_le_left ε ε₂
+  have hε2 : 0 < ε₃ := by
     rw [lt_min_iff]
     constructor
-    exact hδ0
-    exact hε0
-  have hδ2ε0 : δ2 ≤ ε0 := min_le_right δ ε0
-  have hδ2δ : δ2 ≤ δ := min_le_left δ ε0
-  have hδ : ∀ (n : ℕ), (0 < n) → (n ≤ N + 1) → (ball x δ) ∩ (f^[n] '' ball x δ) = ∅ := by
-    intro n2 hn21 hn22
-    have hA : δ ≤ ε2 n2 := by
-      apply Finset.min'_le
-      simp
-      use n2
-      refine' ⟨⟨hn21,hn22⟩,rfl⟩
-    have hbigball := h'ε2 n2 hn21
-    apply inter_subset_empty_of_inter_empty (ball x δ) (f^[n2] '' ball x δ) (ball x (ε2 n2)) (f^[n2] '' ball x (ε2 n2))
-    · exact ball_subset_ball (x := x) hA
-    · exact image_subset (f^[n2]) (ball_subset_ball (x := x) hA)
-    · exact hbigball
-  have hxfδ := hxf δ2 hδ20
-  rcases hxfδ with ⟨y,⟨n3,hy1,hy2,hy3⟩⟩
-  have hsmallball : ball x δ2 ⊆ ball x δ := ball_subset_ball hδ2δ
-  have hsmall1 : y ∈ ball x δ := ball_subset_ball hδ2δ hy1
-  use y
-  use n3
-  refine' ⟨ball_subset_ball hδ2ε0 hy1,⟨ball_subset_ball hδ2ε0 hy2,_⟩⟩
-  contrapose! hδ
-  use n3
-  refine' ⟨_,⟨hδ,_⟩⟩
-  exact Nat.pos_of_ne_zero hy3
-  dsimp
-  intro stupido
-  have hstupido : f^[n3] y ∈ ∅ := by
-    rw [←stupido]
-    apply mem_inter
-    · exact hsmallball hy2
-    · rw [mem_image]
-      use y
-      refine' ⟨hsmall1,rfl⟩
-  assumption
+    exact hε
+    exact h₈
+  -- We have therefore shown that, for all n, f^n(B(x,ε₃)) ∩ B(x,ε₃) = ∅
+  have h₇ : ∀ (n : ℕ), (0 < n) → f^[n] '' ball x ε₃ ∩ ball x ε₃ = ∅ := by
+    intro n hnn
+    by_cases hcases : n ≤ N + 1
+    .apply inter_subset_empty_of_inter_empty (f^[n] '' ball x ε₃) (ball x ε₃)  (f^[n] '' ball x ε₂) (ball x ε₂)
+     apply image_subset
+     apply ball_subset_ball
+     exact h₅
+     apply ball_subset_ball
+     exact h₅
+     rw [inter_comm]
+     exact h₉ n ⟨hnn, hcases⟩
+    .apply inter_subset_empty_of_inter_empty (f^[n] '' ball x ε₃) (ball x ε₃)  (f^[n] '' ball x ε) (ball x ε)
+     apply image_subset
+     apply ball_subset_ball
+     exact h₆
+     apply ball_subset_ball
+     exact h₆
+     push_neg at hcases
+     exact h₂ n hcases
+  -- And this contradicts the non wandering assumption.
+  unfold nonWanderingSet at hx
+  dsimp at hx
+  choose y n hy hyn hnpos using hx ε₃ hε2
+  push_neg at hnpos
+  have hu := h₇ n (Nat.pos_of_ne_zero hnpos)
+  have hw := mem_inter (mem_image_of_mem f^[n] hy) hyn
+  rw [hu] at hw
+  exact hw
   done
-  -/
+
+
+lemma non_periodic_arbitrary_large_time (N : ℕ) (ε0 : ℝ) (hε0 : 0 < ε0) (x : α) (hfx : IsNotPeriodicPt f x) (hxf : x ∈ nonWanderingSet f)
+: ∃ (y : α), ∃ (n : ℕ), y ∈ ball x ε0 ∧ f^[n] y ∈ ball x ε0 ∧ N+1 < n := by
+  choose n h2 h3 using (ball_non_periodic_arbitrary_large_time f hf ε0 hε0 x hxf hfx N)
+  choose z h5 using (inter_nonempty_iff_exists_left.mp (nmem_singleton_empty.mp h3))
+  choose y h7 h8 using ((mem_image f^[n] (ball x ε0) z).mp (mem_of_mem_inter_left h5))
+  use! y, n
+  have hb : f^[n] y ∈ ball x ε0 := by
+    rw [h8]
+    exact h5.2
+  exact ⟨h7, hb, h2⟩
+  done
+
 
 theorem arbitrary_large_time (N : ℕ) (ε : ℝ) (hε : 0 < ε) (x : α) (hx : x ∈ nonWanderingSet f) :
-∃ (y : α), ∃ (n : ℕ), y ∈ ball x ε ∧ f^[n] y ∈ ball x ε ∧ N+1 < n :=
+∃ (y : α), ∃ (n : ℕ), y ∈ ball x ε ∧ f^[n] y ∈ ball x ε ∧ N + 1 < n :=
 by
   by_cases hfx : IsNotPeriodicPt f x
   -- hard case: if x is non-periodic, we use continuity of f
-  · exact non_periodic_arbitrary_large_time f N ε hε x hfx hx
+  · exact non_periodic_arbitrary_large_time f hf N ε hε x hfx hx
   -- easy case: if x is periodic, then y = x is a good candidate
   · unfold IsNotPeriodicPt at hfx
     push_neg at hfx

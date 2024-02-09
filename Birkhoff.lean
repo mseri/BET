@@ -26,7 +26,7 @@ variable [CompactSpace α] (f : α → α) (hf : Continuous f)
 /- Show that periodic points belong to the non-wandering set -/
 theorem periodicpts_is_mem (x : α) (n : ℕ) (nnz: n ≠ 0) (pp: IsPeriodicPt f n x) :
     x ∈ nonWanderingSet f := by
-  intro ε hε
+  intro ε
   use x, n
   -- unfold IsPeriodicPt at pp
   -- unfold IsFixedPt at pp

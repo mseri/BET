@@ -1,0 +1,31 @@
+name: Lean build
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: lean-build
+  cancel-in-progress: true
+
+jobs:
+  build_project:
+    runs-on: ubuntu-latest
+    name: Build project
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install elan
+        run: curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain leanprover/lean4:4.0.0
+      - name: Get cache
+        run: ~/.elan/bin/lake -Kenv=dev exe cache get || true
+      - name: Build project
+        run: ~/.elan/bin/lake -Kenv=dev build Birkhoff
+ 

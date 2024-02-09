@@ -1,6 +1,6 @@
 # Birkhoff's ergodic theorem in LEAN4
 
-![Lean build](https://github.com/github/docs/actions/workflows/build.yml/badge.svg)
+![Lean build](https://github.com/oliver-butterley/birkhoff/actions/workflows/build.yml/badge.svg)
 
 This repository contains the output of our project
 at the [Machine-Checked Mathematics Workshop](https://www.lorentzcenter.nl/machine-checked-mathematics.html)

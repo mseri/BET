@@ -1,6 +1,10 @@
-/build
-/lake-packages
+# Created by `lake exe cache get` if no home directory is available
 /.cache
-/.lake
+# Prior to v4.3.0-rc2 lake stored files in these locations.
+/build/
+/lake-packages/
 /lakefile.olean
+# After v4.3.0-rc2 lake stores its files here:
+/.lake/
+# macOS leaves these files everywhere:
 .DS_Store

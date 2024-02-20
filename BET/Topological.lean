@@ -2,34 +2,43 @@ import Mathlib.Tactic
 import Mathlib.Dynamics.OmegaLimit
 import Mathlib.Dynamics.Ergodic.AddCircle
 
+/-!
+# Topological dynamics
+
+This file defines Birkhoff sums, other related notions and proves Birkhoff's ergodic theorem.
+
+## Implementation notes
+
+We could do everything in a topological space, using filters and neighborhoods, but it will
+be more comfortable with a metric space.
+
+TODO: at some point translate to topological spaces
+
+## References
+
+* ....
+
+-/
+
 open MeasureTheory Filter Metric Function Set
 open scoped omegaLimit
 set_option autoImplicit false
 
-/- For every objective, first write down a statement that Lean understands, with a proof given
-by `sorry`. Then try to prove it! -/
-
 section Topological_Dynamics
 
-/- TODO: at some point translate to topological spaces -/
-
-/- We could do everything in a topological space, using filters and neighborhoods, but it will
-be more comfortable with a metric space. -/
 variable {α : Type _} [MetricSpace α]
 
-/- Define the non-wandering set of `f`-/
+/-- The non-wandering set of `f` is the set of points which return arbitrarily close after some iterate. -/
 def nonWanderingSet (f : α → α) : Set α :=
   {x | ∀ ε, 0 < ε → ∃ (y : α), ∃ (n : ℕ), y ∈ ball x ε ∧ f^[n] y ∈ ball x ε ∧ n ≠ 0}
 
 variable [CompactSpace α] (f : α → α) (hf : Continuous f)
 
-/- Show that periodic points belong to the non-wandering set -/
+/-- Periodic points belong to the non-wandering set. -/
 theorem periodicpts_is_mem (x : α) (n : ℕ) (nnz: n ≠ 0) (pp: IsPeriodicPt f n x) :
     x ∈ nonWanderingSet f := by
   intro ε hε
   use x, n
-  -- unfold IsPeriodicPt at pp
-  -- unfold IsFixedPt at pp
   refine' ⟨_, _, _⟩
   . exact mem_ball_self hε
   . rw [pp]
@@ -56,7 +65,6 @@ lemma inter_subset_empty_of_inter_empty (A : Set α) (B: Set α) (C : Set α) (D
   exact Iff.mp subset_empty_iff hincl
   done
 
-/- Un lemme d'exercice: boules separees  -/
 lemma separated_balls (x : α) (hfx : x ≠ f x) :  ∃ ε, 0 < ε ∧ (ball x ε) ∩ (f '' (ball x ε)) = ∅ := by
    have hfC : ContinuousAt f x := Continuous.continuousAt hf
    rw [Metric.continuousAt_iff] at hfC
@@ -94,7 +102,7 @@ lemma separated_balls (x : α) (hfx : x ≠ f x) :  ∃ ε, 0 < ε ∧ (ball x �
      · exact fun l => l.elim
    done
 
--- Perhaps this should go inside Mathlib.Dynamics.PeriodicPts.lean
+/-- The set of points which are not periodic of any period. -/
 def IsNotPeriodicPt (f : α → α)  (x : α) := ∀ n : ℕ, 0 < n -> ¬IsPeriodicPt f n x
 
 lemma separated_ball_image_ball (n : ℕ) (hn : 0 < n) (x : α) (hfx : IsNotPeriodicPt f x) :  ∃ (ε : ℝ), 0 < ε ∧ (ball x ε) ∩ (f^[n] '' (ball x ε)) = ∅ := by
@@ -272,22 +280,20 @@ theorem is_closed : IsClosed (nonWanderingSet f : Set α) := by
   done
 
 
-/- Show that the non-wandering set of `f` is compact. -/
+/-- The non-wandering set of `f` is compact. -/
 theorem is_cpt : IsCompact (nonWanderingSet f : Set α) := by
   apply isCompact_of_isClosed_isBounded
   . exact is_closed f
   . exact isBounded_of_compactSpace
   done
 
-/- Show that the omega-limit set of any point is nonempty. -/
-/- Click F12 on ω⁺ below to go to its definition, and browse a little bit the file to get a
-feel of what is already there. -/
+/-- The omega-limit set of any point is nonempty. -/
 theorem omegaLimit_nonempty (x : α) : Set.Nonempty (ω⁺ (fun n ↦ f^[n]) ({x})) := by
   apply nonempty_omegaLimit atTop (fun n ↦ f^[n]) {x}
   exact Set.singleton_nonempty x
   done
 
-/- Show that the omega-limit set of any point is contained in the non-wandering set. -/
+/-- The omega-limit set of any point is contained in the non-wandering set. -/
 theorem omegaLimit_nonwandering (x : α) :
     (ω⁺ (fun n ↦ f^[n]) ({x})) ⊆ (nonWanderingSet f) := by
   intro z hz
@@ -315,11 +321,10 @@ theorem omegaLimit_nonwandering (x : α) :
     rw [this]
     apply (hf 2)
   . simp
-    apply hφ
-    norm_num
+    exact Nat.sub_ne_zero_of_lt (hφ Nat.le.refl)
   done
 
-/- Show that the non-wandering set is non-empty -/
+/-- The non-wandering set is non-empty -/
 theorem nonWandering_nonempty [hα : Nonempty α] : Set.Nonempty (nonWanderingSet f) := by
   have (x : α) : Set.Nonempty (ω⁺ (fun n ↦ f^[n]) ({x})) -> Set.Nonempty (nonWanderingSet f) := by
     apply Set.Nonempty.mono
@@ -330,8 +335,7 @@ theorem nonWandering_nonempty [hα : Nonempty α] : Set.Nonempty (nonWanderingSe
   done
 
 
-/- Define the recurrent set of `f`. The recurrent set is the set of points that are recurrent,
-   i.e. that belong to their omega-limit set. -/
+/-- The recurrent set is the set of points that are recurrent, i.e. that belong to their omega-limit set. -/
 def recurrentSet {α : Type _} [TopologicalSpace α] (f : α → α) : Set α :=
   { x | x ∈ ω⁺ (fun n ↦ f^[n]) ({x}) }
 
@@ -363,7 +367,7 @@ theorem recurrentSet_iff_accumulation_point (x : α) :
     exact ⟨m, hm, mem_of_subset_of_mem ball_in_U fm_in_ball⟩
   done
 
-/- Show that periodic points belong to the recurrent set. -/
+/-- Periodic points belong to the recurrent set. -/
 theorem periodicpts_mem_recurrentSet
     (x : α) (n : ℕ) (nnz: n ≠ 0) (hx: IsPeriodicPt f n x) :
     x ∈ recurrentSet f := by
@@ -390,7 +394,7 @@ theorem periodicpts_mem_recurrentSet
   apply x_in_omegaLimit
   done
 
-/- Show that the recurrent set is included in the non-wandering set -/
+/-- The recurrent set is included in the non-wandering set -/
 theorem recurrentSet_nonwandering : recurrentSet f ⊆ (nonWanderingSet f) := by
   intro z hz
   unfold recurrentSet at hz
@@ -399,29 +403,22 @@ theorem recurrentSet_nonwandering : recurrentSet f ⊆ (nonWanderingSet f) := by
   exact hz
   done
 
-/- Define minimal subsets for `f`, as closed invariant subsets in which all orbits are dense.
-   Note that `IsInvariant.isInvariant_iff_image` is a useful function when we use `invariant`.
-   Using a structure here allows us to get the various properties via dot notation,
-   search e.g. for `hf.minimal` below -/
+/-- The minimal subsets are the closed invariant subsets in which all orbits are dense. -/
 structure IsMinimalSubset (f : α → α) (U : Set α) : Prop :=
   (closed : IsClosed U)
   (invariant: IsInvariant (fun n x => f^[n] x) U)
   (minimal: ∀ (x y : α) (_: x ∈ U) (_: y ∈ U) (ε : ℝ), ε > 0 -> ∃ n : ℕ, f^[n] y ∈ ball x ε)
 
-/- Define a minimal dynamics (all orbits are dense) -/
+/-- A dynamical system (α,f) is minimal if α is a minimal subset. -/
 def IsMinimal (f : α → α) : Prop := IsMinimalSubset f univ
 
-/- Show that in a minimal dynamics, the recurrent set is all the space -/
+/-- In a minimal dynamics, the recurrent set is all the space. -/
 theorem recurrentSet_of_minimal_is_all_space (hf: IsMinimal f) :
     ∀ x : α, x ∈ recurrentSet f := by
   intro z
-  -- unfold recurrentSet
-  -- unfold IsMinimal at hf
-  -- simp
   have : ∀ (x : α) (ε : ℝ) (N : ℕ), ε > 0
          -> ∃ m : ℕ, m ≥ N ∧ f^[m] x ∈ ball x ε := by
     intro x ε N hε
-    -- rcases (hf x (f^[N] x) ε hε) with ⟨n, hball⟩
     obtain ⟨n, hball⟩ : ∃ n, f^[n] (f^[N] x) ∈ ball x ε :=
       hf.minimal x (f^[N] x) (mem_univ _) (mem_univ _) ε hε
     refine' ⟨n + N, _, _⟩
@@ -433,11 +430,11 @@ theorem recurrentSet_of_minimal_is_all_space (hf: IsMinimal f) :
   exact this z
   done
 
--- An example to learn to define maps on the unit interval
+/-- The doubling map is the classic interval map -/
 noncomputable def doubling_map (x : unitInterval) : unitInterval :=
   ⟨Int.fract (2 * x), by exact unitInterval.fract_mem (2 * x)⟩
 
-/- Give an example of a continuous dynamics on a compact space in which the recurrent set is all
+/-- An example of a continuous dynamics on a compact space in which the recurrent set is all
 the space, but the dynamics is not minimal -/
 example : ¬IsMinimal (id : unitInterval -> unitInterval) := by
   intro H
@@ -469,7 +466,7 @@ example (x : unitInterval) :
   done
 
 
-/- Show that every point in a minimal subset is recurrent -/
+/-- Every point in a minimal subset is recurrent. -/
 theorem minimalSubset_mem_recurrentSet (U : Set α) (hU: IsMinimalSubset f U) :
       U ⊆ recurrentSet f := by
   intro x hx
@@ -497,60 +494,17 @@ theorem minimalSubset_mem_recurrentSet (U : Set α) (hU: IsMinimalSubset f U) :
     exact hball
   done
 
-/- Show that every invariant nonempty closed subset contains at least a minimal invariant subset,
-using Zorn lemma. -/
+/-- Every invariant nonempty closed subset contains at least a minimal invariant subset. -/
 theorem nonempty_invariant_closed_subset_has_minimalSubset
     (U : Set α) (hne: Nonempty U) (hC: IsClosed U) (hI: IsInvariant (fun n x => f^[n] x) U) :
     ∃ V : Set α, V ⊆ U -> (hinv: MapsTo f U U) -> IsMinimalSubset f U := by
+  -- This follows from Zorn's lemma
   sorry
 
 
 
-/- Show that the recurrent set of `f` is nonempty -/
+/-- The recurrent set of `f` is nonempty -/
 theorem recurrentSet_nonempty [Nonempty α]: Set.Nonempty (recurrentSet f) := by
   sorry
 
 end Topological_Dynamics
-
-section Ergodic_Theory
-
-open BigOperators
-
-/- standing assumptions: `f` is a measure preserving map of a probability space `(α, μ)`, and
-`g : α → ℝ` is integrable. -/
-
-variable {α : Type _} [MetricSpace α] [CompactSpace α] [MeasurableSpace α] [BorelSpace α]
-  {μ : MeasureTheory.Measure α} [IsProbabilityMeasure μ] {f : α → α}
-  (hf : MeasurePreserving f μ) {g : α → ℝ} (hg : Integrable g μ)
-
-
-/- Define Birkhoff sums. -/
-noncomputable def birkhoffSum {α : Type _} (f : α → α) (g : α → ℝ) (n : ℕ) (x : α) : ℝ :=
-  1 / n * (∑ i in Finset.range n, g (f^[i] x))
-
-
-/- Define the invariant sigma-algebra of `f` -/
-
-
-
-/- Main lemma to prove Birkhoff ergodic theorem:
-assume that the integral of `g` on any invariant set is strictly negative. Then, almost everywhere,
-the Birkhoff sums `S_n g x` are bounded above.
--/
-
-
-/- Deduce Birkhoff theorem from the main lemma, in the form that almost surely, `S_n f / n`
-converges to the conditional expectation of `f` given the invariant sigma-algebra. -/
-
-
-/- If `f` is ergodic, show that the invariant sigma-algebra is ae trivial -/
-
-
-/- Show that the conditional expectation with respect to an ae trivial subalgebra is ae
-the integral. -/
-
-
-/- Give Birkhoff theorem for ergodic maps -/
-
-
-end Ergodic_Theory

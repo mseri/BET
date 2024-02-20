@@ -315,8 +315,7 @@ theorem omegaLimit_nonwandering (x : α) :
     rw [this]
     apply (hf 2)
   . simp
-    apply hφ
-    norm_num
+    exact Nat.sub_ne_zero_of_lt (hφ Nat.le.refl)
   done
 
 /- Show that the non-wandering set is non-empty -/

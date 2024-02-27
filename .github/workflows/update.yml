@@ -2,13 +2,13 @@ name: Check for updates
 
 # This action will run `lean update` and try `lean build` if there is an available update.
 # There are three possible outcomes:
-# - No update available (silent) (no-update)
-# - Update available and build succeeds (open PR) (update-success)
-# - Update available and build fails (open issue) (update-fail)
+# - No update available (silent)
+# - Update available and build succeeds (open PR)
+# - Update available and build fails (open issue)
 
 on:
   schedule:
-    - cron: "0 11 * * 3" # every Tuesday at 11:00
+    - cron: "0 11 * * 4" # every Wednesday at 11:00
   workflow_dispatch: # allows manual starts
 
 jobs:

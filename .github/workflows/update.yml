@@ -1,0 +1,94 @@
+name: Check for updates
+
+# This action will run `lean update` and try `lean build` if there is an available update.
+# There are three possible outcomes:
+# - No update available (silent)
+# - Update available and build succeeds (open PR)
+# - Update available and build fails (open issue)
+
+on:
+  schedule:
+    - cron: "0 11 * * 4" # every Wednesday at 11:00
+  workflow_dispatch: # allows manual starts
+
+jobs:
+  attempt-update:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install elan
+        run: |
+          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: Update
+        run: lake update
+
+      - name: Check if anything was updated
+        uses: tj-actions/verify-changed-files@v18
+        id: check-update
+        with:
+          files: |
+            lean-toolchain
+            lake-manifest.json
+
+      - name: Try to build lean if something was updated
+        if: steps.check-update.outputs.files_changed == 'true'
+        id: build-lean
+        continue-on-error: true
+        run: |
+          lake exe cache get || true
+          lake build
+
+      - name: Run step only if nothing was updated
+        if: steps.check-update.outputs.files_changed == 'false'
+        run: |
+          echo "No update available"
+          echo "outcome=no-update" >> "$GITHUB_ENV"
+
+      - name: Run step only if the updated lean build was successful
+        id: step
+        if: steps.build-lean.outcome == 'success'
+        run: |
+          echo "Update available and build successful"
+          echo "outcome=update-success" >> "$GITHUB_ENV"
+
+      - name: Open PR if the updated lean build was successful
+        if: steps.build-lean.outcome == 'success'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: "Updates available and ready to merge."
+          body: "To do: add useful details here..."
+          delete-branch: true
+          branch-suffix: random
+          branch: auto-update/patch
+
+      - name: Open issue if the updated lean build fails
+        if: steps.build-lean.outcome == 'failure'
+        run: |
+          echo "outcome=update-fail" >> "$GITHUB_ENV"
+          gh issue create \
+            --title "$TITLE" \
+            --label "$LABELS" \
+            --body "$BODY"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          TITLE: Updates available but manual intervention required
+          LABELS: bug
+          BODY: |
+            Run `lake update` and then investigate why this update causes the lean build to fail.
+            Files changed in update: ${{ steps.check-update.outputs.changed_files }}
+
+          # To do: Update action so that it will not create another issue until this present issue is closed.
+
+      - name: Show the outcome
+        run: echo "${{ env.outcome }}"
+        # To do: properly have an action with outputs

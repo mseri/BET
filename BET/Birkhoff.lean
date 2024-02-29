@@ -39,7 +39,7 @@ def A := { x : α | ∃ n, ∀ C : ℝ, ∑ i in Finset.range n, f (T^[i] x) > C
 
 define `A := { x | lim_n ∑_{i=0}^{n} f(T^i x) = ∞}`.
 -/
-def A := { x : α | Filter.Tendsto (λ n ↦ ∑ i in Finset.range n, f (T^[i] x)) Filter.atTop Filter.atTop }
+def A := { x : α | Filter.Tendsto (fun n ↦ ∑ i in Finset.range n, f (T^[i] x)) Filter.atTop Filter.atTop }
 
 /- `A` is in `I = inv_sigma_algebra`. -/
 

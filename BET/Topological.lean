@@ -26,7 +26,7 @@ set_option autoImplicit false
 
 section Topological_Dynamics
 
-variable {α : Type _} [MetricSpace α]
+variable {α : Type*} [MetricSpace α]
 
 /-- The non-wandering set of `f` is the set of points which return arbitrarily close after some iterate. -/
 def nonWanderingSet (f : α → α) : Set α :=
@@ -336,7 +336,7 @@ theorem nonWandering_nonempty [hα : Nonempty α] : Set.Nonempty (nonWanderingSe
 
 
 /-- The recurrent set is the set of points that are recurrent, i.e. that belong to their omega-limit set. -/
-def recurrentSet {α : Type _} [TopologicalSpace α] (f : α → α) : Set α :=
+def recurrentSet {α : Type*} [TopologicalSpace α] (f : α → α) : Set α :=
   { x | x ∈ ω⁺ (fun n ↦ f^[n]) ({x}) }
 
 theorem recurrentSet_iff_accumulation_point (x : α) :

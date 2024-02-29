@@ -27,7 +27,7 @@ open BigOperators MeasureTheory
 - `T` is a measure preserving map of a probability space `(α, μ)`,
 - `f g : α → ℝ` are integrable.
 -/
-variable {α : Type _} [MeasurableSpace α]
+variable {α : Type*} [MeasurableSpace α]
 variable {μ : MeasureTheory.Measure α} [MeasureTheory.IsProbabilityMeasure μ]
 variable {T : α → α} (hT : MeasurePreserving T μ)
 variable {f g : α → ℝ} (hf : Integrable f μ) (hg : Integrable g μ)

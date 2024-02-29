@@ -1,6 +1,7 @@
 import Mathlib.Tactic
 import Mathlib.Dynamics.OmegaLimit
 import Mathlib.Dynamics.Ergodic.AddCircle
+import Mathlib.Dynamics.BirkhobirkhoffSumffSum.Average
 
 /-!
 # Birkhoff's ergodic theorem
@@ -21,41 +22,56 @@ section Ergodic_Theory
 
 open BigOperators MeasureTheory
 
-/- standing assumptions: `f` is a measure preserving map of a probability space `(α, μ)`, and
-`g : α → ℝ` is integrable. -/
 
-variable {α : Type _} [MetricSpace α] [CompactSpace α] [MeasurableSpace α] [BorelSpace α]
-  {μ : MeasureTheory.Measure α} [IsProbabilityMeasure μ] {f : α → α}
-  (hf : MeasurePreserving f μ) {g : α → ℝ} (hg : Integrable g μ)
-
-
-/- Define Birkhoff sums. -/
-noncomputable def birkhoffSum {α : Type _} (f : α → α) (g : α → ℝ) (n : ℕ) (x : α) : ℝ :=
-  1 / n * (∑ i in Finset.range n, g (f^[i] x))
-
-
-/- Define the invariant sigma-algebra of `f` -/
-
-
-
-/- Main lemma to prove Birkhoff ergodic theorem:
-assume that the integral of `g` on any invariant set is strictly negative. Then, almost everywhere,
-the Birkhoff sums `S_n g x` are bounded above.
+/-
+- `T` is a measure preserving map of a probability space `(α, μ)`,
+- `f g : α → ℝ` are integrable.
 -/
+variable {α : Type _} [MeasurableSpace α]
+variable {μ : MeasureTheory.Measure α} [MeasureTheory.IsProbabilityMeasure μ]
+variable {T : α → α} (hT : MeasurePreserving T μ)
+variable {f g : α → ℝ} (hf : Integrable f μ) (hg : Integrable g μ)
+variable (x : α)
+variable (n : ℕ)
+
+#check birkhoffAverage ℝ T f n x
 
 
-/- Deduce Birkhoff theorem from the main lemma, in the form that almost surely, `S_n f / n`
-converges to the conditional expectation of `f` given the invariant sigma-algebra. -/
+/- define `A := { x | sup_n ∑_{i=0}^{n} f(T^i x) = ∞}`. -/
 
+/- `A` is in `I = inv_sigma_algebra`. -/
 
-/- If `f` is ergodic, show that the invariant sigma-algebra is ae trivial -/
+/- define `Φ_n : max { ∑_{i=0}^{n} φ ∘ T^i }_{k ≤ n}` -/
 
+/- ∀ `x ∈ A`, `Φ_{n+1}(x) - Φ_{n}(T(x)) = φ(x) - min(0,Φ_{n}(T(x))) ≥ φ(x)` decreases to `φ(x)`. -/
 
-/- Show that the conditional expectation with respect to an ae trivial subalgebra is ae
+/- Using dominated convergence, `0 ≤ ∫_A (Φ_{n+1} - Φ_{n}) dμ = ∫_A (Φ_{n+1} - Φ_{n} ∘ T) dμ → ∫_A φ dμ`. -/
+
+/- `(1/n) ∑_{k=0}^{n-1} φ ∘ T^k ≤ Φ_n / n`. -/
+
+/- If `x ∉ A`, `limsup_n (1/n) ∑_{k=0}^{n-1} φ ∘ T^i ≤ 0`. -/
+
+/- If conditional expection of `φ` is negative, i.e., `∫_C φ dμ = ∫_C φ|_inv_sigmal_algebra dμ < 0` for all `C` in `inv_sigma_algebra` with `μ(C) > 0`,
+then `μ(A) = 0`. -/
+
+/- Then (assumptions as prior step) `limsup_n (1/n) ∑_{k=0}^{n-1} φ ∘ T^i ≤ 0` a.e. -/
+
+/- Let `φ = f - f|_I - ε`. -/
+
+/- `f_I ∘ T = f|_I` and so `(1/n) ∑_{k=0}^{n-1} f ∘ T^k = (1/n) ∑_{k=0}^{n-1} f ∘ T^k - f_I - ε`. -/
+
+/- `limsup_n (1/n) ∑_{k=0}^{n-1} f ∘ T^i ≤ f|_I + ε` a.e. -/
+
+/- Replacing `f` with `-f`  we get the lower bound. -/
+
+/- Birkhoff's theorem: Almost surely, `birkhoffAverage ℝ f g n x` converges to the conditional expectation of `f`. -/
+
+/- If `T` is ergodic, show that the invariant sigma-algebra is a.e. trivial. -/
+
+/- Show that the conditional expectation with respect to an a.e. trivial subalgebra is a.e.
 the integral. -/
 
-
-/- Give Birkhoff theorem for ergodic maps -/
+/- Birkhoff theorem for ergodic maps. -/
 
 
 end Ergodic_Theory

@@ -34,10 +34,12 @@ variable {f g : α → ℝ} (hf : Integrable f μ) (hg : Integrable g μ)
 variable (x : α)
 variable (n : ℕ)
 
-#check birkhoffAverage ℝ T f n x
+/- define `A := { x | sup_n ∑_{i=0}^{n} f(T^i x) = ∞}`.
+def A := { x : α | ∃ n, ∀ C : ℝ, ∑ i in Finset.range n, f (T^[i] x) > C }
 
-
-/- define `A := { x | sup_n ∑_{i=0}^{n} f(T^i x) = ∞}`. -/
+define `A := { x | lim_n ∑_{i=0}^{n} f(T^i x) = ∞}`.
+-/
+def A := { x : α | Filter.Tendsto (fun n ↦ ∑ i in Finset.range n, f (T^[i] x)) Filter.atTop Filter.atTop }
 
 /- `A` is in `I = inv_sigma_algebra`. -/
 
@@ -65,6 +67,8 @@ then `μ(A) = 0`. -/
 /- Replacing `f` with `-f`  we get the lower bound. -/
 
 /- Birkhoff's theorem: Almost surely, `birkhoffAverage ℝ f g n x` converges to the conditional expectation of `f`. -/
+
+#check birkhoffAverage ℝ T f n x
 
 /- If `T` is ergodic, show that the invariant sigma-algebra is a.e. trivial. -/
 

@@ -20,7 +20,7 @@ This file defines Birkhoff sums, other related notions and proves Birkhoff's erg
 
 section Ergodic_Theory
 
-open Function BigOperators MeasureTheory
+open BigOperators MeasureTheory
 
 
 /-

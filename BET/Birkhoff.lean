@@ -1,7 +1,7 @@
 import Mathlib.Tactic
 import Mathlib.Dynamics.OmegaLimit
 import Mathlib.Dynamics.Ergodic.AddCircle
-import Mathlib.Dynamics.BirkhobirkhoffSumffSum.Average
+import Mathlib.Dynamics.BirkhoffSum.Average
 
 /-!
 # Birkhoff's ergodic theorem

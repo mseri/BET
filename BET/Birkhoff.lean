@@ -80,5 +80,4 @@ the integral. -/
 
 /- Birkhoff theorem for ergodic maps. -/
 
-
 end Ergodic_Theory

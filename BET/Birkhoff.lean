@@ -42,6 +42,9 @@ define `A := { x | lim_n ∑_{i=0}^{n} f(T^i x) = ∞}`.
 def A := { x : α | Filter.Tendsto (fun n ↦ ∑ i in Finset.range n, f (T^[i] x)) Filter.atTop Filter.atTop }
 
 /- `A` is in `I = inv_sigma_algebra`. -/
+-- idea: is it better to define a new type measureable sets in alpha and then restrict to that type?
+-- def inv_sigma_algebra := { S : Set α | MeasurableSet S ∧ T⁻¹' S = S }
+def inv_sigma_algebra := { S : Set α | MeasurableSet S ∧ IsInvariant (fun n x ↦ T^[n] x) S }
 
 /- define `Φ_n : max { ∑_{i=0}^{n} φ ∘ T^i }_{k ≤ n}` -/
 

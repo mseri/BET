@@ -1,5 +1,6 @@
 {
     "recommendations": [
         "leanprover.lean4",
+        "ms-vsliveshare.vsliveshare",
     ]
 }

@@ -29,10 +29,56 @@ open BigOperators MeasureTheory
 -/
 variable {α : Type*} [MeasurableSpace α]
 variable {μ : MeasureTheory.Measure α} [MeasureTheory.IsProbabilityMeasure μ]
-variable {T : α → α} (hT : MeasurePreserving T μ)
-variable {f g : α → ℝ} (hf : Integrable f μ) (hg : Integrable g μ)
-variable (x : α)
-variable (n : ℕ)
+variable (T : α → α) (hT : MeasurePreserving T μ)
+variable (f g : α → ℝ) (hf : Integrable f μ) (hg : Integrable g μ)
+
+
+open Finset in
+/-- The max of the first `n + 1` Birkhoff sums.
+I.e., `maxOfSums T f x n` corresponds to `max {birkhoffSum T f 1 x,..., birkhoffSum T f (n + 1) x}`.
+Indexing choice avoids max of empty set issue. -/
+def maxOfSums (x : α) (n : ℕ) :=
+    sup' (range (n + 1)) (nonempty_range_succ) (fun k ↦ birkhoffSum T f (k + 1) x)
+
+theorem maxOfSums_zero : maxOfSums T f x 0 = f x := by
+  unfold maxOfSums
+  simp only [zero_add, Finset.range_one, Finset.sup'_singleton, birkhoffSum_one']
+
+/-- `maxOfSums` is monotone (one step version). -/
+theorem maxOfSums_succ_le (x : α) (n : ℕ) : (maxOfSums T f x n) ≤ (maxOfSums T f x (n + 1)) := by
+  exact Finset.sup'_mono (fun k ↦ birkhoffSum T f (k + 1) x)
+    (Finset.range_subset.mpr (Nat.le.step Nat.le.refl)) Finset.nonempty_range_succ
+
+/-- `maxOfSums` is monotone (explict version). -/
+theorem maxOfSums_le_le (x : α) (m n : ℕ) (hmn : m ≤ n) :
+    (maxOfSums T f x m) ≤ (maxOfSums T f x n) := by
+  induction' n with n hi
+  rw [Nat.le_zero.mp hmn]
+  rcases Nat.of_le_succ hmn with hc | hc
+  exact le_trans (hi hc) (maxOfSums_succ_le T f x n)
+  rw [hc]
+
+/-- `maxOfSums` is monotone.
+(Uncertain which is the best phrasing to keep of these options.) -/
+theorem maxOfSums_le_le' (x : α) : Monotone (fun n ↦ maxOfSums T f x n) := by
+  unfold Monotone
+  intros n m hmn
+  exact maxOfSums_le_le T f x n m hmn
+
+open Filter in
+/-- The set of divergent points `{ x | sup_n ∑_{i=0}^{n} f(T^i x) = ∞}`. -/
+def divSet := { x : α | Tendsto (fun n ↦ maxOfSums T f x n) atTop atTop }
+
+
+
+
+
+
+
+
+
+
+
 
 /- define `A := { x | sup_n ∑_{i=0}^{n} f(T^i x) = ∞}`.
 def A := { x : α | ∃ n, ∀ C : ℝ, ∑ i in Finset.range n, f (T^[i] x) > C }

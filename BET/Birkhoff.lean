@@ -241,7 +241,6 @@ then `μ(A) = 0`. -/
 
 /- Birkhoff's theorem: Almost surely, `birkhoffAverage ℝ φ g n x` converges to the conditional expectation of `φ`. -/
 
-#check birkhoffAverage ℝ T φ n x
 
 /- If `T` is ergodic, show that the invariant sigma-algebra is a.e. trivial. -/
 

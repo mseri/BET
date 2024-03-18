@@ -30,7 +30,8 @@ open BigOperators MeasureTheory
 variable {α : Type*} [MeasurableSpace α]
 variable {μ : MeasureTheory.Measure α} [MeasureTheory.IsProbabilityMeasure μ]
 variable (T : α → α) (hT : MeasurePreserving T μ)
-variable (φ g φ : α → ℝ) (hf : Integrable φ μ) (hg : Integrable g μ)
+variable (φ : α → ℝ)
+-- variable (f g φ : α → ℝ) (hf : Integrable φ μ) (hg : Integrable g μ)
 
 
 open Finset in
@@ -68,11 +69,9 @@ theorem maxOfSums_le_le' (x : α) : Monotone (fun n ↦ maxOfSums T φ x n) := b
   intros n m hmn
   exact maxOfSums_le_le T φ x n m hmn
 
-
 open Filter in
 /-- The set of divergent points `{ x | lim_n Φ_n x = ∞}`. -/
 def divSet := { x : α | Tendsto (fun n ↦ maxOfSums T φ x n) atTop atTop }
-
 
 /- ∀ `x ∈ A`, `Φ_{n+1}(x) - Φ_{n}(T(x)) = φ(x) - min(0,Φ_{n}(T(x))) ≥ φ(x)` decreases to `φ(x)`. -/
 
@@ -84,60 +83,77 @@ theorem birkhoffSum_succ_image (n : ℕ) (x : α) :
     simp
     exact add_sub (birkhoffSum T φ n x) (φ (T^[n] x)) (φ x)
 
--- TODO: clean the following, enquire if there is an easier way to extract it from mathlib.
-/-- Would expect this to be in `Mathlib/Data/Finset/Lattice`. -/
+/-- Would expect this to be in `Mathlib/Data/Finset/Lattice`.
+Or perhaps there is already an easier way to extract it from mathlib? -/
 theorem sup'_eq_iff_le {s : Finset β} [SemilatticeSup α] (H : s.Nonempty) (φ : β → α) (hs : a ∈ s) :
     s.sup' H φ = φ a ↔ ∀ b ∈ s, φ b ≤ φ a := by
   constructor
-  intros h0 b h2
-  rw [← h0]
-  exact Finset.le_sup' φ h2
-  intro h1
-  have hle : s.sup' H φ ≤ φ a := by
-    simp only [Finset.sup'_le_iff]
-    exact h1
-  exact (LE.le.ge_iff_eq hle).mp (Finset.le_sup' φ hs)
+  · intros h0 b h2
+    rw [← h0]
+    exact Finset.le_sup' φ h2
+  · intro h1
+    have hle : s.sup' H φ ≤ φ a := by
+      simp only [Finset.sup'_le_iff]
+      exact h1
+    exact (LE.le.ge_iff_eq hle).mp (Finset.le_sup' φ hs)
 
-
-open Finset in
-/-- Divide a range into two parts. Maybe this exists in mathlib? Simpler way to write the proof?-/
-theorem range_union (n m : ℕ) : range (n + m) = (range n) ∪ (filter (n ≤ ·) (range (n + m))) := by
-  ext k
+/-- convenient because used several times in proving claim 1 -/
+theorem map_range_Nonempty (n : ℕ) : (Finset.map (addLeftEmbedding 1)
+    (Finset.range (n + 1))).Nonempty := by
+  use 1
+  refine Finset.mem_map.mpr ?h.a
+  use 0
   constructor
-  by_cases hc : k < n
-  intro hkr
-  exact mem_union.mpr (Or.inl (mem_range.mpr hc))
-  push_neg at hc
-  intro hkr
-  exact mem_union_right (range n) (mem_filter.mpr { left := hkr, right := hc })
-  intros hku
-  simp
-  simp at hku
-  rcases hku with h1 | h2
-  exact Nat.lt_add_right m h1
-  exact h2.left
+  · simp only [Finset.mem_range, add_pos_iff, zero_lt_one, or_true]
+  · exact rfl
 
 open Finset in
-/-- Claim 1 (Marco) -/
+/-- modified from mathlib to make f explicit - isn't the version in mathlib inconvenient? -/
+theorem comp_sup'_eq_sup'_comp_alt [SemilatticeSup α] [SemilatticeSup γ] {s : Finset β}
+    (H : s.Nonempty) (f : β → α)
+    (g : α → γ) (g_sup : ∀ x y, g (x ⊔ y) = g x ⊔ g y) : g (s.sup' H f) = s.sup' H (g ∘ f) := by
+  refine' H.cons_induction _ _ <;> intros <;> simp [*]
+
+open Finset in
+/-- Claim 1 -/
 theorem maxOfSums_succ_image (n : ℕ) (x : α) :
     maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n = φ x - min 0 (maxOfSums T φ (T x) n) := by
   -- Consider `maxOfSums T φ x (n + 1) = max {birkhoffSum T φ 1 x,..., birkhoffSum T φ (n + 2) x}`
-  by_cases hc : ∀ k ≤ n + 1, birkhoffSum T φ (k + 1) x ≤ birkhoffSum T φ 1 x
-  -- Case when the max is achieved by first element.
-  have h0 : maxOfSums T φ x (n + 1) = birkhoffSum T φ 1 x := by
-    unfold maxOfSums
-    rw [birkhoffSum_one']
-    rw [birkhoffSum_one'] at hc
-    have h12 : (range (n + 1 + 1)).Nonempty := nonempty_range_succ
-    have h13 : 0 ∈ (range (n + 1 + 1)) := by
-      refine mem_range.mpr (Nat.add_pos_right (n + 1) Nat.le.refl)
-    have h11 := sup'_eq_iff_le h12 (fun k ↦ birkhoffSum T φ (k + 1) x) h13
-    simp only [zero_add, birkhoffSum_one', mem_range] at h11
-    have h15 : ∀ b < n + 1 + 1, birkhoffSum T φ (b + 1) x ≤ φ x := by
-      intros k h16
-      have h17 : k ≤ n + 1 := Nat.lt_succ.mp h16
-      exact hc k h17
-    exact h11.mpr h15
+  -- hc tells that the max is equal to the first term or the max of all the other terms
+  have hc : maxOfSums T φ x (n + 1) = birkhoffSum T φ 1 x ∨
+      maxOfSums T φ x (n + 1) = sup' (map (addLeftEmbedding 1) (range (n + 1)))
+      (map_range_Nonempty n) fun k ↦ birkhoffSum T φ (k + 1) x := by
+    have h0 : range (n + 2) = {0} ∪ map (addLeftEmbedding 1) (range (n + 1)) := by
+      rw [← range_one, ← Nat.add_comm 1 (n + 1)]
+      exact range_add_eq_union 1 (n + 1)
+    have h1 := sup'_union (singleton_nonempty 0) (map_range_Nonempty n)
+        (fun k ↦ birkhoffSum T φ (k + 1) x)
+    simp_rw [← h0] at h1
+      -- the max is the max of first term and the max of all the other terms
+    have h2 : maxOfSums T φ x (n + 1) = max (birkhoffSum T φ 1 x)
+        (sup' (map (addLeftEmbedding 1) (range (n + 1))) (map_range_Nonempty n)
+        fun k ↦ birkhoffSum T φ (k + 1) x) := by
+      unfold maxOfSums
+      rw [h1]
+      simp
+      exact rfl
+    have h3 := max_choice (birkhoffSum T φ 1 x)
+      (sup' (map (addLeftEmbedding 1) (range (n + 1))) (map_range_Nonempty n)
+      fun k ↦ birkhoffSum T φ (k + 1) x)
+    rw [← h2] at h3
+    exact h3
+  -- divide into cases
+  rcases hc with hcl | hcr
+  -- case when max is the first term
+  have h35 : ∀ k ∈ range (n + 1 + 1), birkhoffSum T φ (k + 1) x ≤ birkhoffSum T φ 1 x := by
+    have h41 : 0 ∈ (range (n + 1 + 1)) := mem_range.mpr (Nat.add_pos_right (n + 1) Nat.le.refl)
+    have h11 := sup'_eq_iff_le nonempty_range_succ (fun k ↦ birkhoffSum T φ (k + 1) x) h41
+    simp at h11
+    simp
+    refine' h11.mp _
+    unfold maxOfSums at hcl
+    simp at hcl
+    exact hcl
   have h1 : birkhoffSum T φ 1 x = φ x := birkhoffSum_one T φ x
   have h2 : ∀ k, birkhoffSum T φ k (T x) = birkhoffSum T φ (k + 1) x - φ x := by
     intro k
@@ -145,9 +161,10 @@ theorem maxOfSums_succ_image (n : ℕ) (x : α) :
   have h3 : ∀ k ≤ n + 1, birkhoffSum T φ k (T x) ≤ 0 := by
     intros k hk
     rw [h2]
-    rw [h1] at hc
+    rw [h1] at hcl
     simp only [tsub_le_iff_right, zero_add]
-    exact hc k hk
+    rw [birkhoffSum_one'] at h35
+    exact h35 k (mem_range_succ_iff.mpr hk)
   have h4 : maxOfSums T φ (T x) n ≤ 0 := by
     unfold maxOfSums
     simp only [sup'_le_iff, mem_range]
@@ -156,97 +173,41 @@ theorem maxOfSums_succ_image (n : ℕ) (x : α) :
     refine h3 (k + 1) (Nat.add_le_add hk Nat.le.refl)
   have h5 : min 0 (maxOfSums T φ (T x) n) = maxOfSums T φ (T x) n := min_eq_right h4
   linarith
-  -- Case when max is not achieved by the first element
-  push_neg at hc
-  let bS := fun k ↦ birkhoffSum T φ (k + 1) x
-  let s1 := range 1
-  let s2 := filter (1 ≤ ·) (range (n + 2))
-  have h19 : range (n + 2) = s1 ∪ s2 := by
-    have h20 := range_union 1 (n + 1)
-    rw [Nat.one_add (n + 1)] at h20
-    exact h20
-  have h21 : s2.Nonempty := by
-    use 1
-
-    sorry
-  have h17 : sup' (range (n + 2)) nonempty_range_succ bS = bS 0 ⊔ sup' s2 h21 bS := by
-    -- Now use `sup'_union`, `range_union` to divide `maxOfSums T φ x (n + 1)` into 2 pieces.
-
-    sorry
-
-  have h6 : maxOfSums T φ x (n + 1) =
-      sup' (range (n + 1)) (nonempty_range_succ) (fun k ↦ birkhoffSum T φ (k + 2) x) := by
+  -- case when max is not achieved by the first element
+  rw [sup'_map (fun k ↦ birkhoffSum T φ (k + 1) x) (map_range_Nonempty n)] at hcr
+  simp at hcr
+  have h1 : maxOfSums T φ x (n + 1) = φ x + maxOfSums T φ (T x) n := by
+    rw [hcr]
     unfold maxOfSums
-    -- Since `hc`, the max is not achieved by the first element reduce to max over other terms.
-
-    sorry
-  have h7 : maxOfSums T φ (T x) n =
-      sup' (range (n + 1)) (nonempty_range_succ) (fun k ↦ birkhoffSum T φ (k + 1) (T x)) := by
-    exact rfl
-  have h10 : maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n = φ x := by
-    rw [h6, h7]
-    have h18 (k : ℕ) := birkhoffSum_succ_image T φ (k + 1) x
-    have h19 :
-        (fun k ↦ birkhoffSum T φ (k + 2) x) = (fun k ↦ birkhoffSum T φ (k + 1) (T x) + φ x) := by
-
-      sorry
-    rw [h19]
-
-    -- Use `sup'_comm` to allow sup to commute with the function.
-    sorry
+    have h4 (k : ℕ) (_ : k ∈ range (n + 1)) := birkhoffSum_succ' T φ (k + 1) x
+    have h5 := sup'_congr nonempty_range_succ rfl h4
+    have h7 := comp_sup'_eq_sup'_comp_alt (nonempty_range_succ : (range (n + 1)).Nonempty)
+      (fun k ↦ birkhoffSum T φ (k + 1) (T x)) (fun a ↦ (φ x) + a ) (fun a b ↦ add_sup a b (φ x))
+    simp at h7
+    simp at h5
+    simp_rw [← h7] at h5
+    simp_rw [← h5, add_comm]
+  -- in this case the min is zero
   have h8 : 0 ≤ maxOfSums T φ (T x) n := by
-    unfold maxOfSums
-
-    sorry
-  have h9 : min 0 (maxOfSums T φ (T x) n) = 0 := by
-    exact min_eq_left h8
-  rw [h9, h6, h7]
-
-  sorry
-
-
+    have h9 : φ x ≤ maxOfSums T φ x (n + 1) := by
+      unfold maxOfSums
+      have h41 : 0 ∈ (range (n + 1 + 1)) := mem_range.mpr (Nat.add_pos_right (n + 1) Nat.le.refl)
+      have h10 := le_sup' (fun k ↦ birkhoffSum T φ (k + 1) x) h41
+      simp at h10
+      norm_num
+      exact h10
+    linarith
+  rw [min_eq_left h8, h1]
+  simp
 
 open Filter in
 /-- The set of divergent points is invariant. -/
 theorem divSet_inv : T⁻¹' (divSet T φ) = (divSet T φ) := by
   sorry
 
-
-
-
 /- `A` is in `I = inv_sigma_algebra`. -/
 -- idea: is it better to define a new type measureable sets in alpha and then restrict to that type?
 -- def inv_sigma_algebra := { S : Set α | MeasurableSet S ∧ T⁻¹' S = S }
 def inv_sigma_algebra := { S : Set α | MeasurableSet S ∧ IsInvariant (fun n x ↦ T^[n] x) S }
-
-
-/- Using dominated convergence, `0 ≤ ∫_A (Φ_{n+1} - Φ_{n}) dμ = ∫_A (Φ_{n+1} - Φ_{n} ∘ T) dμ → ∫_A φ dμ`. -/
-
-/- `(1/n) ∑_{k=0}^{n-1} φ ∘ T^k ≤ Φ_n / n`. -/
-
-/- If `x ∉ A`, `limsup_n (1/n) ∑_{k=0}^{n-1} φ ∘ T^i ≤ 0`. -/
-
-/- If conditional expection of `φ` is negative, i.e., `∫_C φ dμ = ∫_C φ|_inv_sigmal_algebra dμ < 0` for all `C` in `inv_sigma_algebra` with `μ(C) > 0`,
-then `μ(A) = 0`. -/
-
-/- Then (assumptions as prior step) `limsup_n (1/n) ∑_{k=0}^{n-1} φ ∘ T^i ≤ 0` a.e. -/
-
-/- Let `φ = φ - φ|_I - ε`. -/
-
-/- `f_I ∘ T = φ|_I` and so `(1/n) ∑_{k=0}^{n-1} φ ∘ T^k = (1/n) ∑_{k=0}^{n-1} φ ∘ T^k - f_I - ε`. -/
-
-/- `limsup_n (1/n) ∑_{k=0}^{n-1} φ ∘ T^i ≤ φ|_I + ε` a.e. -/
-
-/- Replacing `φ` with `-φ`  we get the lower bound. -/
-
-/- Birkhoff's theorem: Almost surely, `birkhoffAverage ℝ φ g n x` converges to the conditional expectation of `φ`. -/
-
-
-/- If `T` is ergodic, show that the invariant sigma-algebra is a.e. trivial. -/
-
-/- Show that the conditional expectation with respect to an a.e. trivial subalgebra is a.e.
-the integral. -/
-
-/- Birkhoff theorem for ergodic maps. -/
 
 end Ergodic_Theory

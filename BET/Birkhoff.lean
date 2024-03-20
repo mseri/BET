@@ -1,4 +1,3 @@
-import Mathlib.Tactic
 import Mathlib.Dynamics.OmegaLimit
 import Mathlib.Dynamics.Ergodic.AddCircle
 import Mathlib.Dynamics.BirkhoffSum.Average
@@ -6,7 +5,7 @@ import Mathlib.Dynamics.BirkhoffSum.Average
 /-!
 # Birkhoff's ergodic theorem
 
-This file defines Birkhoff sums, other related notions and proves Birkhoff's ergodic theorem.
+This file contains the proof of Birkhoff's ergodic theorem.
 
 ## Implementation notes
 
@@ -25,20 +24,17 @@ open BigOperators MeasureTheory
 
 /-
 - `T` is a measure preserving map of a probability space `(α, μ)`,
-- `φ g : α → ℝ` are integrable.
+- `φ : α → ℝ` is integrable.
 -/
 variable {α : Type*} [MeasurableSpace α]
 variable {μ : MeasureTheory.Measure α} [MeasureTheory.IsProbabilityMeasure μ]
 variable (T : α → α) (hT : MeasurePreserving T μ)
-variable (φ : α → ℝ)
--- variable (f g φ : α → ℝ) (hf : Integrable φ μ) (hg : Integrable g μ)
+variable (φ : α → ℝ) (hphi : Integrable φ μ)
 
 
 open Finset in
-/-- The max of the first `n + 1` Birkhoff sums.
-I.e., `maxOfSums T φ x n` corresponds to `max {birkhoffSum T φ 1 x,..., birkhoffSum T φ (n + 1) x}`.
-Indexing choice avoids max of empty set issue. -/
-/- define `Φ_n : max { ∑_{i=0}^{n} φ ∘ T^i }_{k ≤ n}` -/
+/-- The max of the first `n + 1` Birkhoff sums, i.e.,
+`maxOfSums T φ x n` corresponds to `max {birkhoffSum T φ 1 x,..., birkhoffSum T φ (n + 1) x}`. -/
 def maxOfSums (x : α) (n : ℕ) :=
     sup' (range (n + 1)) (nonempty_range_succ) (fun k ↦ birkhoffSum T φ (k + 1) x)
 
@@ -201,13 +197,89 @@ theorem maxOfSums_succ_image (n : ℕ) (x : α) :
   simp
 
 open Filter in
+/-- `maxOfSums` at `T x` diverges iff `maxOfSums` at `x` diverges. -/
+theorem maxOfSums_image_Tendsto_atTop_iff (x : α) :
+    Tendsto (fun n ↦ maxOfSums T φ (T x) n) Filter.atTop Filter.atTop ↔
+    Tendsto (fun n ↦ maxOfSums T φ x n) Filter.atTop Filter.atTop := by
+  constructor
+  · intro hx
+    -- since `maxOfSums T φ (T x) n` → ∞, eventually `min 0 (maxOfSums T φ (T x) n) = 0`
+    have h1 : ∀ᶠ n in atTop, min 0 (maxOfSums T φ (T x) n) = 0 := by
+      have h0 : ∀ᶠ n in atTop, 0 ≤ maxOfSums T φ (T x) n := by
+        exact Tendsto.eventually_ge_atTop hx 0
+      simp at h0
+      simp
+      obtain ⟨k,hk⟩ := h0
+      use k
+    -- eventually we have a precise equality between the two maxOfSums
+    have h2 : ∀ᶠ n in atTop, maxOfSums T φ (T x) n = maxOfSums T φ x (n + 1) - φ x := by
+      simp only [eventually_atTop, ge_iff_le] at h1
+      obtain ⟨k,hk⟩ := h1
+      simp
+      use k
+      intros m hm
+      -- take advantage of claim 1
+      have h3 := (maxOfSums_succ_image T φ m x)
+      rw [hk m hm, sub_zero] at h3
+      linarith
+    -- use the eventual equality
+    have h5 : Tendsto (fun n ↦ maxOfSums T φ x (n + 1) - φ x) atTop atTop := by
+      exact Tendsto.congr' h2 hx
+    -- rearrange using properties of `Tendsto`
+    have h6 : Tendsto (fun n ↦ maxOfSums T φ x (n + 1)) atTop atTop := by
+      have h7 := tendsto_atTop_add_const_right atTop (φ x) h5
+      simp at h7
+      exact h7
+    refine' (tendsto_add_atTop_iff_nat 1).mp _
+    exact h6
+  · intro hx
+    have hx' : Tendsto (fun n ↦ maxOfSums T φ x (n + 1)) atTop atTop := by
+      exact (tendsto_add_atTop_iff_nat 1).mpr hx
+    have h1 : ∀ᶠ n in atTop, min 0 (maxOfSums T φ (T x) n) = 0 := by
+      have h2 : ∀ᶠ n in atTop, φ x + 1 ≤ maxOfSums T φ x (n + 1) := by
+        exact Tendsto.eventually_ge_atTop hx' (φ x + 1)
+      simp at h2
+      obtain ⟨k, hk⟩ := h2
+      simp
+      use k
+      intros n hn
+      have h3 := hk n hn
+      have h5 := eq_add_of_sub_eq' (maxOfSums_succ_image T φ n x)
+      rw [h5] at h3
+      by_contra hf
+      push_neg at hf
+      have h4 : min 0 (maxOfSums T φ (T x) n) = maxOfSums T φ (T x) n := by
+        simp
+        apply le_of_lt
+        exact hf
+      rw [h4] at h5
+      simp at h5
+      linarith
+    -- eventually we have a precise equality between the two maxOfSums (repeat of above)
+    have h2' : ∀ᶠ n in atTop, maxOfSums T φ x (n + 1) - φ x = maxOfSums T φ (T x) n := by
+      simp only [eventually_atTop, ge_iff_le] at h1
+      obtain ⟨k,hk⟩ := h1
+      simp
+      use k
+      intros m hm
+      -- take advantage of claim 1
+      have h3 := (maxOfSums_succ_image T φ m x)
+      rw [hk m hm, sub_zero] at h3
+      linarith
+
+    exact Tendsto.congr' h2' (tendsto_atTop_add_const_right atTop (- φ x) hx')
+
+open Filter in
 /-- The set of divergent points is invariant. -/
 theorem divSet_inv : T⁻¹' (divSet T φ) = (divSet T φ) := by
-  sorry
+  ext x
+  exact maxOfSums_image_Tendsto_atTop_iff T φ x
+
+
 
 /- `A` is in `I = inv_sigma_algebra`. -/
 -- idea: is it better to define a new type measureable sets in alpha and then restrict to that type?
 -- def inv_sigma_algebra := { S : Set α | MeasurableSet S ∧ T⁻¹' S = S }
-def inv_sigma_algebra := { S : Set α | MeasurableSet S ∧ IsInvariant (fun n x ↦ T^[n] x) S }
+-- def inv_sigma_algebra := { S : Set α | MeasurableSet S ∧ IsInvariant (fun n x ↦ T^[n] x) S }
 
 end Ergodic_Theory

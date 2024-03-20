@@ -111,11 +111,11 @@ theorem comp_sup'_eq_sup'_comp_alt [SemilatticeSup α] [SemilatticeSup γ] {s : 
   refine' H.cons_induction _ _ <;> intros <;> simp [*]
 
 open Finset in
-/-- Claim 1 -/
+/-- Claim 1: a conventient equality for `maxOfSums`. -/
 theorem maxOfSums_succ_image (n : ℕ) (x : α) :
     maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n = φ x - min 0 (maxOfSums T φ (T x) n) := by
   -- Consider `maxOfSums T φ x (n + 1) = max {birkhoffSum T φ 1 x,..., birkhoffSum T φ (n + 2) x}`
-  -- hc tells that the max is equal to the first term or the max of all the other terms
+  -- tthe max is equal to the first term or the max of all the other terms
   have hc : maxOfSums T φ x (n + 1) = birkhoffSum T φ 1 x ∨
       maxOfSums T φ x (n + 1) = sup' (map (addLeftEmbedding 1) (range (n + 1)))
       (map_range_Nonempty n) fun k ↦ birkhoffSum T φ (k + 1) x := by
@@ -235,6 +235,7 @@ theorem maxOfSums_image_Tendsto_atTop_iff (x : α) :
   · intro hx
     have hx' : Tendsto (fun n ↦ maxOfSums T φ x (n + 1)) atTop atTop := by
       exact (tendsto_add_atTop_iff_nat 1).mpr hx
+    -- since `maxOfSums T φ x (n + 1)` → ∞, eventually `min 0 (maxOfSums T φ (T x) n) = 0`
     have h1 : ∀ᶠ n in atTop, min 0 (maxOfSums T φ (T x) n) = 0 := by
       have h2 : ∀ᶠ n in atTop, φ x + 1 ≤ maxOfSums T φ x (n + 1) := by
         exact Tendsto.eventually_ge_atTop hx' (φ x + 1)
@@ -255,7 +256,7 @@ theorem maxOfSums_image_Tendsto_atTop_iff (x : α) :
       rw [h4] at h5
       simp at h5
       linarith
-    -- eventually we have a precise equality between the two maxOfSums (repeat of above)
+    -- eventually we have a precise equality between the two maxOfSums, like above
     have h2' : ∀ᶠ n in atTop, maxOfSums T φ x (n + 1) - φ x = maxOfSums T φ (T x) n := by
       simp only [eventually_atTop, ge_iff_le] at h1
       obtain ⟨k,hk⟩ := h1
@@ -266,11 +267,10 @@ theorem maxOfSums_image_Tendsto_atTop_iff (x : α) :
       have h3 := (maxOfSums_succ_image T φ m x)
       rw [hk m hm, sub_zero] at h3
       linarith
-
     exact Tendsto.congr' h2' (tendsto_atTop_add_const_right atTop (- φ x) hx')
 
 open Filter in
-/-- The set of divergent points is invariant. -/
+/-- Claim 2: the set of divergent points is invariant. -/
 theorem divSet_inv : T⁻¹' (divSet T φ) = (divSet T φ) := by
   ext x
   exact maxOfSums_image_Tendsto_atTop_iff T φ x

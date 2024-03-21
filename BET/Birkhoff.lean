@@ -111,8 +111,8 @@ theorem comp_sup'_eq_sup'_comp_alt [SemilatticeSup α] [SemilatticeSup γ] {s : 
   refine' H.cons_induction _ _ <;> intros <;> simp [*]
 
 open Finset in
-/-- Claim 1: a conventient equality for `maxOfSums`. -/
-theorem maxOfSums_succ_image (n : ℕ) (x : α) :
+/-- Claim 1: a convenient equality for `maxOfSums`. -/
+theorem claim1 (n : ℕ) (x : α) :
     maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n = φ x - min 0 (maxOfSums T φ (T x) n) := by
   -- Consider `maxOfSums T φ x (n + 1) = max {birkhoffSum T φ 1 x,..., birkhoffSum T φ (n + 2) x}`
   -- tthe max is equal to the first term or the max of all the other terms
@@ -197,34 +197,88 @@ theorem maxOfSums_succ_image (n : ℕ) (x : α) :
   simp
 
 open Filter in
-/-- `maxOfSums` at `T x` diverges iff `maxOfSums` at `x` diverges. -/
-theorem maxOfSums_image_Tendsto_atTop_iff (x : α) :
-    Tendsto (fun n ↦ maxOfSums T φ (T x) n) Filter.atTop Filter.atTop ↔
-    Tendsto (fun n ↦ maxOfSums T φ x n) Filter.atTop Filter.atTop := by
+/-- eventual equality - this can be used in proving claim 2 -/
+theorem claim4 (x : α) (hx : (T x) ∈ divSet T φ ):
+    ∀ᶠ n in atTop, maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n = φ x := by
+  unfold divSet at hx
+  simp at hx
+  -- since `maxOfSums T φ (T x) n` → ∞, eventually `min 0 (maxOfSums T φ (T x) n) = 0`
+  have h1 : ∀ᶠ n in atTop, min 0 (maxOfSums T φ (T x) n) = 0 := by
+    have h0 : ∀ᶠ n in atTop, 0 ≤ maxOfSums T φ (T x) n := by
+      exact Tendsto.eventually_ge_atTop hx 0
+    simp at h0
+    simp
+    obtain ⟨k,hk⟩ := h0
+    use k
+  simp only [eventually_atTop, ge_iff_le] at h1
+  obtain ⟨k,hk⟩ := h1
+  simp
+  use k
+  intros m hm
+  -- take advantage of claim 1
+  have h3 := (claim1 T φ m x)
+  rw [hk m hm, sub_zero] at h3
+  exact h3
+
+open Filter in
+/-- eventual equality - this can be used in proving claim 2 -/
+theorem claim5 (x : α) (hx : x ∈ divSet T φ ):
+    ∀ᶠ n in atTop, maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n = φ x := by
+  unfold divSet at hx
+  simp at hx
+  have hx' : Tendsto (fun n ↦ maxOfSums T φ x (n + 1)) atTop atTop := by
+    exact (tendsto_add_atTop_iff_nat 1).mpr hx
+  -- since `maxOfSums T φ x (n + 1)` → ∞, eventually `min 0 (maxOfSums T φ (T x) n) = 0`
+  have h1 : ∀ᶠ n in atTop, min 0 (maxOfSums T φ (T x) n) = 0 := by
+    have h2 : ∀ᶠ n in atTop, φ x + 1 ≤ maxOfSums T φ x (n + 1) := by
+      exact Tendsto.eventually_ge_atTop hx' (φ x + 1)
+    simp at h2
+    obtain ⟨k, hk⟩ := h2
+    simp
+    use k
+    intros n hn
+    have h3 := hk n hn
+    have h5 := eq_add_of_sub_eq' (claim1 T φ n x)
+    rw [h5] at h3
+    by_contra hf
+    push_neg at hf
+    have h4 : min 0 (maxOfSums T φ (T x) n) = maxOfSums T φ (T x) n := by
+      simp
+      apply le_of_lt
+      exact hf
+    rw [h4] at h5
+    simp at h5
+    linarith
+  simp only [eventually_atTop, ge_iff_le] at h1
+  obtain ⟨k,hk⟩ := h1
+  simp
+  use k
+  intros m hm
+  -- take advantage of claim 1
+  have h3 := (claim1 T φ m x)
+  rw [hk m hm, sub_zero] at h3
+  exact h3
+
+open Filter in
+/-- Claim 2: the set of divergent points is invariant. -/
+theorem divSet_inv : T⁻¹' (divSet T φ) = (divSet T φ) := by
+  ext x
   constructor
   · intro hx
-    -- since `maxOfSums T φ (T x) n` → ∞, eventually `min 0 (maxOfSums T φ (T x) n) = 0`
-    have h1 : ∀ᶠ n in atTop, min 0 (maxOfSums T φ (T x) n) = 0 := by
-      have h0 : ∀ᶠ n in atTop, 0 ≤ maxOfSums T φ (T x) n := by
-        exact Tendsto.eventually_ge_atTop hx 0
-      simp at h0
+    have h2' : ∀ᶠ n in atTop, maxOfSums T φ (T x) n = maxOfSums T φ x (n + 1) - φ x := by
+      -- there should be a slicker way of rearranging the equality in Tendsto ------------------
       simp
-      obtain ⟨k,hk⟩ := h0
+      have h2 := claim4 T φ x hx
+      simp at h2
+      obtain ⟨k, hk⟩ := h2
       use k
-    -- eventually we have a precise equality between the two maxOfSums
-    have h2 : ∀ᶠ n in atTop, maxOfSums T φ (T x) n = maxOfSums T φ x (n + 1) - φ x := by
-      simp only [eventually_atTop, ge_iff_le] at h1
-      obtain ⟨k,hk⟩ := h1
-      simp
-      use k
-      intros m hm
-      -- take advantage of claim 1
-      have h3 := (maxOfSums_succ_image T φ m x)
-      rw [hk m hm, sub_zero] at h3
-      linarith
+      intros n hn
+      suffices hs : maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n = φ x by linarith
+      exact hk n hn
+      ------------------------------------------------------------------------------------------
     -- use the eventual equality
     have h5 : Tendsto (fun n ↦ maxOfSums T φ x (n + 1) - φ x) atTop atTop := by
-      exact Tendsto.congr' h2 hx
+      exact Tendsto.congr' h2' hx
     -- rearrange using properties of `Tendsto`
     have h6 : Tendsto (fun n ↦ maxOfSums T φ x (n + 1)) atTop atTop := by
       have h7 := tendsto_atTop_add_const_right atTop (φ x) h5
@@ -235,60 +289,31 @@ theorem maxOfSums_image_Tendsto_atTop_iff (x : α) :
   · intro hx
     have hx' : Tendsto (fun n ↦ maxOfSums T φ x (n + 1)) atTop atTop := by
       exact (tendsto_add_atTop_iff_nat 1).mpr hx
-    -- since `maxOfSums T φ x (n + 1)` → ∞, eventually `min 0 (maxOfSums T φ (T x) n) = 0`
-    have h1 : ∀ᶠ n in atTop, min 0 (maxOfSums T φ (T x) n) = 0 := by
-      have h2 : ∀ᶠ n in atTop, φ x + 1 ≤ maxOfSums T φ x (n + 1) := by
-        exact Tendsto.eventually_ge_atTop hx' (φ x + 1)
+    -- eventually we have a precise equality between the two maxOfSums
+    have h2' : ∀ᶠ n in atTop, maxOfSums T φ x (n + 1) - φ x = maxOfSums T φ (T x) n := by
+      -- there should be a slicker way of rearranging the equality in Tendsto ------------------
+      simp
+      have h2 := claim5 T φ x hx
       simp at h2
       obtain ⟨k, hk⟩ := h2
-      simp
       use k
       intros n hn
-      have h3 := hk n hn
-      have h5 := eq_add_of_sub_eq' (maxOfSums_succ_image T φ n x)
-      rw [h5] at h3
-      by_contra hf
-      push_neg at hf
-      have h4 : min 0 (maxOfSums T φ (T x) n) = maxOfSums T φ (T x) n := by
-        simp
-        apply le_of_lt
-        exact hf
-      rw [h4] at h5
-      simp at h5
-      linarith
-    -- eventually we have a precise equality between the two maxOfSums, like above
-    have h2' : ∀ᶠ n in atTop, maxOfSums T φ x (n + 1) - φ x = maxOfSums T φ (T x) n := by
-      simp only [eventually_atTop, ge_iff_le] at h1
-      obtain ⟨k,hk⟩ := h1
-      simp
-      use k
-      intros m hm
-      -- take advantage of claim 1
-      have h3 := (maxOfSums_succ_image T φ m x)
-      rw [hk m hm, sub_zero] at h3
-      linarith
+      suffices hs : maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n = φ x by linarith
+      exact hk n hn
+      ------------------------------------------------------------------------------------------
     exact Tendsto.congr' h2' (tendsto_atTop_add_const_right atTop (- φ x) hx')
 
-open Filter in
-/-- Claim 2: the set of divergent points is invariant. -/
-theorem divSet_inv : T⁻¹' (divSet T φ) = (divSet T φ) := by
-  ext x
-  exact maxOfSums_image_Tendsto_atTop_iff T φ x
-
 /-- framed formula -/
-theorem claim3 (x : α) : Monotone (fun n ↦ - (maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n)) := by
+theorem claim3 (x : α) : Monotone (fun n ↦ -(maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n)) := by
   unfold Monotone
   intros n m hnm
-  simp_rw [maxOfSums_succ_image]
+  simp_rw [claim1]
   simp
   by_cases hc : 0 ≤ maxOfSums T φ (T x) m
   · left
     exact hc
   · right
     exact maxOfSums_Monotone T φ (T x) hnm
-
-
-
 
 /-
 Monotone convergence theorem:

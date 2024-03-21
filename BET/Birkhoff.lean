@@ -60,7 +60,7 @@ theorem maxOfSums_le_le (x : α) (m n : ℕ) (hmn : m ≤ n) :
 
 /-- `maxOfSums` is monotone.
 (Uncertain which is the best phrasing to keep of these options.) -/
-theorem maxOfSums_le_le' (x : α) : Monotone (fun n ↦ maxOfSums T φ x n) := by
+theorem maxOfSums_Monotone (x : α) : Monotone (fun n ↦ maxOfSums T φ x n) := by
   unfold Monotone
   intros n m hmn
   exact maxOfSums_le_le T φ x n m hmn
@@ -275,7 +275,27 @@ theorem divSet_inv : T⁻¹' (divSet T φ) = (divSet T φ) := by
   ext x
   exact maxOfSums_image_Tendsto_atTop_iff T φ x
 
+/-- framed formula -/
+theorem claim3 (x : α) : Monotone (fun n ↦ - (maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n)) := by
+  unfold Monotone
+  intros n m hnm
+  simp_rw [maxOfSums_succ_image]
+  simp
+  by_cases hc : 0 ≤ maxOfSums T φ (T x) m
+  · left
+    exact hc
+  · right
+    exact maxOfSums_Monotone T φ (T x) hnm
 
+
+
+
+/-
+Monotone convergence theorem:
+- lintegral_iSup
+- lintegral_tendsto_of_tendsto_of_monotone
+- lintegral_iSup'
+-/
 
 /- `A` is in `I = inv_sigma_algebra`. -/
 -- idea: is it better to define a new type measureable sets in alpha and then restrict to that type?

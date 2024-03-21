@@ -81,17 +81,17 @@ theorem birkhoffSum_succ_image (n : ℕ) (x : α) :
 
 /-- Would expect this to be in `Mathlib/Data/Finset/Lattice`.
 Or perhaps there is already an easier way to extract it from mathlib? -/
-theorem sup'_eq_iff_le {s : Finset β} [SemilatticeSup α] (H : s.Nonempty) (φ : β → α) (hs : a ∈ s) :
-    s.sup' H φ = φ a ↔ ∀ b ∈ s, φ b ≤ φ a := by
+theorem sup'_eq_iff_le {s : Finset β} [SemilatticeSup α] (H : s.Nonempty) (f : β → α) (hs : a ∈ s) :
+    s.sup' H f = f a ↔ ∀ b ∈ s, f b ≤ f a := by
   constructor
   · intros h0 b h2
     rw [← h0]
-    exact Finset.le_sup' φ h2
+    exact Finset.le_sup' f h2
   · intro h1
-    have hle : s.sup' H φ ≤ φ a := by
+    have hle : s.sup' H f ≤ f a := by
       simp only [Finset.sup'_le_iff]
       exact h1
-    exact (LE.le.ge_iff_eq hle).mp (Finset.le_sup' φ hs)
+    exact (LE.le.ge_iff_eq hle).mp (Finset.le_sup' f hs)
 
 /-- convenient because used several times in proving claim 1 -/
 theorem map_range_Nonempty (n : ℕ) : (Finset.map (addLeftEmbedding 1)

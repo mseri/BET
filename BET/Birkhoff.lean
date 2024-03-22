@@ -325,15 +325,12 @@ open Filter Topology in
 theorem claim6 : 0 ≤ ∫ x in (divSet T φ), φ x ∂μ := by
   have h0 (n : ℕ) : 0 ≤ ∫ x in (divSet T φ), (maxOfSums T φ x (n + 1) - maxOfSums T φ x n) ∂μ := by
     have hn : n ≤ (n + 1) := by simp
-    have h01 (x : α) : 0 ≤ (maxOfSums T φ x (n + 1) - maxOfSums T φ x n) := by
-      have h00 := maxOfSums_Monotone T φ x hn
-      simp at h00
-      linarith
-    have h01' : ∀ x ∈ divSet T φ, 0 ≤ (maxOfSums T φ x (n + 1) - maxOfSums T φ x n) := by
+    have h01 : ∀ x ∈ divSet T φ, 0 ≤ (maxOfSums T φ x (n + 1) - maxOfSums T φ x n) := by
       intros x hx
-      exact h01 x
+      have h00 := maxOfSums_Monotone T φ x hn
+      linarith
 
-    -- have h02 := set_integral_nonneg (divSet_MeasurableSet T φ) h01'
+    -- have h02 := set_integral_nonneg (divSet_MeasurableSet T φ) h01
     sorry
   have h1 (n : ℕ) : ∫ x in (divSet T φ), (maxOfSums T φ x (n + 1) - maxOfSums T φ x n) ∂μ =
       ∫ x in (divSet T φ), (maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n) ∂μ := by

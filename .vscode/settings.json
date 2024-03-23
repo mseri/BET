@@ -8,6 +8,8 @@
   "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
   "cSpell.words": [
-    "Antitone"
+    "Antitone",
+    "birkhoff",
+    "Semiring"
   ]
 }

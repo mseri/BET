@@ -30,7 +30,7 @@ variable {α : Type*} [MeasurableSpace α]
 variable {μ : MeasureTheory.Measure α} [MeasureTheory.IsProbabilityMeasure μ]
 variable (T : α → α) (hT : MeasurePreserving T μ)
 variable (φ : α → ℝ) (hphi : Integrable φ μ)
-
+variable (R : Type*) [DivisionSemiring R] [Module R ℝ] -- used for birkhoffAverage
 
 open Finset in
 /-- The max of the first `n + 1` Birkhoff sums, i.e.,
@@ -315,10 +315,15 @@ theorem diff_Monotone (x : α) : Monotone (fun n ↦ -(maxOfSums T φ x (n + 1) 
   · right
     exact maxOfSums_Monotone T φ (T x) hnm
 
--- theorem star_claim (x : α) (hx : x ∉ divSet  ) : ... ≤ 0 := by sorry
+/-- ✨ Outside the divergent set the limsup of Birkhoff average is non positive. -/
+theorem non_positive_of_notin_divSet (x : α) (hx : x ∉ divSet T φ) :
+    Filter.limsup (fun n ↦ (birkhoffAverage R T φ n x)) ≤ 0 := by
+  /- By `hx` we know that `n ↦ birkhoffSum T φ n x` is bounded. Conclude dividing by `n`. -/
+  sorry
 
 /-- The set of divergent points is measurable -/
 theorem divSet_MeasurableSet : MeasurableSet (divSet T φ) := by
+  /- ? -/
   sorry
 
 open Filter Topology Measure in

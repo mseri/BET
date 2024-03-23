@@ -7,3 +7,4 @@
   takes 10 lines, there is surely a slicker way to do it.
 - [ ] How can we use notation within the argument to reduce the verbosity of the argument. E.g., introduce notation for `maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n`?
 - [ ] In some cases `Monotone` together with a minus sign should be replaced with `Antitone`.
+- [ ] Understand the requirement of `[DivisionSemiring R] [Module R ℝ]` for `birkhoffAverage`.

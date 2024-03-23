@@ -198,7 +198,7 @@ theorem claim1 (n : ℕ) (x : α) :
 
 open Filter in
 /-- eventual equality -/
-theorem claim4 (x : α) (hx : (T x) ∈ divSet T φ ):
+theorem diff_evenutally_of_divSet' (x : α) (hx : (T x) ∈ divSet T φ ):
     ∀ᶠ n in atTop, maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n = φ x := by
   unfold divSet at hx
   simp at hx
@@ -222,7 +222,7 @@ theorem claim4 (x : α) (hx : (T x) ∈ divSet T φ ):
 
 open Filter in
 /-- eventual equality -/
-theorem claim5 (x : α) (hx : x ∈ divSet T φ):
+theorem diff_evenutally_of_divSet (x : α) (hx : x ∈ divSet T φ):
     ∀ᶠ n in atTop, maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n = φ x := by
   unfold divSet at hx
   simp at hx
@@ -268,7 +268,7 @@ theorem divSet_inv : T⁻¹' (divSet T φ) = (divSet T φ) := by
     have h2' : ∀ᶠ n in atTop, maxOfSums T φ (T x) n = maxOfSums T φ x (n + 1) - φ x := by
       -- there should be a slicker way of rearranging the equality in Tendsto ------------------
       simp
-      have h2 := claim4 T φ x hx
+      have h2 := diff_evenutally_of_divSet' T φ x hx
       simp at h2
       obtain ⟨k, hk⟩ := h2
       use k
@@ -293,7 +293,7 @@ theorem divSet_inv : T⁻¹' (divSet T φ) = (divSet T φ) := by
     have h2' : ∀ᶠ n in atTop, maxOfSums T φ x (n + 1) - φ x = maxOfSums T φ (T x) n := by
       -- there should be a slicker way of rearranging the equality in Tendsto ------------------
       simp
-      have h2 := claim5 T φ x hx
+      have h2 := diff_evenutally_of_divSet T φ x hx
       simp at h2
       obtain ⟨k, hk⟩ := h2
       use k
@@ -303,8 +303,8 @@ theorem divSet_inv : T⁻¹' (divSet T φ) = (divSet T φ) := by
       ------------------------------------------------------------------------------------------
     exact Tendsto.congr' h2' (tendsto_atTop_add_const_right atTop (- φ x) hx')
 
-/-- framed formula -/
-theorem claim3 (x : α) : Monotone (fun n ↦ -(maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n)) := by
+/-- Framed formula: the negative difference of maxOfSums is monotone. -/
+theorem diff_Monotone (x : α) : Monotone (fun n ↦ -(maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n)) := by
   unfold Monotone
   intros n m hnm
   simp_rw [claim1]
@@ -321,27 +321,41 @@ theorem claim3 (x : α) : Monotone (fun n ↦ -(maxOfSums T φ x (n + 1) - maxOf
 theorem divSet_MeasurableSet : MeasurableSet (divSet T φ) := by
   sorry
 
-open Filter Topology in
-theorem claim6 : 0 ≤ ∫ x in (divSet T φ), φ x ∂μ := by
+open Filter Topology Measure in
+/-- The integral of an observable over the divergent set is nonnegative. -/
+theorem integra_nonneg : 0 ≤ ∫ x in (divSet T φ), φ x ∂μ := by
   have h0 (n : ℕ) : 0 ≤ ∫ x in (divSet T φ), (maxOfSums T φ x (n + 1) - maxOfSums T φ x n) ∂μ := by
     have hn : n ≤ (n + 1) := by simp
     have h01 : ∀ x ∈ divSet T φ, 0 ≤ (maxOfSums T φ x (n + 1) - maxOfSums T φ x n) := by
       intros x hx
       have h00 := maxOfSums_Monotone T φ x hn
       linarith
-
-    -- have h02 := set_integral_nonneg (divSet_MeasurableSet T φ) h01
-    sorry
+    exact set_integral_nonneg (divSet_MeasurableSet T φ) h01
   have h1 (n : ℕ) : ∫ x in (divSet T φ), (maxOfSums T φ x (n + 1) - maxOfSums T φ x n) ∂μ =
       ∫ x in (divSet T φ), (maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n) ∂μ := by
-
-    -- change of variables using that divSet is invariant
-    sorry
+    have h10 : ∫ x in (divSet T φ), (maxOfSums T φ x n) ∂μ =
+        ∫ x in (divSet T φ), (maxOfSums T φ (T x) n) ∂μ := by
+      /- Invariance using that divSet and μ are invariant
+      with
+        - `divSet_inv`
+      -/
+      sorry
+    have h11 (n : ℕ) : Integrable (fun x ↦ maxOfSums T φ x n) (restrict μ (divSet T φ)) := by
+      sorry
+    have h12 (n : ℕ) : Integrable (fun x ↦ maxOfSums T φ (T x) n) (restrict μ (divSet T φ)) := by
+      sorry
+    rw [integral_sub (h11 (n + 1)) (h11 n), h10, ← integral_sub (h11 (n + 1)) (h12 n)]
   have h2 :
       Tendsto (fun n ↦ ∫ x in (divSet T φ), (maxOfSums T φ x (n + 1)
-      - maxOfSums T φ (T x) n) ∂μ) atTop (𝓝 (∫ x in (divSet T φ), φ x ∂μ)) := by
-
-    -- use monotone convergence theorem
+      - maxOfSums T φ (T x) n) ∂μ) atTop (nhds (∫ x in (divSet T φ), φ x ∂μ)) := by
+    /- Use monotone convergence theorem
+      - `lintegral_iSup`
+      - `lintegral_tendsto_of_tendsto_of_monotone`
+      - `lintegral_iSup'`
+    with
+      - `diff_Monotone`
+      - `diff_evenutally_of_divSet`
+    -/
     sorry
   have h3 (n : ℕ) : 0 ≤ ∫ x in (divSet T φ), (maxOfSums T φ x (n + 1)
       - maxOfSums T φ (T x) n) ∂μ := by
@@ -349,13 +363,6 @@ theorem claim6 : 0 ≤ ∫ x in (divSet T φ), φ x ∂μ := by
     _ = ∫ x in (divSet T φ), (maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n) ∂μ := h1 n
   exact le_of_tendsto_of_tendsto' tendsto_const_nhds h2 h3
 
-
-/-
-Monotone convergence theorem:
-- lintegral_iSup
-- lintegral_tendsto_of_tendsto_of_monotone
-- lintegral_iSup'
--/
 
 /- `A` is in `I = inv_sigma_algebra`. -/
 -- idea: is it better to define a new type measureable sets in alpha and then restrict to that type?

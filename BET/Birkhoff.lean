@@ -323,7 +323,7 @@ theorem divSet_MeasurableSet : MeasurableSet (divSet T φ) := by
 
 open Filter Topology Measure in
 /-- The integral of an observable over the divergent set is nonnegative. -/
-theorem integra_nonneg : 0 ≤ ∫ x in (divSet T φ), φ x ∂μ := by
+theorem integral_nonneg : 0 ≤ ∫ x in (divSet T φ), φ x ∂μ := by
   have h0 (n : ℕ) : 0 ≤ ∫ x in (divSet T φ), (maxOfSums T φ x (n + 1) - maxOfSums T φ x n) ∂μ := by
     have hn : n ≤ (n + 1) := by simp
     have h01 : ∀ x ∈ divSet T φ, 0 ≤ (maxOfSums T φ x (n + 1) - maxOfSums T φ x n) := by

@@ -1,6 +1,6 @@
 # Queries
 
-- [ ] Is this the best choice for the definition of `maxOfSums`? Choice avoids the problem of an emptyset but means that in many places the proof of being `Nonempty` must be supplied.
+- [ ] Is `Finset.sup'` the best choice for the definition of `maxOfSums`? Choice avoids the problem of an emptyset but means that in many places the proof of being `Nonempty` must be supplied.
 - [ ] Converting between
   - `∀ᶠ (n : ℕ) in atTop, maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n = φ x` and
   - `∀ᶠ n in atTop, maxOfSums T φ x (n + 1) - φ x = maxOfSums T φ (T x) n`
@@ -8,3 +8,5 @@
 - [ ] How can we use notation within the argument to reduce the verbosity of the argument. E.g., introduce notation for `maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n`?
 - [ ] In some cases `Monotone` together with a minus sign should be replaced with `Antitone`.
 - [ ] Understand the requirement of `[DivisionSemiring R] [Module R ℝ]` for `birkhoffAverage`.
+- [ ] Is `sup'_eq_iff_le` a candidate for including into `mathlib` or is it already there somehow?
+- [ ] The `mathlib` theorem `comp_sup'_eq_sup'_comp` has `f` as implicit making it hard to apply, for this reason we currently have a modified copy of this in our file.

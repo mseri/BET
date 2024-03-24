@@ -197,7 +197,7 @@ theorem claim1 (n : ℕ) (x : α) :
   simp
 
 open Filter in
-/-- eventual equality -/
+/-- Eventual equality - variant with assumption on `T x`. -/
 theorem diff_evenutally_of_divSet' (x : α) (hx : (T x) ∈ divSet T φ ):
     ∀ᶠ n in atTop, maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n = φ x := by
   unfold divSet at hx
@@ -221,7 +221,7 @@ theorem diff_evenutally_of_divSet' (x : α) (hx : (T x) ∈ divSet T φ ):
   exact h3
 
 open Filter in
-/-- eventual equality -/
+/-- Eventual equality - variant with assumption on `x`. -/
 theorem diff_evenutally_of_divSet (x : α) (hx : x ∈ divSet T φ):
     ∀ᶠ n in atTop, maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n = φ x := by
   unfold divSet at hx
@@ -315,13 +315,14 @@ theorem diff_Monotone (x : α) : Monotone (fun n ↦ -(maxOfSums T φ x (n + 1) 
   · right
     exact maxOfSums_Monotone T φ (T x) hnm
 
+open Filter in
 /-- ✨ Outside the divergent set the limsup of Birkhoff average is non positive. -/
 theorem non_positive_of_notin_divSet (x : α) (hx : x ∉ divSet T φ) :
-    Filter.limsup (fun n ↦ (birkhoffAverage R T φ n x)) ≤ 0 := by
+    limsup (fun n ↦ (birkhoffAverage R T φ n x)) ≤ 0 := by
   /- By `hx` we know that `n ↦ birkhoffSum T φ n x` is bounded. Conclude dividing by `n`. -/
   sorry
 
-/-- The set of divergent points is measurable -/
+/-- `divSet T φ` is a measurable set -/
 theorem divSet_MeasurableSet : MeasurableSet (divSet T φ) := by
   /- ? -/
   sorry

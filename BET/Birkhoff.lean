@@ -26,11 +26,63 @@ open BigOperators MeasureTheory
 - `T` is a measure preserving map of a probability space `(α, μ)`,
 - `φ : α → ℝ` is integrable.
 -/
-variable {α : Type*} [MeasurableSpace α]
+variable {α : Type*} [m0: MeasurableSpace α]
+/-
+The original sigma-algebra is now named m0 because we need to distiguish
+b/w that the the invariant sigma-algebra.
+-/
 variable {μ : MeasureTheory.Measure α} [MeasureTheory.IsProbabilityMeasure μ]
 variable (T : α → α) (hT : MeasurePreserving T μ)
 variable (φ : α → ℝ) (hphi : Integrable φ μ)
 variable (R : Type*) [DivisionSemiring R] [Module R ℝ] -- used for birkhoffAverage
+
+
+
+/- when calling the definition below, T will be an explicit argument, because we made
+T an explicit variable (and we couldn't do otherwise, Floris explained) and becauae we
+used T in the construction of the definition -/
+def invSigmaAlg : MeasurableSpace α where
+  MeasurableSet' := fun s ↦ MeasurableSet s ∧ T ⁻¹' s = s
+  -- also 'MeasurableSet' s := MeasurableSet s ∧ T ⁻¹' s = s'
+  measurableSet_empty := by
+    constructor
+    · exact MeasurableSet.empty
+    · exact rfl
+  measurableSet_compl := by
+    intro s
+    dsimp only -- problems at least with infoview on this part
+    intro hinit -- the last 3 lines can be abbreviated to: 'intro h hinit'
+    obtain ⟨hinit1, hinit2⟩ := hinit
+    constructor
+    · exact MeasurableSet.compl hinit1
+    · exact congrArg compl hinit2 -- this was suggested by Lean
+  measurableSet_iUnion := by
+    intro s
+    dsimp
+    intro hinit
+    constructor
+    · have hi1st : ∀ i, MeasurableSet (s i) := by
+        intro i
+        exact (hinit i).left
+      exact MeasurableSet.iUnion hi1st
+    · have hi2nd : ∀ i, T ⁻¹'(s i) = s i := by
+        intro i
+        exact (hinit i).right
+      rw [Set.preimage_iUnion]
+      exact Set.iUnion_congr hi2nd
+
+
+
+
+/- the lemma below was a problem because it was hard to find out what m ≤ m0 meant, when
+m, m0 are measurable spaces. Hovering over the ≤ sign in infoview and following links
+explained it:
+instance : LE (MeasurableSpace α) where le m₁ m₂ := ∀ s, MeasurableSet[m₁] s → MeasurableSet[m₂] s
+-/
+lemma leq_InvSigmaAlg_FullAlg : invSigmaAlg T ≤ m0 := by
+  intro s hs -- here the infoview is faulty and doesn't show everything (known Lean problem, Floris says)
+  exact hs.left
+
 
 open Finset in
 /-- The max of the first `n + 1` Birkhoff sums, i.e.,
@@ -68,6 +120,27 @@ theorem maxOfSums_Monotone (x : α) : Monotone (fun n ↦ maxOfSums T φ x n) :=
 open Filter in
 /-- The set of divergent points `{ x | lim_n Φ_n x = ∞}`. -/
 def divSet := { x : α | Tendsto (fun n ↦ maxOfSums T φ x n) atTop atTop }
+
+
+
+/- can probably be stated without the '[m0]' part -/
+lemma isMeasurable_divSet : MeasurableSet[m0] (divSet T φ) := by sorry
+/-
+For the above lemma we need to use that the set A, defined by all x s.t.
+lim_n φ_n = ∞ is m0-measurable. Since ⇨ is measurable (b/c integrable)
+it all boils down to understanding waht Lean means with φ : α → ℝ being
+measurable,that is, wrt to what sigma-algebra in ℝ. Since ℝ is ℝ, Lean
+might assume it's wrt the Lebesgue measurable sets. In this case, we're
+good. Of course we still need to find a lemma in mathlib that says that
+the "counterimage of ∞ is measurable". Note that the lemma can't say
+exactly that becuase φ takes values in ℝ and not in ENNReal (in which
+case we might have had a chance).
+In any case, if we don't find such lemma, I can easily produce it.
+-/
+
+
+
+#check isMeasurable_divSet T φ
 
 /- ∀ `x ∈ A`, `Φ_{n+1}(x) - Φ_{n}(T(x)) = φ(x) - min(0,Φ_{n}(T(x))) ≥ φ(x)` decreases to `φ(x)`. -/
 

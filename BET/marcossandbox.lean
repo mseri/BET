@@ -1,7 +1,6 @@
 import Mathlib.Tactic
 import Mathlib.MeasureTheory.Function.ConditionalExpectation.Basic
 
-
 noncomputable section
 open MeasureTheory
 
@@ -67,29 +66,13 @@ end
 
 
 noncomputable section
-open MeasureTheory
+open MeasureTheory Set
 
 variable {α : Type*} [m0: MeasurableSpace α]
 variable {μ : Measure α} [IsProbabilityMeasure μ]
 variable (T : α → α) (hT : Measurable T)
 variable {f : α → ℝ} (hf : Integrable f μ)
 
--- the lemma below MUST be in mathlib, but I couldn't find it!
-lemma my_count_union (A B: ℕ → Set α) (h : ∀ i, A i = B i) : ⋃ i, A i = ⋃ i, B i := by
-  ext x
-  simp
-  constructor
-  · intro hyp
-    obtain ⟨i, hypa⟩ := hyp
-    use i
-    rw [← h]
-    exact hypa
-  · intro hyp
-    obtain ⟨i, hypb⟩ := hyp
-    use i
-    rw [h]
-    exact hypb
-  done
 
 /- when calling the definition below, T will be an explicit argument, because we made
 T an explicit variable (and we couldn't do otherwise, Floris explained) and becauae we
@@ -122,8 +105,10 @@ def invSigmaAlg : MeasurableSpace α where
         intro i
         exact (hinit i).right
       rw [Set.preimage_iUnion]
-      exact my_count_union (fun i ↦ T ⁻¹' s i) (fun i ↦ s i) hi2nd
+      exact iUnion_congr hi2nd
     done
+
+#check iUnion_congr
 
 /- the lemma below was a problem because it was hard to find out what m ≤ m0 meant, when
 m, m0 are measurable spaces. Hovering over the ≤ sugn in infoview and following links
@@ -135,7 +120,9 @@ lemma leq_InvSigmaAlg_FullAlg : invSigmaAlg T ≤ m0 := by
   exact hs.left
   done
 
--------------------------------------
+
+------------------------------------- OLD STUFF DOWN HERE
+
 /- the following is an earlier version before I realized we never needed that T is
 measurable for this definition -/
 def invSigmaAlg_previous (hT : Measurable T) : MeasurableSpace α where
@@ -169,3 +156,20 @@ def invSigmaAlg_previous (hT : Measurable T) : MeasurableSpace α where
       rw [Set.preimage_iUnion]
       exact my_count_union (fun i ↦ T ⁻¹' s i) (fun i ↦ s i) hi2nd
     done
+
+-- the lemma below MUST be in mathlib, but I couldn't find it!
+lemma my_count_union (A B: ℕ → Set α) (h : ∀ i, A i = B i) : ⋃ i, A i = ⋃ i, B i := by
+  ext x
+  simp
+  constructor
+  · intro hyp
+    obtain ⟨i, hypa⟩ := hyp
+    use i
+    rw [← h]
+    exact hypa
+  · intro hyp
+    obtain ⟨i, hypb⟩ := hyp
+    use i
+    rw [h]
+    exact hypb
+  done

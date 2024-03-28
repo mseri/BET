@@ -111,7 +111,7 @@ def invSigmaAlg : MeasurableSpace α where
 #check iUnion_congr
 
 /- the lemma below was a problem because it was hard to find out what m ≤ m0 meant, when
-m, m0 are measurable spaces. Hovering over the ≤ sugn in infoview and following links
+m, m0 are measurable spaces. Hovering over the ≤ sign in infoview and following links
 explained it:
 instance : LE (MeasurableSpace α) where le m₁ m₂ := ∀ s, MeasurableSet[m₁] s → MeasurableSet[m₂] s
 -/

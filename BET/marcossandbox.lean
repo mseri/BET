@@ -66,7 +66,7 @@ end
 
 
 noncomputable section
-open MeasureTheory Set
+open MeasureTheory
 
 variable {α : Type*} [m0: MeasurableSpace α]
 variable {μ : Measure α} [IsProbabilityMeasure μ]
@@ -105,7 +105,7 @@ def invSigmaAlg : MeasurableSpace α where
         intro i
         exact (hinit i).right
       rw [Set.preimage_iUnion]
-      exact iUnion_congr hi2nd
+      exact Set.iUnion_congr hi2nd
     done
 
 #check iUnion_congr

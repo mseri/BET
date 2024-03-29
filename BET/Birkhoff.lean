@@ -129,14 +129,28 @@ open Filter in
 /-- The set of divergent points `{ x | lim_n Φ_n x = ∞}`. -/
 def divSet := { x : α | Tendsto (fun n ↦ maxOfSums T φ x n) atTop atTop }
 
+/- Marco morking here
+
 open Finset in
 lemma maxOfSums_measurable : ∀ n, Measurable (fun x ↦ maxOfSums T φ x n) := by
   intro n
-  have hBSintgr : ∀ k, Measurable (fun x ↦ birkhoffSum T φ (k+1) x) := by sorry
-  have fff : fun x ↦ maxOfSums T φ x n = ⨆ (k : range (n + 1)), (fun x ↦ birkhoffSum T φ (k+1) x) := by sorry
-  done
+  have hBSm : ∀ (k : range (n + 1)), Measurable (fun x ↦ birkhoffSum T φ (k+1) x) := by sorry
+  have pivot : maxOfSums T φ x n = ⨆ (k : range (n + 1)), (fun x ↦ birkhoffSum T φ (k+1) x) := by sorry
+  let hend := measurable_iSup hBSm
+  rw [pivot]
+  exact
 
-  #check range (10)
+
+
+/-
+here I plan to use
+theorem measurable_iSup {α : Type u_1} {δ : Type u_5} [TopologicalSpace α]
+[MeasurableSpace α] [BorelSpace α] [MeasurableSpace δ]
+[ConditionallyCompleteLinearOrder α] [OrderTopology α]
+[TopologicalSpace.SecondCountableTopology α] {ι : Sort u_6}
+[Countable ι] {f : ι → δ → α} (hf : ∀ (i : ι), Measurable (f i)) :
+Measurable fun b => ⨆ i, f i b
+-/
 
   -- XXXXXXX Marco working here!!!
 

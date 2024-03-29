@@ -33,10 +33,18 @@ b/w that the the invariant sigma-algebra.
 -/
 variable {μ : MeasureTheory.Measure α} [MeasureTheory.IsProbabilityMeasure μ]
 variable (T : α → α) (hT : MeasurePreserving T μ)
-variable (φ : α → ℝ) (hphi : Integrable φ μ)
+variable (φ : α → ℝ) (hphi : Integrable φ μ) (hphim : Measurable φ)
+/- For the moment it's convenient to also assume that φ is measurable
+because for Lean Integrable means almost everywhere (strongly) measurable
+and, as I said, I think it's not convenient to carry around "a.e." in the
+main prooof. We can probably fix this later by taking an almost everywhere
+(strongly) measurable fn, turn it into a truly measurable function which is
+a.e. equal to the given function, apply the thoerem to this one and then
+derive conclusions for the original function -/
 variable (R : Type*) [DivisionSemiring R] [Module R ℝ] -- used for birkhoffAverage
 
-
+lemma map_measurable : Measurable T := by
+  exact hT.measurable
 
 /- when calling the definition below, T will be an explicit argument, because we made
 T an explicit variable (and we couldn't do otherwise, Floris explained) and becauae we
@@ -121,15 +129,17 @@ open Filter in
 /-- The set of divergent points `{ x | lim_n Φ_n x = ∞}`. -/
 def divSet := { x : α | Tendsto (fun n ↦ maxOfSums T φ x n) atTop atTop }
 
-
+lemma maxOfSums_measurable : ∀ n, Measurable (fun x ↦ maxOfSums T φ x n) := by
+  intro n
+  sorry
 
 /- can probably be stated without the '[m0]' part -/
-lemma isMeasurable_divSet : MeasurableSet[m0] (divSet T φ) := by sorry
+lemma divSet_neasurable : MeasurableSet[m0] (divSet T φ) := by sorry
 /-
 For the above lemma we need to use that the set A, defined by all x s.t.
-lim_n φ_n = ∞ is m0-measurable. Since ⇨ is measurable (b/c integrable)
-it all boils down to understanding waht Lean means with φ : α → ℝ being
-measurable,that is, wrt to what sigma-algebra in ℝ. Since ℝ is ℝ, Lean
+lim_n φ_n = ∞ is m0-measurable. Since φ is measurable (b/c integrable)
+it all boils down to understanding what Lean means with φ : α → ℝ being
+measurable, that is, wrt to what sigma-algebra in ℝ. Since ℝ is ℝ, Lean
 might assume it's wrt the Lebesgue measurable sets. In this case, we're
 good. Of course we still need to find a lemma in mathlib that says that
 the "counterimage of ∞ is measurable". Note that the lemma can't say

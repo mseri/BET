@@ -149,9 +149,6 @@ In any case, if we don't find such lemma, I can easily produce it.
 -/
 
 
-
-#check isMeasurable_divSet T φ
-
 /- ∀ `x ∈ A`, `Φ_{n+1}(x) - Φ_{n}(T(x)) = φ(x) - min(0,Φ_{n}(T(x))) ≥ φ(x)` decreases to `φ(x)`. -/
 
 /-- Convenient combination of `birkhoffSum` terms. -/

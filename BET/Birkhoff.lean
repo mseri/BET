@@ -129,9 +129,18 @@ open Filter in
 /-- The set of divergent points `{ x | lim_n Φ_n x = ∞}`. -/
 def divSet := { x : α | Tendsto (fun n ↦ maxOfSums T φ x n) atTop atTop }
 
+open Finset in
 lemma maxOfSums_measurable : ∀ n, Measurable (fun x ↦ maxOfSums T φ x n) := by
   intro n
-  sorry
+  have hBSintgr : ∀ k, Measurable (fun x ↦ birkhoffSum T φ (k+1) x) := by sorry
+  have fff : fun x ↦ maxOfSums T φ x n = ⨆ (k : range (n + 1)), (fun x ↦ birkhoffSum T φ (k+1) x) := by sorry
+  done
+
+  #check range (10)
+
+  -- XXXXXXX Marco working here!!!
+
+
 
 /- can probably be stated without the '[m0]' part -/
 lemma divSet_neasurable : MeasurableSet[m0] (divSet T φ) := by sorry

@@ -139,7 +139,7 @@ lemma maxOfSums_measurable : ∀ n, Measurable (fun x ↦ maxOfSums T φ x n) :=
   let hend := measurable_iSup hBSm
   rw [pivot]
   exact
-
+-/
 
 
 /-

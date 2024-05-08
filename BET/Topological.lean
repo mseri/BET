@@ -35,81 +35,54 @@ def nonWanderingSet (f : α → α) : Set α :=
 variable [CompactSpace α] (f : α → α) (hf : Continuous f)
 
 /-- Periodic points belong to the non-wandering set. -/
-theorem periodicpts_is_mem (x : α) (n : ℕ) (nnz: n ≠ 0) (pp: IsPeriodicPt f n x) :
+theorem periodicpts_is_mem (x : α) (n : ℕ) (nnz : n ≠ 0) (pp : IsPeriodicPt f n x) :
     x ∈ nonWanderingSet f := by
   intro ε hε
   use x, n
-  refine' ⟨_, _, _⟩
-  . exact mem_ball_self hε
+  refine' ⟨mem_ball_self hε, _, nnz⟩
   . rw [pp]
     exact mem_ball_self hε
-  . exact nnz
   done
 
 lemma periodic_arbitrary_large_time (N : ℕ) (m : ℕ) (hm : 0 < m) (ε : ℝ) (hε : 0 < ε) (x : α)
     (hx : IsPeriodicPt f m x) :
     ∃ (y : α), ∃ (n : ℕ), y ∈ ball x ε ∧ f^[n] y ∈ ball x ε ∧ N ≤ n := by
   use x, m * N
-  refine' ⟨_,_,_⟩
-  · exact mem_ball_self hε
+  refine' ⟨mem_ball_self hε, _, Nat.le_mul_of_pos_left N hm⟩
   · rw [IsPeriodicPt.mul_const hx N]
     exact mem_ball_self hε
-  · exact Nat.le_mul_of_pos_left N hm
   done
 
-lemma inter_subset_empty_of_inter_empty (A : Set α) (B: Set α) (C : Set α) (D: Set α) :
-(A ⊆ C) → (B ⊆ D) → (C ∩ D = ∅) → (A ∩ B = ∅) := by
-  intro hAC hBD hCD
-  have hincl : A ∩ B ⊆ C ∩ D := inter_subset_inter hAC hBD
-  rw [hCD] at hincl
-  exact Iff.mp subset_empty_iff hincl
-  done
+lemma inter_subset_empty_of_inter_empty (A : Set α) (B : Set α) (C : Set α) (D : Set α) :
+(A ⊆ C) → (B ⊆ D) → (C ∩ D = ∅) → (A ∩ B = ∅) :=
+  fun hAC hBD hCD ↦ subset_empty_iff.mp (hCD ▸ inter_subset_inter hAC hBD)
 
-lemma separated_balls (x : α) (hfx : x ≠ f x) :  ∃ ε, 0 < ε ∧ (ball x ε) ∩ (f '' (ball x ε)) = ∅ := by
-   have hfC : ContinuousAt f x := Continuous.continuousAt hf
-   rw [Metric.continuousAt_iff] at hfC
-   have h00 : 0 < ((dist x (f x))/4) := by
-     apply div_pos
-     rw [dist_pos]
-     exact hfx
-     exact four_pos
-   have hfCp := hfC ((dist x (f x))/4) h00
-   rcases hfCp with ⟨a, b, c⟩
-   use min a ((dist x (f x))/4)
-   refine' ⟨_,_⟩
-   · exact lt_min b h00
-   · rw [Set.ext_iff]
-     intro y
-     constructor
-     · intro ⟨hy1,hy2⟩
-       unfold ball at hy1
-       dsimp at hy1
-       have hha : min a (dist x (f x) / 4) ≤ a := min_le_left a (dist x (f x) / 4)
-       have hy3 : dist y x < a := hy1.trans_le hha
-       unfold ball at hy2
-       rw [mem_image] at hy2
-       rcases hy2 with ⟨z , hz1, hz2⟩
-       dsimp at hz1
-       have hz3 : dist z x < a := hz1.trans_le hha
-       have hy4 := c hz3
-       rw [hz2] at hy4
-       have hha2 : min a (dist x (f x) / 4) ≤ (dist x (f x) / 4) := min_le_right a (dist x (f x) / 4)
-       have hy5 : dist y x < (dist x (f x) / 4) := hy1.trans_le hha2
-       rw [dist_comm] at hy5
-       exfalso
-       have gg := dist_triangle x y (f x)
-       linarith
-     · exact fun l => l.elim
-   done
+lemma separated_balls (x : α) (h : x ≠ f x) : ∃ ε, 0 < ε ∧ (ball x ε) ∩ (f '' (ball x ε)) = ∅ := by
+  have hfC : ContinuousAt f x := Continuous.continuousAt hf
+  rw [Metric.continuousAt_iff] at hfC
+  have h00 : 0 < ((dist x (f x)) / 4) := div_pos (dist_pos.mpr h) four_pos
+  have ⟨a, b, c⟩ := hfC ((dist x (f x)) / 4) h00
+  use min a ((dist x (f x)) / 4)
+  refine' ⟨lt_min b h00, _⟩
+  rw [Set.ext_iff]
+  refine' fun y ↦ ⟨fun ⟨hy1, hy2⟩ ↦ _ , fun l ↦ l.elim⟩
+  rw [ball, mem_setOf_eq] at hy1
+  have hha : min a (dist x (f x) / 4) ≤ a := min_le_left a (dist x (f x) / 4)
+  rw [ball, mem_image] at hy2
+  rcases hy2 with ⟨z, hz1, hz2⟩
+  have hy3 := hz2 ▸ c <| (mem_setOf_eq ▸ hz1).trans_le hha
+  have hy4 := dist_comm y x ▸ hy1.trans_le <| min_le_right a (dist x (f x) / 4)
+  exfalso
+  have gg := dist_triangle x y (f x)
+  linarith
+  done
 
 /-- The set of points which are not periodic of any period. -/
 def IsNotPeriodicPt (f : α → α)  (x : α) := ∀ n : ℕ, 0 < n -> ¬IsPeriodicPt f n x
 
-lemma separated_ball_image_ball (n : ℕ) (hn : 0 < n) (x : α) (hfx : IsNotPeriodicPt f x) :  ∃ (ε : ℝ), 0 < ε ∧ (ball x ε) ∩ (f^[n] '' (ball x ε)) = ∅ := by
-    have hfx2 := hfx n hn
-    have hfnC : Continuous f^[n] := Continuous.iterate hf n
-    have hfx2' : x ≠ f^[n] x := Ne.symm hfx2
-    exact separated_balls (f^[n]) hfnC x hfx2'
+lemma separated_ball_image_ball (n : ℕ) (hn : 0 < n) (x : α) (hfx : IsNotPeriodicPt f x) :
+    ∃ (ε : ℝ), 0 < ε ∧ (ball x ε) ∩ (f^[n] '' (ball x ε)) = ∅ :=
+  separated_balls (f^[n]) (hf.iterate n) x (Ne.symm <| hfx n hn)
 
 lemma separated_balls_along_non_periodic_orbit (N : ℕ) (x : α) (hfx : IsNotPeriodicPt f x) : ∃ δ, (δ > 0) ∧ ∀ (n : ℕ), (0 < n) ∧ (n ≤ N + 1) → (ball x δ) ∩ (f^[n] '' ball x δ) = ∅ := by
   have hkill : ∀ (n : ℕ), 0 < n → ∃ ε, 0 < ε ∧ (ball x ε) ∩ (f^[n] '' (ball x ε)) = ∅ := by
@@ -205,8 +178,7 @@ lemma non_periodic_arbitrary_large_time (N : ℕ) (ε0 : ℝ) (hε0 : 0 < ε0) (
 
 
 theorem arbitrary_large_time (N : ℕ) (ε : ℝ) (hε : 0 < ε) (x : α) (hx : x ∈ nonWanderingSet f) :
-∃ (y : α), ∃ (n : ℕ), y ∈ ball x ε ∧ f^[n] y ∈ ball x ε ∧ N + 1 < n :=
-by
+    ∃ (y : α), ∃ (n : ℕ), y ∈ ball x ε ∧ f^[n] y ∈ ball x ε ∧ N + 1 < n := by
   by_cases hfx : IsNotPeriodicPt f x
   -- hard case: if x is non-periodic, we use continuity of f
   · exact non_periodic_arbitrary_large_time f hf N ε hε x hfx hx

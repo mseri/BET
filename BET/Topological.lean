@@ -84,35 +84,27 @@ lemma separated_ball_image_ball (n : ℕ) (hn : 0 < n) (x : α) (hfx : IsNotPeri
     ∃ (ε : ℝ), 0 < ε ∧ (ball x ε) ∩ (f^[n] '' (ball x ε)) = ∅ :=
   separated_balls (f^[n]) (hf.iterate n) x (Ne.symm <| hfx n hn)
 
-lemma separated_balls_along_non_periodic_orbit (N : ℕ) (x : α) (hfx : IsNotPeriodicPt f x) : ∃ δ, (δ > 0) ∧ ∀ (n : ℕ), (0 < n) ∧ (n ≤ N + 1) → (ball x δ) ∩ (f^[n] '' ball x δ) = ∅ := by
-  have hkill : ∀ (n : ℕ), 0 < n → ∃ ε, 0 < ε ∧ (ball x ε) ∩ (f^[n] '' (ball x ε)) = ∅ := by
-    intro n hnpos
-    obtain ⟨ε,hε⟩ := separated_ball_image_ball f hf n hnpos x hfx
-    use ε
+lemma separated_balls_along_non_periodic_orbit (N : ℕ) (x : α) (hfx : IsNotPeriodicPt f x) :
+    ∃ δ, (δ > 0) ∧ ∀ (n : ℕ), (0 < n) ∧ (n ≤ N + 1) → (ball x δ) ∩ (f^[n] '' ball x δ) = ∅ := by
+  have hkill : ∀ n, 0 < n → ∃ ε, 0 < ε ∧ (ball x ε) ∩ (f^[n] '' (ball x ε)) = ∅ :=
+    fun n hnpos ↦ separated_ball_image_ball f hf n hnpos x hfx
   choose! ε2 hε2 h'ε2 using hkill
-  have A : Finset.Nonempty ((Finset.Icc 1 (N+1)).image ε2) := by simp
-  let δ := ((Finset.Icc 1 (N+1)).image ε2).min' A
-  have δmem: δ ∈ (Finset.Icc 1 (N+1)).image ε2 := Finset.min'_mem _ _
-  simp at δmem
+  have A : Finset.Nonempty ((Finset.Icc 1 (N + 1)).image ε2) := by simp
+  let δ := ((Finset.Icc 1 (N + 1)).image ε2).min' A
+  have δmem : δ ∈ (Finset.Icc 1 (N + 1)).image ε2 := Finset.min'_mem _ _
+  simp only [Finset.mem_image, Finset.mem_Icc] at δmem
   rcases δmem with ⟨n, ⟨npos, _⟩, h'n⟩
-  change ε2 n = δ at h'n
   use δ
-  constructor
-  exact Eq.trans_gt h'n (hε2 n npos)
-  intro  n2 hnrange
+  refine' ⟨Eq.trans_gt h'n (hε2 n npos), fun n2 hnrange ↦ _⟩
   have hA : δ ≤ ε2 n2 := by
     apply Finset.min'_le
-    simp
+    simp only [Finset.mem_image, Finset.mem_Icc]
     use n2
-    refine' ⟨_, rfl⟩
-    apply hnrange
-  have hbigball := h'ε2 n2 hnrange.left
-  apply inter_subset_empty_of_inter_empty (ball x δ) (f^[n2] '' ball x δ) (ball x (ε2 n2)) (f^[n2] '' ball x (ε2 n2))
-  · exact ball_subset_ball (x := x) hA
-  · exact image_subset (f^[n2]) (ball_subset_ball (x := x) hA)
-  · exact hbigball
+    exact ⟨hnrange, rfl⟩
+  exact inter_subset_empty_of_inter_empty (ball x δ) (f^[n2] '' ball x δ) (ball x (ε2 n2))
+    (f^[n2] '' ball x (ε2 n2)) (ball_subset_ball (x := x) hA)
+    (image_subset (f^[n2]) (ball_subset_ball (x := x) hA)) (h'ε2 n2 hnrange.left)
   done
-
 
 theorem ball_non_periodic_arbitrary_large_time (ε : ℝ) (hε : 0 < ε) (x : α) (hx : x ∈ nonWanderingSet f)  (hfx : IsNotPeriodicPt f x) :
  ∀ (N : ℕ), ∃ (n : ℕ), N+1 < n ∧ (f^[n] '' ball x ε) ∩ ball x ε ≠ ∅ := by

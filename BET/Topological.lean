@@ -167,49 +167,41 @@ theorem arbitrary_large_time (N : ℕ) (ε : ℝ) (hε : 0 < ε) (x : α) (hx : 
 /- Show that the non-wandering set of `f` is closed. -/
 theorem is_closed : IsClosed (nonWanderingSet f : Set α) := by
   rw [← isSeqClosed_iff_isClosed]
-  -- unfold IsSeqClosed
-  intro u x hu ulim
+  intro u x hu ulim ε hepos
   rw [tendsto_atTop_nhds] at ulim
-  intro ε hepos
   have e2pos : 0 < ε / 2 := by linarith
-  have h1 : IsOpen (ball x (ε / 2)) := isOpen_ball
-  have h2 : ∃ (z : α), z ∈ ball x (ε/ 2) ∧ z ∈ nonWanderingSet f := by
-    have k1 := ulim (ball x (ε / 2))
-    have k2 : x ∈ (ball x (ε / 2)) := by
-      exact mem_ball_self e2pos
-    obtain ⟨N, k3⟩ := k1 k2 h1
-    have k4 : u N ∈ ball x (ε / 2) := by
-      have k5 : N ≤ N := by
-        exact Nat.le_refl N
-      exact k3 N k5
-    exact ⟨u N, k4, hu N⟩
-  rcases h2 with ⟨z, h3, h4⟩
-  have h5 : ∃ (y : α), ∃ (n : ℕ), y ∈ ball z (ε / 2) ∧ f^[n] y ∈ ball z (ε / 2) ∧ n ≠ 0 := by
-    simp [nonWanderingSet] at h4
-    -- let l1 := h4 (ε / 2) e2pos
-    -- rcases l1 with ⟨y, l1, ⟨n, l2, l3⟩⟩
-    -- obtain below is equivalent to the above two lines
-    obtain ⟨y, l1, ⟨n, l2, l3⟩⟩ := h4 (ε / 2) e2pos
+  obtain ⟨z, h3, h4⟩ : ∃ (z : α), z ∈ ball x (ε/ 2) ∧ z ∈ nonWanderingSet f := by
+    obtain ⟨N, k3⟩ := ulim (ball x (ε / 2)) (mem_ball_self e2pos) isOpen_ball
+    exact ⟨u N, k3 N (Nat.le_refl N), hu N⟩
+  simp only [nonWanderingSet, mem_ball, ne_eq, exists_and_left, mem_setOf_eq] at h4
+  -- let l1 := h4 (ε / 2) e2pos
+  -- rcases l1 with ⟨y, l1, ⟨n, l2, l3⟩⟩
+  -- obtain below is equivalent to the above two lines
+  obtain ⟨y, l1, ⟨n, l2, l3⟩⟩ := h4 (ε / 2) e2pos
+  obtain ⟨y, n, h6, h7, h8⟩ : ∃ y, ∃ n, y ∈ ball z (ε / 2) ∧ f^[n] y ∈ ball z (ε / 2) ∧ n ≠ 0 := by
     use y, n -- note `use y, n` which is the same as `use y` and `use n`
     -- simp -- was repeatedly doing `mem_ball.mp: y ∈ ball x ε -> dist y x < ε `
     exact ⟨l1, l2, l3⟩
-  rcases h5 with ⟨y, n, h6, h7, h8⟩
-  have h9 : y ∈ ball x ε := by
+  have m1 : dist y z + dist z x < ε := by
+    rw [mem_ball] at h3 h6
+    linarith
+  have h9 : y ∈ ball x ε := lt_of_le_of_lt (dist_triangle _ _ _) m1
+  -- simp -- was doing `mem_ball.mp: y ∈ ball x ε -> dist y x < ε `
+  -- have : dist y x ≤ dist y z + dist z x := dist_triangle _ _ _
+  -- Question: Why can I omit argument, but I can't in the line below?
+  -- Answer: In this case the argument can easily be inferred from the goal since you want
+  -- to prove that `dist y x ≤ dist y z + dist z x` and you are giving it a lemma that says
+  -- exactly that, so the only thing left to determine is what are the `x`, `y` and `z` in the
+  -- lemma. On the other hand in the line below the arguments are not obvious from the goal,
+  -- since you need to prove an inequality using some kind of transitivity, so it is easy to
+  -- infer the first and last objects from the goal, but not the middle one.
+  -- exact lt_of_le_of_lt this m1
+  have p1 : dist (f^[n] y) z + dist z x < ε := by
+    rw [mem_ball] at h7 h3
+    linarith
+  have h10 : f^[n] y ∈ ball x ε := lt_of_le_of_lt (dist_triangle _ _ _) p1
     -- simp -- was doing `mem_ball.mp: y ∈ ball x ε -> dist y x < ε `
-    have m1 : dist y z + dist z x < ε := by
-      rw [mem_ball] at h3 h6
-      linarith
-    have : dist y x ≤ dist y z + dist z x := by
-      exact dist_triangle _ _ _  -- why can I omit argument, but I can't in the line below?
-    exact lt_of_le_of_lt this m1
-  have h10 : f^[n] y ∈ ball x ε := by
-    -- simp -- was doing `mem_ball.mp: y ∈ ball x ε -> dist y x < ε `
-    have p1 : dist (f^[n] y) z + dist z x < ε := by
-      rw [mem_ball] at h7 h3
-      linarith
-    have : dist (f^[n] y) x ≤ dist (f^[n] y) z + dist z x := by
-      exact dist_triangle _ _ _  -- why can I omit argument, but I can't in the line below?
-    exact lt_of_le_of_lt this p1
+    -- have : dist (f^[n] y) x ≤ dist (f^[n] y) z + dist z x := dist_triangle _ _ _
   exact ⟨y, n, h9, h10, h8⟩
   done
 

@@ -236,32 +236,25 @@ theorem nonWandering_nonempty [hα : Nonempty α] : Set.Nonempty (nonWanderingSe
 
 /-- The recurrent set is the set of points that are recurrent, i.e. that belong to their omega-limit set. -/
 def recurrentSet {α : Type*} [TopologicalSpace α] (f : α → α) : Set α :=
-  { x | x ∈ ω⁺ (fun n ↦ f^[n]) ({x}) }
+  { x | x ∈ ω⁺ (fun n ↦ f^[n]) {x} }
 
 theorem recurrentSet_iff_accumulation_point (x : α) :
     x ∈ recurrentSet f ↔ ∀ (ε : ℝ) (N : ℕ), 0 < ε → ∃ m : ℕ, N ≤ m ∧ f^[m] x ∈ ball x ε := by
   constructor
-  . intro recur_x
-    unfold recurrentSet at recur_x
-    -- simp is fine as well, but we only need
-    -- `x ∈ { y | p y } = p x` here
-    -- I hope that being explicit makes compilation faster
-    simp only [mem_setOf_eq] at recur_x
-    rw [mem_omegaLimit_iff_frequently] at recur_x
-    intro ε N hε
+  . intro recur_x ε N hε
+    rw [recurrentSet, mem_setOf_eq, mem_omegaLimit_iff_frequently] at recur_x
     have recur_x_in_ball := recur_x (ball x ε) (ball_mem_nhds x hε)
-    simp [frequently_atTop] at recur_x_in_ball
+    simp only [singleton_inter_nonempty, frequently_atTop] at recur_x_in_ball
     exact recur_x_in_ball N
   . intro hf
-    unfold recurrentSet
-    simp only [mem_setOf_eq] -- `x ∈ { y | p y } = p x`
-    rw [mem_omegaLimit_iff_frequently]
+    -- simp only [mem_setOf_eq] -- `x ∈ { y | p y } = p x`
+    rw [recurrentSet, mem_setOf_eq, mem_omegaLimit_iff_frequently]
     intro U hU
-    simp [frequently_atTop] -- reduces the goal to `∀ (a : ℕ), ∃ b, a ≤ b ∧ f^[b] x ∈ U`
+    simp only [singleton_inter_nonempty, mem_preimage, frequently_atTop] -- reduces the goal to `∀ (a : ℕ), ∃ b, a ≤ b ∧ f^[b] x ∈ U`
     -- same as `rcases Metric.mem_nhds_iff.mp hU with ⟨ε, hε, rest⟩` but nicer
     obtain ⟨ε, hε, ball_in_U⟩ : ∃ ε, ε > 0 ∧ ball x ε ⊆ U := Metric.mem_nhds_iff.mp hU
     intro a
-    obtain ⟨m, hm, fm_in_ball⟩ := (hf ε a hε)
+    rcases hf ε a hε with ⟨m, hm, fm_in_ball⟩
     exact ⟨m, hm, mem_of_subset_of_mem ball_in_U fm_in_ball⟩
   done
 

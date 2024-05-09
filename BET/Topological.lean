@@ -170,7 +170,7 @@ theorem is_closed : IsClosed (nonWanderingSet f) := by
   intro u x hu ulim ε hepos
   rw [tendsto_atTop_nhds] at ulim
   have e2pos : 0 < ε / 2 := by linarith
-  obtain ⟨z, h3, h4⟩ : ∃ (z : α), z ∈ ball x (ε/ 2) ∧ z ∈ nonWanderingSet f := by
+  obtain ⟨z, h3, h4⟩ : ∃ (z : α), z ∈ ball x (ε / 2) ∧ z ∈ nonWanderingSet f := by
     obtain ⟨N, k3⟩ := ulim (ball x (ε / 2)) (mem_ball_self e2pos) isOpen_ball
     exact ⟨u N, k3 N (Nat.le_refl N), hu N⟩
   simp only [nonWanderingSet, mem_ball, ne_eq, exists_and_left, mem_setOf_eq] at h4

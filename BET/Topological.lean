@@ -75,7 +75,7 @@ lemma separated_balls (x : α) (h : x ≠ f x) : ∃ ε, 0 < ε ∧ (ball x ε) 
   linarith
 
 /-- The set of points which are not periodic of any period. -/
-def IsNotPeriodicPt (f : α → α)  (x : α) := ∀ n : ℕ, 0 < n -> ¬IsPeriodicPt f n x
+def IsNotPeriodicPt (f : α → α)  (x : α) := ∀ n : ℕ, 0 < n → ¬IsPeriodicPt f n x
 
 lemma separated_ball_image_ball (n : ℕ) (hn : 0 < n) (x : α) (hfx : IsNotPeriodicPt f x) :
     ∃ (ε : ℝ), 0 < ε ∧ (ball x ε) ∩ (f^[n] '' (ball x ε)) = ∅ :=
@@ -173,12 +173,12 @@ theorem is_closed : IsClosed (nonWanderingSet f) := by
   obtain ⟨y, l1, ⟨n, l2, l3⟩⟩ := h4 (ε / 2) e2pos
   obtain ⟨h6, h7, h8⟩ : y ∈ ball z (ε / 2) ∧ f^[n] y ∈ ball z (ε / 2) ∧ n ≠ 0 := ⟨l1, l2, l3⟩
     -- use y, n -- note `use y, n` which is the same as `use y` and `use n`
-    -- simp -- was repeatedly doing `mem_ball.mp: y ∈ ball x ε -> dist y x < ε `
+    -- simp -- was repeatedly doing `mem_ball.mp: y ∈ ball x ε → dist y x < ε `
   have m1 : dist y z + dist z x < ε := by
     rw [mem_ball] at h3 h6
     linarith
   have h9 : y ∈ ball x ε := lt_of_le_of_lt (dist_triangle _ _ _) m1
-  -- simp -- was doing `mem_ball.mp: y ∈ ball x ε -> dist y x < ε `
+  -- simp -- was doing `mem_ball.mp: y ∈ ball x ε → dist y x < ε `
   -- have : dist y x ≤ dist y z + dist z x := dist_triangle _ _ _
   -- Question: Why can I omit argument, but I can't in the line below?
   -- Answer: In this case the argument can easily be inferred from the goal since you want
@@ -192,7 +192,7 @@ theorem is_closed : IsClosed (nonWanderingSet f) := by
     rw [mem_ball] at h7 h3
     linarith
   have h10 : f^[n] y ∈ ball x ε := lt_of_le_of_lt (dist_triangle _ _ _) p1
-    -- simp -- was doing `mem_ball.mp: y ∈ ball x ε -> dist y x < ε `
+    -- simp -- was doing `mem_ball.mp: y ∈ ball x ε → dist y x < ε `
     -- have : dist (f^[n] y) x ≤ dist (f^[n] y) z + dist z x := dist_triangle _ _ _
   exact ⟨y, n, h9, h10, h8⟩
 
@@ -264,8 +264,8 @@ theorem recurrentSet_nonwandering : recurrentSet f ⊆ (nonWanderingSet f) :=
 /-- The minimal subsets are the closed invariant subsets in which all orbits are dense. -/
 structure IsMinimalSubset (f : α → α) (U : Set α) : Prop :=
   (closed : IsClosed U)
-  (invariant : IsInvariant (fun n x => f^[n] x) U)
-  (minimal : ∀ (x y : α) (_ : x ∈ U) (_ : y ∈ U) (ε : ℝ), ε > 0 -> ∃ n : ℕ, f^[n] y ∈ ball x ε)
+  (invariant : IsInvariant (fun n x ↦ f^[n] x) U)
+  (minimal : ∀ (x y : α) (_ : x ∈ U) (_ : y ∈ U) (ε : ℝ), ε > 0 → ∃ n : ℕ, f^[n] y ∈ ball x ε)
 
 /-- A dynamical system (α,f) is minimal if α is a minimal subset. -/
 def IsMinimal (f : α → α) : Prop := IsMinimalSubset f univ
@@ -275,7 +275,7 @@ theorem recurrentSet_of_minimal_is_all_space (hf : IsMinimal f) :
     ∀ x : α, x ∈ recurrentSet f := by
   intro z
   have : ∀ (x : α) (ε : ℝ) (N : ℕ), ε > 0
-         -> ∃ m : ℕ, m ≥ N ∧ f^[m] x ∈ ball x ε := by
+         → ∃ m : ℕ, m ≥ N ∧ f^[m] x ∈ ball x ε := by
     intro x ε N hε
     obtain ⟨n, hball⟩ : ∃ n, f^[n] (f^[N] x) ∈ ball x ε :=
       hf.minimal x (f^[N] x) (mem_univ _) (mem_univ _) ε hε
@@ -292,7 +292,7 @@ noncomputable def doubling_map (x : unitInterval) : unitInterval :=
 
 /-- An example of a continuous dynamics on a compact space in which the recurrent set is all
 the space, but the dynamics is not minimal -/
-example : ¬IsMinimal (id : unitInterval -> unitInterval) := by
+example : ¬IsMinimal (id : unitInterval → unitInterval) := by
   intro H
   have minimality := H.minimal
   contrapose! minimality
@@ -312,7 +312,7 @@ example : ¬IsMinimal (id : unitInterval -> unitInterval) := by
     exact le_of_lt dist_pos
 
 example (x : unitInterval) :
-    x ∈ recurrentSet (id : unitInterval -> unitInterval) := by
+    x ∈ recurrentSet (id : unitInterval → unitInterval) := by
   -- unfold recurrentSet
   apply periodicpts_mem_recurrentSet _ _ 1
   . linarith
@@ -348,7 +348,7 @@ theorem minimalSubset_mem_recurrentSet (U : Set α) (hU : IsMinimalSubset f U) :
 /-- Every invariant nonempty closed subset contains at least a minimal invariant subset. -/
 theorem nonempty_invariant_closed_subset_has_minimalSubset
     (U : Set α) (hne : Nonempty U) (hC : IsClosed U) (hI : IsInvariant (fun n x => f^[n] x) U) :
-    ∃ V : Set α, V ⊆ U -> (hinv : MapsTo f U U) -> IsMinimalSubset f U := by
+    ∃ V : Set α, V ⊆ U → (hinv : MapsTo f U U) → IsMinimalSubset f U := by
   -- This follows from Zorn's lemma
   sorry
 

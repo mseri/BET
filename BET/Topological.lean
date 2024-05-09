@@ -288,22 +288,17 @@ noncomputable def doubling_map (x : unitInterval) : unitInterval :=
 the space, but the dynamics is not minimal -/
 example : ¬IsMinimal (id : unitInterval → unitInterval) := by
   intro H
-  have minimality := H.minimal
-  contrapose! minimality
-  -- `push_neg` pushes negations as deep as possible into the conclusion of a hypothesis
-  use 0, 1, (mem_univ 0), (mem_univ 1), (dist (1 : unitInterval) (0 : unitInterval))/2
+  have hh := H.minimal 0 1 (mem_univ 0) (mem_univ 1)
+    ((dist (1 : unitInterval) (0 : unitInterval)) / 2)
+  contrapose! hh
   -- we need this helper twice below
-  have dist_pos : 0 < dist (1 : unitInterval) 0 := by
-    apply dist_pos.mpr
-    apply unitInterval.coe_ne_zero.mp; norm_num -- 1 ≠ 0
-  constructor
-  . apply div_pos dist_pos
-    linarith -- 0 < 2
-  . intro n
-    -- `simp` is necessary to go from `¬id^[n] 1 ∈ ball 0 (dist 1 0 / 2)`
-    -- to `0 ≤ dist 1 0`
-    simp
-    exact le_of_lt dist_pos
+  have dist_pos : 0 < dist (1 : unitInterval) 0 :=
+    dist_pos.mpr (unitInterval.coe_ne_zero.mp (by norm_num))
+  refine' ⟨div_pos dist_pos (by norm_num), fun n ↦ _⟩
+  -- `simp` is necessary to go from `¬id^[n] 1 ∈ ball 0 (dist 1 0 / 2)`
+  -- to `0 ≤ dist 1 0`
+  simp only [iterate_id, id_eq, mem_ball, not_lt, half_le_self_iff]
+  exact le_of_lt dist_pos
 
 example (x : unitInterval) :
     x ∈ recurrentSet (id : unitInterval → unitInterval) := by

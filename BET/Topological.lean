@@ -224,7 +224,6 @@ theorem is_closed : IsClosed (nonWanderingSet f : Set α) := by
   exact ⟨y, n, h9, h10, h8⟩
   done
 
-
 /-- The non-wandering set of `f` is compact. -/
 theorem is_cpt : IsCompact (nonWanderingSet f : Set α) := by
   apply isCompact_of_isClosed_isBounded
@@ -278,7 +277,6 @@ theorem nonWandering_nonempty [hα : Nonempty α] : Set.Nonempty (nonWanderingSe
   apply omegaLimit_nonempty f
   apply Nonempty.some hα
   done
-
 
 /-- The recurrent set is the set of points that are recurrent, i.e. that belong to their omega-limit set. -/
 def recurrentSet {α : Type*} [TopologicalSpace α] (f : α → α) : Set α :=

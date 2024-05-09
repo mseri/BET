@@ -165,7 +165,7 @@ theorem arbitrary_large_time (N : ℕ) (ε : ℝ) (hε : 0 < ε) (x : α) (hx : 
   done
 
 /- Show that the non-wandering set of `f` is closed. -/
-theorem is_closed : IsClosed (nonWanderingSet f : Set α) := by
+theorem is_closed : IsClosed (nonWanderingSet f) := by
   rw [← isSeqClosed_iff_isClosed]
   intro u x hu ulim ε hepos
   rw [tendsto_atTop_nhds] at ulim

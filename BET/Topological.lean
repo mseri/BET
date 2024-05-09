@@ -271,20 +271,14 @@ structure IsMinimalSubset (f : α → α) (U : Set α) : Prop :=
 def IsMinimal (f : α → α) : Prop := IsMinimalSubset f univ
 
 /-- In a minimal dynamics, the recurrent set is all the space. -/
-theorem recurrentSet_of_minimal_is_all_space (hf : IsMinimal f) :
-    ∀ x : α, x ∈ recurrentSet f := by
-  intro z
-  have : ∀ (x : α) (ε : ℝ) (N : ℕ), ε > 0
-         → ∃ m : ℕ, m ≥ N ∧ f^[m] x ∈ ball x ε := by
-    intro x ε N hε
+theorem recurrentSet_of_minimal_is_all_space (hf : IsMinimal f) (x : α) :
+    x ∈ recurrentSet f := by
+  have : ∀ (ε : ℝ) (N : ℕ), ε > 0 → ∃ m : ℕ, m ≥ N ∧ f^[m] x ∈ ball x ε := by
+    intro ε N hε
     obtain ⟨n, hball⟩ : ∃ n, f^[n] (f^[N] x) ∈ ball x ε :=
       hf.minimal x (f^[N] x) (mem_univ _) (mem_univ _) ε hε
-    refine' ⟨n + N, _, _⟩
-    . linarith
-    . rw [ <-Function.iterate_add_apply ] at hball
-      exact hball
-  apply (recurrentSet_iff_accumulation_point f z).mpr
-  exact this z
+    exact ⟨n + N, by linarith, (Function.iterate_add_apply _ _ _ _).symm ▸ hball⟩
+  exact (recurrentSet_iff_accumulation_point f x).mpr this
 
 /-- The doubling map is the classic interval map -/
 noncomputable def doubling_map (x : unitInterval) : unitInterval :=

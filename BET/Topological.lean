@@ -210,10 +210,8 @@ theorem is_cpt : IsCompact (nonWanderingSet f : Set α) :=
   isCompact_of_isClosed_isBounded (is_closed f) isBounded_of_compactSpace
 
 /-- The omega-limit set of any point is nonempty. -/
-theorem omegaLimit_nonempty (x : α) : Set.Nonempty (ω⁺ (fun n ↦ f^[n]) ({x})) := by
-  apply nonempty_omegaLimit atTop (fun n ↦ f^[n]) {x}
-  exact Set.singleton_nonempty x
-  done
+theorem omegaLimit_nonempty (x : α) : Set.Nonempty (ω⁺ (fun n ↦ f^[n]) ({x})) :=
+  nonempty_omegaLimit atTop (fun n ↦ f^[n]) {x} (Set.singleton_nonempty x)
 
 /-- The omega-limit set of any point is contained in the non-wandering set. -/
 theorem omegaLimit_nonwandering (x : α) :

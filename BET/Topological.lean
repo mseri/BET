@@ -267,12 +267,8 @@ theorem periodicpts_mem_recurrentSet (x : α) (n : ℕ) (nnz : n ≠ 0) (hx : Is
     rw [mem_omegaLimit_iff_frequently]
     intro U hU
     simp only [singleton_inter_nonempty, mem_preimage, frequently_atTop, ge_iff_le]
-    intro a
-    have hb : ∃ b, a ≤ b ∧ f^[b] x ∈ U := by
-      use a * n
-      rw [Function.IsPeriodicPt.const_mul hx a]
-      exact ⟨Nat.le_mul_of_pos_right a (Nat.pos_of_ne_zero nnz), mem_of_mem_nhds hU⟩
-    exact hb
+    exact fun a ↦ ⟨a * n, ⟨Nat.le_mul_of_pos_right a (Nat.pos_of_ne_zero nnz),
+      mem_of_mem_nhds <| (Function.IsPeriodicPt.const_mul hx a).symm ▸ hU⟩⟩
   apply x_in_omegaLimit
   done
 

@@ -136,19 +136,15 @@ theorem ball_non_periodic_arbitrary_large_time (ε : ℝ) (hε : 0 < ε) (x : α
   rwa [h₇ n (Nat.pos_of_ne_zero hnpos)] at hw
   done
 
-
-lemma non_periodic_arbitrary_large_time (N : ℕ) (ε0 : ℝ) (hε0 : 0 < ε0) (x : α) (hfx : IsNotPeriodicPt f x) (hxf : x ∈ nonWanderingSet f)
-: ∃ (y : α), ∃ (n : ℕ), y ∈ ball x ε0 ∧ f^[n] y ∈ ball x ε0 ∧ N+1 < n := by
+lemma non_periodic_arbitrary_large_time (N : ℕ) (ε0 : ℝ) (hε0 : 0 < ε0) (x : α)
+    (hfx : IsNotPeriodicPt f x) (hxf : x ∈ nonWanderingSet f) :
+    ∃ (y : α), ∃ (n : ℕ), y ∈ ball x ε0 ∧ f^[n] y ∈ ball x ε0 ∧ N + 1 < n := by
   choose n h2 h3 using (ball_non_periodic_arbitrary_large_time f hf ε0 hε0 x hxf hfx N)
   choose z h5 using (inter_nonempty_iff_exists_left.mp (nmem_singleton_empty.mp h3))
   choose y h7 h8 using ((mem_image f^[n] (ball x ε0) z).mp (mem_of_mem_inter_left h5))
-  use! y, n
-  have hb : f^[n] y ∈ ball x ε0 := by
-    rw [h8]
-    exact h5.2
-  exact ⟨h7, hb, h2⟩
+  use y, n
+  exact ⟨h7, h8 ▸ h5.2, h2⟩
   done
-
 
 theorem arbitrary_large_time (N : ℕ) (ε : ℝ) (hε : 0 < ε) (x : α) (hx : x ∈ nonWanderingSet f) :
     ∃ (y : α), ∃ (n : ℕ), y ∈ ball x ε ∧ f^[n] y ∈ ball x ε ∧ N + 1 < n := by
@@ -173,7 +169,6 @@ theorem arbitrary_large_time (N : ℕ) (ε : ℝ) (hε : 0 < ε) (x : α) (hx : 
     · have h5 := Nat.le_mul_of_pos_left (N + 1) hn
       linarith
   done
-
 
 /- Show that the non-wandering set of `f` is closed. -/
 theorem is_closed : IsClosed (nonWanderingSet f : Set α) := by
@@ -382,9 +377,8 @@ the space, but the dynamics is not minimal -/
 example : ¬IsMinimal (id : unitInterval -> unitInterval) := by
   intro H
   have minimality := H.minimal
-  contrapose minimality
+  contrapose! minimality
   -- `push_neg` pushes negations as deep as possible into the conclusion of a hypothesis
-  push_neg
   use 0, 1, (mem_univ 0), (mem_univ 1), (dist (1 : unitInterval) (0 : unitInterval))/2
   -- we need this helper twice below
   have dist_pos : 0 < dist (1 : unitInterval) 0 := by

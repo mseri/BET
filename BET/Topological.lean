@@ -154,17 +154,11 @@ theorem arbitrary_large_time (N : ℕ) (ε : ℝ) (hε : 0 < ε) (x : α) (hx : 
   -- easy case: if x is periodic, then y = x is a good candidate
   · unfold IsNotPeriodicPt at hfx
     push_neg at hfx
-    obtain ⟨n, hn, hn2⟩ := hfx
+    rcases hfx with ⟨n, hn, hn2⟩
     -- rcases hfx with ⟨n, hn⟩ also works
-    use x
-    use n * (N+2)
-    refine' ⟨_,_,_⟩
-    · exact mem_ball_self hε
-    · have h4 : IsPeriodicPt f n x := by
-        unfold IsPeriodicPt
-        unfold IsFixedPt
-        exact hn2
-      rw [IsPeriodicPt.mul_const h4 (N+2)]
+    use x, n * (N + 2)
+    refine' ⟨mem_ball_self hε, _, _⟩
+    · rw [IsPeriodicPt.mul_const hn2 (N + 2)]
       exact mem_ball_self hε
     · have h5 := Nat.le_mul_of_pos_left (N + 1) hn
       linarith
@@ -173,7 +167,7 @@ theorem arbitrary_large_time (N : ℕ) (ε : ℝ) (hε : 0 < ε) (x : α) (hx : 
 /- Show that the non-wandering set of `f` is closed. -/
 theorem is_closed : IsClosed (nonWanderingSet f : Set α) := by
   rw [← isSeqClosed_iff_isClosed]
-  unfold IsSeqClosed
+  -- unfold IsSeqClosed
   intro u x hu ulim
   rw [tendsto_atTop_nhds] at ulim
   intro ε hepos

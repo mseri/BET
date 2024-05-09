@@ -300,35 +300,19 @@ example : ¬IsMinimal (id : unitInterval → unitInterval) := by
   simp only [iterate_id, id_eq, mem_ball, not_lt, half_le_self_iff]
   exact le_of_lt dist_pos
 
-example (x : unitInterval) : x ∈ recurrentSet (id : unitInterval → unitInterval) := by
-  exact periodicpts_mem_recurrentSet (by linarith) (is_periodic_id 1 x) 1
+example (x : unitInterval) : x ∈ recurrentSet (id : unitInterval → unitInterval) :=
+  periodicpts_mem_recurrentSet _ _ 1 (by norm_num) (is_periodic_id 1 x)
 
 /-- Every point in a minimal subset is recurrent. -/
 theorem minimalSubset_mem_recurrentSet (U : Set α) (hU : IsMinimalSubset f U) :
-      U ⊆ recurrentSet f := by
+    U ⊆ recurrentSet f := by
   intro x hx
   obtain ⟨_, hInv, hMin⟩ := hU
   apply (recurrentSet_iff_accumulation_point f x).mpr
   intro ε N hε
-  have iterates_in_U : ∀ n : ℕ, f^[n] x ∈ U := by
-    -- unfold IsInvariant at hInv
-    intro n
-    -- let f' := hInv n; simp at f'
-    -- apply Set.mapsTo'.mp at f'
-    -- leads us to `f^[n] x ∈ (fun n x ↦ f^[n] x) n '' U`
-    -- which simplifies to `∃ x', x' ∈ U ∧ f^[n] x' = f^[n] x`
-    -- as one can check with `simp`
-    apply Set.mapsTo'.mp (hInv n)
-    -- once we `use x`
-    -- we get the statement from `exact ⟨hx, rfl⟩`
-    -- this can be summarized to
-    exact ⟨x, hx, rfl⟩
-  obtain ⟨n, hball⟩ : ∃ n, f^[n] (f^[N] x) ∈ ball x ε := by
-    apply hMin x (f^[N] x) hx (iterates_in_U N) ε hε
-  refine' ⟨n + N, _, _⟩
-  . exact le_add_self -- N ≤ n + N
-  . rw [ <-Function.iterate_add_apply ] at hball
-    exact hball
+  obtain ⟨n, hball⟩ : ∃ n, f^[n] (f^[N] x) ∈ ball x ε :=
+    hMin x (f^[N] x) hx (Set.mapsTo'.mp (hInv N) ⟨x, hx, rfl⟩) ε hε
+  exact ⟨n + N, le_add_self, (Function.iterate_add_apply _ _ _ _).symm ▸ hball⟩
 
 /-- Every invariant nonempty closed subset contains at least a minimal invariant subset. -/
 theorem nonempty_invariant_closed_subset_has_minimalSubset

@@ -300,12 +300,8 @@ example : ¬IsMinimal (id : unitInterval → unitInterval) := by
   simp only [iterate_id, id_eq, mem_ball, not_lt, half_le_self_iff]
   exact le_of_lt dist_pos
 
-example (x : unitInterval) :
-    x ∈ recurrentSet (id : unitInterval → unitInterval) := by
-  -- unfold recurrentSet
-  apply periodicpts_mem_recurrentSet _ _ 1
-  . linarith
-  . exact is_periodic_id 1 x
+example (x : unitInterval) : x ∈ recurrentSet (id : unitInterval → unitInterval) := by
+  exact periodicpts_mem_recurrentSet (by linarith) (is_periodic_id 1 x) 1
 
 /-- Every point in a minimal subset is recurrent. -/
 theorem minimalSubset_mem_recurrentSet (U : Set α) (hU : IsMinimalSubset f U) :

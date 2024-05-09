@@ -214,14 +214,12 @@ theorem omegaLimit_nonempty (x : α) : Set.Nonempty (ω⁺ (fun n ↦ f^[n]) ({x
   nonempty_omegaLimit atTop (fun n ↦ f^[n]) {x} (Set.singleton_nonempty x)
 
 /-- The omega-limit set of any point is contained in the non-wandering set. -/
-theorem omegaLimit_nonwandering (x : α) :
-    (ω⁺ (fun n ↦ f^[n]) ({x})) ⊆ (nonWanderingSet f) := by
+theorem omegaLimit_nonwandering (x : α) : (ω⁺ (fun n ↦ f^[n]) ({x})) ⊆ (nonWanderingSet f) := by
   intro z hz
-  rewrite [mem_omegaLimit_iff_frequently] at hz
-  simp at hz
-  have subsequence : ∀ U ∈ nhds z, ∃ φ, StrictMono φ ∧ ∀ (n : ℕ), f^[φ n] x ∈ U := by
-    intro U hU
-    apply Filter.extraction_of_frequently_atTop (hz U hU)
+  rw [mem_omegaLimit_iff_frequently] at hz
+  simp? at hz
+  have subsequence : ∀ U ∈ nhds z, ∃ φ, StrictMono φ ∧ ∀ (n : ℕ), f^[φ n] x ∈ U :=
+    fun U hU ↦ Filter.extraction_of_frequently_atTop (hz U hU)
     done
   -- unfold nonWanderingSet
   intro ε hε
@@ -259,8 +257,7 @@ def recurrentSet {α : Type*} [TopologicalSpace α] (f : α → α) : Set α :=
   { x | x ∈ ω⁺ (fun n ↦ f^[n]) ({x}) }
 
 theorem recurrentSet_iff_accumulation_point (x : α) :
-    x ∈ recurrentSet f ↔ ∀ (ε : ℝ) (N : ℕ), 0 < ε
-                         -> ∃ m : ℕ, N ≤ m ∧ f^[m] x ∈ ball x ε := by
+    x ∈ recurrentSet f ↔ ∀ (ε : ℝ) (N : ℕ), 0 < ε → ∃ m : ℕ, N ≤ m ∧ f^[m] x ∈ ball x ε := by
   constructor
   . intro recur_x
     unfold recurrentSet at recur_x

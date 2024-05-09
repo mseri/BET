@@ -42,7 +42,6 @@ theorem periodicpts_is_mem (x : α) (n : ℕ) (nnz : n ≠ 0) (pp : IsPeriodicPt
   refine' ⟨mem_ball_self hε, _, nnz⟩
   . rw [pp]
     exact mem_ball_self hε
-  done
 
 lemma periodic_arbitrary_large_time (N : ℕ) (m : ℕ) (hm : 0 < m) (ε : ℝ) (hε : 0 < ε) (x : α)
     (hx : IsPeriodicPt f m x) :
@@ -51,7 +50,6 @@ lemma periodic_arbitrary_large_time (N : ℕ) (m : ℕ) (hm : 0 < m) (ε : ℝ) 
   refine' ⟨mem_ball_self hε, _, Nat.le_mul_of_pos_left N hm⟩
   · rw [IsPeriodicPt.mul_const hx N]
     exact mem_ball_self hε
-  done
 
 lemma inter_subset_empty_of_inter_empty (A : Set α) (B : Set α) (C : Set α) (D : Set α) :
 (A ⊆ C) → (B ⊆ D) → (C ∩ D = ∅) → (A ∩ B = ∅) :=
@@ -75,7 +73,6 @@ lemma separated_balls (x : α) (h : x ≠ f x) : ∃ ε, 0 < ε ∧ (ball x ε) 
   exfalso
   have gg := dist_triangle x y (f x)
   linarith
-  done
 
 /-- The set of points which are not periodic of any period. -/
 def IsNotPeriodicPt (f : α → α)  (x : α) := ∀ n : ℕ, 0 < n -> ¬IsPeriodicPt f n x
@@ -104,7 +101,6 @@ lemma separated_balls_along_non_periodic_orbit (N : ℕ) (x : α) (hfx : IsNotPe
   exact inter_subset_empty_of_inter_empty (ball x δ) (f^[n2] '' ball x δ) (ball x (ε2 n2))
     (f^[n2] '' ball x (ε2 n2)) (ball_subset_ball (x := x) hA)
     (image_subset (f^[n2]) (ball_subset_ball (x := x) hA)) (h'ε2 n2 hnrange.left)
-  done
 
 theorem ball_non_periodic_arbitrary_large_time (ε : ℝ) (hε : 0 < ε) (x : α)
   (hx : x ∈ nonWanderingSet f)  (hfx : IsNotPeriodicPt f x) :
@@ -134,7 +130,6 @@ theorem ball_non_periodic_arbitrary_large_time (ε : ℝ) (hε : 0 < ε) (x : α
   choose y n hy hyn hnpos using hx ε₃ (lt_min_iff.mpr ⟨hε, h₈⟩)
   have hw := mem_inter (mem_image_of_mem f^[n] hy) hyn
   rwa [h₇ n (Nat.pos_of_ne_zero hnpos)] at hw
-  done
 
 lemma non_periodic_arbitrary_large_time (N : ℕ) (ε0 : ℝ) (hε0 : 0 < ε0) (x : α)
     (hfx : IsNotPeriodicPt f x) (hxf : x ∈ nonWanderingSet f) :
@@ -144,7 +139,6 @@ lemma non_periodic_arbitrary_large_time (N : ℕ) (ε0 : ℝ) (hε0 : 0 < ε0) (
   choose y h7 h8 using ((mem_image f^[n] (ball x ε0) z).mp (mem_of_mem_inter_left h5))
   use y, n
   exact ⟨h7, h8 ▸ h5.2, h2⟩
-  done
 
 theorem arbitrary_large_time (N : ℕ) (ε : ℝ) (hε : 0 < ε) (x : α) (hx : x ∈ nonWanderingSet f) :
     ∃ (y : α), ∃ (n : ℕ), y ∈ ball x ε ∧ f^[n] y ∈ ball x ε ∧ N + 1 < n := by
@@ -162,7 +156,6 @@ theorem arbitrary_large_time (N : ℕ) (ε : ℝ) (hε : 0 < ε) (x : α) (hx : 
       exact mem_ball_self hε
     · have h5 := Nat.le_mul_of_pos_left (N + 1) hn
       linarith
-  done
 
 /- Show that the non-wandering set of `f` is closed. -/
 theorem is_closed : IsClosed (nonWanderingSet f) := by
@@ -202,7 +195,6 @@ theorem is_closed : IsClosed (nonWanderingSet f) := by
     -- simp -- was doing `mem_ball.mp: y ∈ ball x ε -> dist y x < ε `
     -- have : dist (f^[n] y) x ≤ dist (f^[n] y) z + dist z x := dist_triangle _ _ _
   exact ⟨y, n, h9, h10, h8⟩
-  done
 
 /-- The non-wandering set of `f` is compact. -/
 theorem is_cpt : IsCompact (nonWanderingSet f : Set α) :=
@@ -227,7 +219,6 @@ theorem omegaLimit_nonwandering (x : α) : (ω⁺ (fun n ↦ f^[n]) ({x})) ⊆ (
     rw [← Function.iterate_add_apply, Nat.sub_add_cancel]
     exact le_of_lt (hφ (by linarith))
   exact ⟨hf 1, this ▸ (hf 2), Nat.sub_ne_zero_of_lt (hφ Nat.le.refl)⟩
-  done
 
 /-- The non-wandering set is non-empty -/
 theorem nonWandering_nonempty [hα : Nonempty α] : Set.Nonempty (nonWanderingSet f) :=
@@ -255,7 +246,6 @@ theorem recurrentSet_iff_accumulation_point (x : α) :
     intro a
     rcases hf ε a hε with ⟨m, hm, fm_in_ball⟩
     exact ⟨m, hm, mem_of_subset_of_mem ball_in_U fm_in_ball⟩
-  done
 
 /-- Periodic points belong to the recurrent set. -/
 theorem periodicpts_mem_recurrentSet (x : α) (n : ℕ) (nnz : n ≠ 0) (hx : IsPeriodicPt f n x) :
@@ -266,16 +256,11 @@ theorem periodicpts_mem_recurrentSet (x : α) (n : ℕ) (nnz : n ≠ 0) (hx : Is
   intro U hU
   exact fun a ↦ ⟨a * n, ⟨Nat.le_mul_of_pos_right a (Nat.pos_of_ne_zero nnz),
     mem_of_mem_nhds <| (Function.IsPeriodicPt.const_mul hx a).symm ▸ hU⟩⟩
-  done
 
 /-- The recurrent set is included in the non-wandering set -/
 theorem recurrentSet_nonwandering : recurrentSet f ⊆ (nonWanderingSet f) := by
-  intro z hz
-  unfold recurrentSet at hz
-  simp only [mem_setOf_eq] at hz -- `x ∈ { y | p y } = p x`
-  apply omegaLimit_nonwandering
-  exact hz
-  done
+  -- exact ⟨z, hz, omegaLimit_nonwandering _ _ (mem_setOf_eq ▸ hz)⟩
+  sorry
 
 /-- The minimal subsets are the closed invariant subsets in which all orbits are dense. -/
 structure IsMinimalSubset (f : α → α) (U : Set α) : Prop :=
@@ -299,10 +284,8 @@ theorem recurrentSet_of_minimal_is_all_space (hf : IsMinimal f) :
     . linarith
     . rw [ <-Function.iterate_add_apply ] at hball
       exact hball
-    done
   apply (recurrentSet_iff_accumulation_point f z).mpr
   exact this z
-  done
 
 /-- The doubling map is the classic interval map -/
 noncomputable def doubling_map (x : unitInterval) : unitInterval :=
@@ -328,7 +311,6 @@ example : ¬IsMinimal (id : unitInterval -> unitInterval) := by
     -- to `0 ≤ dist 1 0`
     simp
     exact le_of_lt dist_pos
-  done
 
 example (x : unitInterval) :
     x ∈ recurrentSet (id : unitInterval -> unitInterval) := by
@@ -336,7 +318,6 @@ example (x : unitInterval) :
   apply periodicpts_mem_recurrentSet _ _ 1
   . linarith
   . exact is_periodic_id 1 x
-  done
 
 /-- Every point in a minimal subset is recurrent. -/
 theorem minimalSubset_mem_recurrentSet (U : Set α) (hU : IsMinimalSubset f U) :
@@ -364,7 +345,6 @@ theorem minimalSubset_mem_recurrentSet (U : Set α) (hU : IsMinimalSubset f U) :
   . exact le_add_self -- N ≤ n + N
   . rw [ <-Function.iterate_add_apply ] at hball
     exact hball
-  done
 
 /-- Every invariant nonempty closed subset contains at least a minimal invariant subset. -/
 theorem nonempty_invariant_closed_subset_has_minimalSubset

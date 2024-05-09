@@ -258,9 +258,8 @@ theorem periodicpts_mem_recurrentSet (x : α) (n : ℕ) (nnz : n ≠ 0) (hx : Is
     mem_of_mem_nhds <| (Function.IsPeriodicPt.const_mul hx a).symm ▸ hU⟩⟩
 
 /-- The recurrent set is included in the non-wandering set -/
-theorem recurrentSet_nonwandering : recurrentSet f ⊆ (nonWanderingSet f) := by
-  -- exact ⟨z, hz, omegaLimit_nonwandering _ _ (mem_setOf_eq ▸ hz)⟩
-  sorry
+theorem recurrentSet_nonwandering : recurrentSet f ⊆ (nonWanderingSet f) :=
+  fun _ ↦ fun hz ↦ omegaLimit_nonwandering _ _ (mem_setOf_eq ▸ hz)
 
 /-- The minimal subsets are the closed invariant subsets in which all orbits are dense. -/
 structure IsMinimalSubset (f : α → α) (U : Set α) : Prop :=

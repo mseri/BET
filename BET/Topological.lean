@@ -178,10 +178,9 @@ theorem is_closed : IsClosed (nonWanderingSet f) := by
   -- rcases l1 with ⟨y, l1, ⟨n, l2, l3⟩⟩
   -- obtain below is equivalent to the above two lines
   obtain ⟨y, l1, ⟨n, l2, l3⟩⟩ := h4 (ε / 2) e2pos
-  obtain ⟨y, n, h6, h7, h8⟩ : ∃ y, ∃ n, y ∈ ball z (ε / 2) ∧ f^[n] y ∈ ball z (ε / 2) ∧ n ≠ 0 := by
-    use y, n -- note `use y, n` which is the same as `use y` and `use n`
+  obtain ⟨h6, h7, h8⟩ : y ∈ ball z (ε / 2) ∧ f^[n] y ∈ ball z (ε / 2) ∧ n ≠ 0 := ⟨l1, l2, l3⟩
+    -- use y, n -- note `use y, n` which is the same as `use y` and `use n`
     -- simp -- was repeatedly doing `mem_ball.mp: y ∈ ball x ε -> dist y x < ε `
-    exact ⟨l1, l2, l3⟩
   have m1 : dist y z + dist z x < ε := by
     rw [mem_ball] at h3 h6
     linarith
@@ -267,20 +266,13 @@ theorem periodicpts_mem_recurrentSet (x : α) (n : ℕ) (nnz : n ≠ 0) (hx : Is
   have x_in_omegaLimit : x ∈ ω⁺ (fun n ↦ f^[n]) ({x} : Set α) := by
     rw [mem_omegaLimit_iff_frequently]
     intro U hU
-    simp [frequently_atTop]
+    simp only [singleton_inter_nonempty, mem_preimage, frequently_atTop, ge_iff_le]
     intro a
     have hb : ∃ b, a ≤ b ∧ f^[b] x ∈ U := by
       use a * n
-      constructor
-      . exact Nat.le_mul_of_pos_right a (Nat.pos_of_ne_zero nnz)
-      . -- have : f^[a * n] x = x := by
-        --  exact Function.IsPeriodicPt.const_mul hx a
-        -- rw [this]
-        rw [Function.IsPeriodicPt.const_mul hx a]
-        exact mem_of_mem_nhds hU
-      done
+      rw [Function.IsPeriodicPt.const_mul hx a]
+      exact ⟨Nat.le_mul_of_pos_right a (Nat.pos_of_ne_zero nnz), mem_of_mem_nhds hU⟩
     exact hb
-    done
   apply x_in_omegaLimit
   done
 

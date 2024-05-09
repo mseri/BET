@@ -217,40 +217,26 @@ theorem omegaLimit_nonempty (x : α) : Set.Nonempty (ω⁺ (fun n ↦ f^[n]) ({x
 theorem omegaLimit_nonwandering (x : α) : (ω⁺ (fun n ↦ f^[n]) ({x})) ⊆ (nonWanderingSet f) := by
   intro z hz
   rw [mem_omegaLimit_iff_frequently] at hz
-  simp? at hz
+  simp only [singleton_inter_nonempty, mem_preimage] at hz
   have subsequence : ∀ U ∈ nhds z, ∃ φ, StrictMono φ ∧ ∀ (n : ℕ), f^[φ n] x ∈ U :=
     fun U hU ↦ Filter.extraction_of_frequently_atTop (hz U hU)
-    done
-  -- unfold nonWanderingSet
   intro ε hε
-  have ball_in_nbd : ball z ε ∈ nhds z := by
-    exact ball_mem_nhds z hε
+  have ball_in_nbd : ball z ε ∈ nhds z := ball_mem_nhds z hε
   -- same as `let ⟨φ, hφ, hf⟩ := subsequence (ball z ε) ball_in_nbd` but nicer
   obtain ⟨φ, hφ, hf⟩ : ∃ φ, StrictMono φ ∧ ∀ (n : ℕ), f^[φ n] x ∈ ball z ε :=
     subsequence (ball z ε) ball_in_nbd
   use f^[φ 1] x, φ 2 - φ 1
-  refine' ⟨_, _, _⟩
-  . exact (hf 1)
-  . have : f^[φ 2 - φ 1] (f^[φ 1] x) = f^[φ 2] x := by
-      rw [ <-Function.iterate_add_apply, Nat.sub_add_cancel ]
-      apply le_of_lt;
-      apply hφ
-      linarith
-    rw [this]
-    apply (hf 2)
-  . simp
-    exact Nat.sub_ne_zero_of_lt (hφ Nat.le.refl)
+  refine' ⟨hf 1, _, Nat.sub_ne_zero_of_lt (hφ Nat.le.refl)⟩
+  have : f^[φ 2 - φ 1] (f^[φ 1] x) = f^[φ 2] x := by
+    rw [← Function.iterate_add_apply, Nat.sub_add_cancel]
+    apply le_of_lt (hφ (by linarith))
+  rw [this]
+  apply (hf 2)
   done
 
 /-- The non-wandering set is non-empty -/
-theorem nonWandering_nonempty [hα : Nonempty α] : Set.Nonempty (nonWanderingSet f) := by
-  have (x : α) : Set.Nonempty (ω⁺ (fun n ↦ f^[n]) ({x})) -> Set.Nonempty (nonWanderingSet f) := by
-    apply Set.Nonempty.mono
-    apply omegaLimit_nonwandering
-  apply this
-  apply omegaLimit_nonempty f
-  apply Nonempty.some hα
-  done
+theorem nonWandering_nonempty [hα : Nonempty α] : Set.Nonempty (nonWanderingSet f) :=
+  Set.Nonempty.mono (omegaLimit_nonwandering _ _) (omegaLimit_nonempty f (Nonempty.some hα))
 
 /-- The recurrent set is the set of points that are recurrent, i.e. that belong to their omega-limit set. -/
 def recurrentSet {α : Type*} [TopologicalSpace α] (f : α → α) : Set α :=

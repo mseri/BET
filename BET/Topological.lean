@@ -259,8 +259,7 @@ theorem recurrentSet_iff_accumulation_point (x : α) :
   done
 
 /-- Periodic points belong to the recurrent set. -/
-theorem periodicpts_mem_recurrentSet
-    (x : α) (n : ℕ) (nnz: n ≠ 0) (hx: IsPeriodicPt f n x) :
+theorem periodicpts_mem_recurrentSet (x : α) (n : ℕ) (nnz : n ≠ 0) (hx : IsPeriodicPt f n x) :
     x ∈ recurrentSet f := by
   -- unfold IsPeriodicPt at hx
   -- unfold IsFixedPt at hx
@@ -297,14 +296,14 @@ theorem recurrentSet_nonwandering : recurrentSet f ⊆ (nonWanderingSet f) := by
 /-- The minimal subsets are the closed invariant subsets in which all orbits are dense. -/
 structure IsMinimalSubset (f : α → α) (U : Set α) : Prop :=
   (closed : IsClosed U)
-  (invariant: IsInvariant (fun n x => f^[n] x) U)
-  (minimal: ∀ (x y : α) (_: x ∈ U) (_: y ∈ U) (ε : ℝ), ε > 0 -> ∃ n : ℕ, f^[n] y ∈ ball x ε)
+  (invariant : IsInvariant (fun n x => f^[n] x) U)
+  (minimal : ∀ (x y : α) (_ : x ∈ U) (_ : y ∈ U) (ε : ℝ), ε > 0 -> ∃ n : ℕ, f^[n] y ∈ ball x ε)
 
 /-- A dynamical system (α,f) is minimal if α is a minimal subset. -/
 def IsMinimal (f : α → α) : Prop := IsMinimalSubset f univ
 
 /-- In a minimal dynamics, the recurrent set is all the space. -/
-theorem recurrentSet_of_minimal_is_all_space (hf: IsMinimal f) :
+theorem recurrentSet_of_minimal_is_all_space (hf : IsMinimal f) :
     ∀ x : α, x ∈ recurrentSet f := by
   intro z
   have : ∀ (x : α) (ε : ℝ) (N : ℕ), ε > 0
@@ -356,7 +355,7 @@ example (x : unitInterval) :
   done
 
 /-- Every point in a minimal subset is recurrent. -/
-theorem minimalSubset_mem_recurrentSet (U : Set α) (hU: IsMinimalSubset f U) :
+theorem minimalSubset_mem_recurrentSet (U : Set α) (hU : IsMinimalSubset f U) :
       U ⊆ recurrentSet f := by
   intro x hx
   obtain ⟨_, hInv, hMin⟩ := hU
@@ -385,13 +384,13 @@ theorem minimalSubset_mem_recurrentSet (U : Set α) (hU: IsMinimalSubset f U) :
 
 /-- Every invariant nonempty closed subset contains at least a minimal invariant subset. -/
 theorem nonempty_invariant_closed_subset_has_minimalSubset
-    (U : Set α) (hne: Nonempty U) (hC: IsClosed U) (hI: IsInvariant (fun n x => f^[n] x) U) :
-    ∃ V : Set α, V ⊆ U -> (hinv: MapsTo f U U) -> IsMinimalSubset f U := by
+    (U : Set α) (hne : Nonempty U) (hC : IsClosed U) (hI : IsInvariant (fun n x => f^[n] x) U) :
+    ∃ V : Set α, V ⊆ U -> (hinv : MapsTo f U U) -> IsMinimalSubset f U := by
   -- This follows from Zorn's lemma
   sorry
 
 /-- The recurrent set of `f` is nonempty -/
-theorem recurrentSet_nonempty [Nonempty α]: Set.Nonempty (recurrentSet f) := by
+theorem recurrentSet_nonempty [Nonempty α] : Set.Nonempty (recurrentSet f) := by
   sorry
 
 end Topological_Dynamics

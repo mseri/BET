@@ -260,9 +260,6 @@ theorem recurrentSet_iff_accumulation_point (x : α) :
 /-- Periodic points belong to the recurrent set. -/
 theorem periodicpts_mem_recurrentSet (x : α) (n : ℕ) (nnz : n ≠ 0) (hx : IsPeriodicPt f n x) :
     x ∈ recurrentSet f := by
-  -- unfold IsPeriodicPt at hx
-  -- unfold IsFixedPt at hx
-  -- unfold recurrentSet
   have x_in_omegaLimit : x ∈ ω⁺ (fun n ↦ f^[n]) ({x} : Set α) := by
     rw [mem_omegaLimit_iff_frequently]
     intro U hU

@@ -410,7 +410,6 @@ example (x : unitInterval) :
   . exact is_periodic_id 1 x
   done
 
-
 /-- Every point in a minimal subset is recurrent. -/
 theorem minimalSubset_mem_recurrentSet (U : Set α) (hU: IsMinimalSubset f U) :
       U ⊆ recurrentSet f := by
@@ -445,8 +444,6 @@ theorem nonempty_invariant_closed_subset_has_minimalSubset
     ∃ V : Set α, V ⊆ U -> (hinv: MapsTo f U U) -> IsMinimalSubset f U := by
   -- This follows from Zorn's lemma
   sorry
-
-
 
 /-- The recurrent set of `f` is nonempty -/
 theorem recurrentSet_nonempty [Nonempty α]: Set.Nonempty (recurrentSet f) := by

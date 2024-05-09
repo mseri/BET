@@ -206,11 +206,8 @@ theorem is_closed : IsClosed (nonWanderingSet f) := by
   done
 
 /-- The non-wandering set of `f` is compact. -/
-theorem is_cpt : IsCompact (nonWanderingSet f : Set α) := by
-  apply isCompact_of_isClosed_isBounded
-  . exact is_closed f
-  . exact isBounded_of_compactSpace
-  done
+theorem is_cpt : IsCompact (nonWanderingSet f : Set α) :=
+  isCompact_of_isClosed_isBounded (is_closed f) isBounded_of_compactSpace
 
 /-- The omega-limit set of any point is nonempty. -/
 theorem omegaLimit_nonempty (x : α) : Set.Nonempty (ω⁺ (fun n ↦ f^[n]) ({x})) := by

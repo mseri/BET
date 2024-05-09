@@ -221,17 +221,13 @@ theorem omegaLimit_nonwandering (x : α) : (ω⁺ (fun n ↦ f^[n]) ({x})) ⊆ (
   have subsequence : ∀ U ∈ nhds z, ∃ φ, StrictMono φ ∧ ∀ (n : ℕ), f^[φ n] x ∈ U :=
     fun U hU ↦ Filter.extraction_of_frequently_atTop (hz U hU)
   intro ε hε
-  have ball_in_nbd : ball z ε ∈ nhds z := ball_mem_nhds z hε
-  -- same as `let ⟨φ, hφ, hf⟩ := subsequence (ball z ε) ball_in_nbd` but nicer
   obtain ⟨φ, hφ, hf⟩ : ∃ φ, StrictMono φ ∧ ∀ (n : ℕ), f^[φ n] x ∈ ball z ε :=
-    subsequence (ball z ε) ball_in_nbd
+    subsequence (ball z ε) (ball_mem_nhds z hε)
   use f^[φ 1] x, φ 2 - φ 1
-  refine' ⟨hf 1, _, Nat.sub_ne_zero_of_lt (hφ Nat.le.refl)⟩
   have : f^[φ 2 - φ 1] (f^[φ 1] x) = f^[φ 2] x := by
     rw [← Function.iterate_add_apply, Nat.sub_add_cancel]
-    apply le_of_lt (hφ (by linarith))
-  rw [this]
-  apply (hf 2)
+    exact le_of_lt (hφ (by linarith))
+  exact ⟨hf 1, this ▸ (hf 2), Nat.sub_ne_zero_of_lt (hφ Nat.le.refl)⟩
   done
 
 /-- The non-wandering set is non-empty -/

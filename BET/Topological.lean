@@ -176,8 +176,6 @@ theorem is_closed : IsClosed (nonWanderingSet f) := by
     rw [mem_ball] at h3 h6
     linarith
   have h9 : y ∈ ball x ε := lt_of_le_of_lt (dist_triangle _ _ _) m1
-  -- simp -- was doing `mem_ball.mp: y ∈ ball x ε → dist y x < ε `
-  -- have : dist y x ≤ dist y z + dist z x := dist_triangle _ _ _
   -- Question: Why can I omit argument, but I can't in the line below?
   -- Answer: In this case the argument can easily be inferred from the goal since you want
   -- to prove that `dist y x ≤ dist y z + dist z x` and you are giving it a lemma that says

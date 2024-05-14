@@ -187,8 +187,6 @@ theorem is_closed : IsClosed (nonWanderingSet f) := by
     rw [mem_ball] at h7 h3
     linarith
   have h10 : f^[n] y ∈ ball x ε := lt_of_le_of_lt (dist_triangle _ _ _) p1
-    -- simp -- was doing `mem_ball.mp: y ∈ ball x ε → dist y x < ε `
-    -- have : dist (f^[n] y) x ≤ dist (f^[n] y) z + dist z x := dist_triangle _ _ _
   exact ⟨y, n, h9, h10, h8⟩
 
 /-- The non-wandering set of `f` is compact. -/

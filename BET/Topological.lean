@@ -183,7 +183,6 @@ theorem is_closed : IsClosed (nonWanderingSet f) := by
   -- lemma. On the other hand in the line below the arguments are not obvious from the goal,
   -- since you need to prove an inequality using some kind of transitivity, so it is easy to
   -- infer the first and last objects from the goal, but not the middle one.
-  -- exact lt_of_le_of_lt this m1
   have p1 : dist (f^[n] y) z + dist z x < ε := by
     rw [mem_ball] at h7 h3
     linarith

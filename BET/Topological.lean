@@ -230,7 +230,6 @@ theorem recurrentSet_iff_accumulation_point (x : α) :
     simp only [singleton_inter_nonempty, frequently_atTop] at recur_x_in_ball
     exact recur_x_in_ball N
   . intro hf
-    -- simp only [mem_setOf_eq] -- `x ∈ { y | p y } = p x`
     rw [recurrentSet, mem_setOf_eq, mem_omegaLimit_iff_frequently]
     intro U hU
     simp only [singleton_inter_nonempty, mem_preimage, frequently_atTop] -- reduces the goal to `∀ (a : ℕ), ∃ b, a ≤ b ∧ f^[b] x ∈ U`

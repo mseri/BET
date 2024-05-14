@@ -172,8 +172,6 @@ theorem is_closed : IsClosed (nonWanderingSet f) := by
   -- obtain below is equivalent to the above two lines
   obtain ⟨y, l1, ⟨n, l2, l3⟩⟩ := h4 (ε / 2) e2pos
   obtain ⟨h6, h7, h8⟩ : y ∈ ball z (ε / 2) ∧ f^[n] y ∈ ball z (ε / 2) ∧ n ≠ 0 := ⟨l1, l2, l3⟩
-    -- use y, n -- note `use y, n` which is the same as `use y` and `use n`
-    -- simp -- was repeatedly doing `mem_ball.mp: y ∈ ball x ε → dist y x < ε `
   have m1 : dist y z + dist z x < ε := by
     rw [mem_ball] at h3 h6
     linarith

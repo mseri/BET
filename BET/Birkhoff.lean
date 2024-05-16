@@ -42,7 +42,7 @@ define `A := { x | lim_n ∑_{i=0}^{n} f(T^i x) = ∞}`.
 def A := { x : α | Filter.Tendsto (fun n ↦ ∑ i in Finset.range n, f (T^[i] x)) Filter.atTop Filter.atTop }
 
 /- `A` is in `I = inv_sigma_algebra`. -/
--- idea: is it better to define a new type measureable sets in alpha and then restrict to that type?
+-- idea: is it better to define a new type measurable sets in alpha and then restrict to that type?
 -- def inv_sigma_algebra := { S : Set α | MeasurableSet S ∧ T⁻¹' S = S }
 def inv_sigma_algebra := { S : Set α | MeasurableSet S ∧ IsInvariant (fun n x ↦ T^[n] x) S }
 
@@ -56,7 +56,7 @@ def inv_sigma_algebra := { S : Set α | MeasurableSet S ∧ IsInvariant (fun n x
 
 /- If `x ∉ A`, `limsup_n (1/n) ∑_{k=0}^{n-1} φ ∘ T^i ≤ 0`. -/
 
-/- If conditional expection of `φ` is negative, i.e., `∫_C φ dμ = ∫_C φ|_inv_sigmal_algebra dμ < 0` for all `C` in `inv_sigma_algebra` with `μ(C) > 0`,
+/- If conditional expectation of `φ` is negative, i.e., `∫_C φ dμ = ∫_C φ|_inv_sigmal_algebra dμ < 0` for all `C` in `inv_sigma_algebra` with `μ(C) > 0`,
 then `μ(A) = 0`. -/
 
 /- Then (assumptions as prior step) `limsup_n (1/n) ∑_{k=0}^{n-1} φ ∘ T^i ≤ 0` a.e. -/

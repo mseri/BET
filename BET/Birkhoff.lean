@@ -1,3 +1,9 @@
+/-
+Copyright 2023 The Authors
+Released under Apache 2.0 license as described in the file LICENSE
+Authors: Guillaume Dubach, Marco Lenci, Sébastien Gouëzel, Marcello Seri, Oliver Butterley
+-/
+
 import Mathlib.Tactic
 import Mathlib.Dynamics.OmegaLimit
 import Mathlib.Dynamics.Ergodic.AddCircle

@@ -1,9 +1,9 @@
 name = "BET"
+defaultTargets = ["BET"]
 
 [leanOptions]
 pp.unicode.fun = true
 pp.proofs.withType = false
-defaultTargets = ["BET"]
 
 [[require]]
 name = "mathlib"

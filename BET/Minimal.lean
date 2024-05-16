@@ -11,6 +11,11 @@ import «BET».Topological
 
 This file contains various details related to minimal sets and minimal actions.
 
+TO DO:
+- Align contents here with https://github.com/leanprover-community/mathlib4/blob/master/Mathlib/Dynamics/Minimal.lean
+- Upgrade the statements and proofs swapping the metric space requirement for merely requiring a topological space.
+- Upgrade all for a general action as per the stuff already in mathlib.
+
 -/
 
 open MeasureTheory Filter Metric Function Set

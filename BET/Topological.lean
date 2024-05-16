@@ -15,7 +15,10 @@ import Mathlib.Dynamics.Ergodic.AddCircle
 
 ## Implementation notes
 
-TODO: at some point translate to topological spaces
+TO DO:
+- Coordinate with the related stuff that already exists in mathlin.
+- Upgrade the statements and proofs swapping the metric space requirement for merely requiring a topological space.
+- Upgrade all for a general action, not only discrete systems.
 
 ## References
 

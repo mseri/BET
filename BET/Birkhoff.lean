@@ -423,7 +423,7 @@ theorem integral_nonneg : 0 ≤ ∫ x in (divSet T φ), φ x ∂μ := by
       intros x hx
       have h00 := maxOfSums_Monotone T φ x hn
       linarith
-    exact set_integral_nonneg (divSet_MeasurableSet T φ) h01
+    exact setIntegral_nonneg (divSet_MeasurableSet T φ) h01
   have h1 (n : ℕ) : ∫ x in (divSet T φ), (maxOfSums T φ x (n + 1) - maxOfSums T φ x n) ∂μ =
       ∫ x in (divSet T φ), (maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n) ∂μ := by
     have h10 : ∫ x in (divSet T φ), (maxOfSums T φ x n) ∂μ =

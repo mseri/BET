@@ -1,6 +1,7 @@
 # Contributing to this project
 
 We welcome anyone who can contribute something to this project.
+For efficiency it is best that all pull requests are in response to an open issue. Potential contributors are encouraged to participate in issue conversations or open new issues.
 The project aims to remain maintainable and educational, so keep this in mind when preparing your PRs.
 
 ## Discussion

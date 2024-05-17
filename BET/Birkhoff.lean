@@ -36,42 +36,43 @@ open BigOperators MeasureTheory
 variable {α : Type*} [m0: MeasurableSpace α]
 /-
 The original sigma-algebra is now named m0 because we need to distiguish
-b/w that the the invariant sigma-algebra.
+b/w that and the invariant sigma-algebra.
 -/
 variable {μ : MeasureTheory.Measure α} [MeasureTheory.IsProbabilityMeasure μ]
 variable (T : α → α) (hT : MeasurePreserving T μ)
 variable (φ : α → ℝ) (hphi : Integrable φ μ) (hphim : Measurable φ)
 /- For the moment it's convenient to also assume that φ is measurable
 because for Lean Integrable means almost everywhere (strongly) measurable
-and, as I said, I think it's not convenient to carry around "a.e." in the
-main prooof. We can probably fix this later by taking an almost everywhere
+and it's not convenient to carry around "a.e." in the main prooof.
+We can probably fix this later by taking an almost everywhere
 (strongly) measurable fn, turn it into a truly measurable function which is
 a.e. equal to the given function, apply the thoerem to this one and then
 derive conclusions for the original function -/
 variable (R : Type*) [DivisionSemiring R] [Module R ℝ] -- used for birkhoffAverage
 
-lemma map_measurable : Measurable T := by
-  exact hT.measurable
-
-/- when calling the definition below, T will be an explicit argument, because we made
-T an explicit variable (and we couldn't do otherwise, Floris explained) and becauae we
-used T in the construction of the definition -/
+/- when calling the definition below, T will be an explicit argument.
+This is for two reasons:
+- we made T an explicit variable (and we couldn't do otherwise, Floris explained), and
+- we used T in the construction of the definition -/
 def invSigmaAlg : MeasurableSpace α where
+  -- same as `MeasurableSet' s := MeasurableSet s ∧ T ⁻¹' s = s`
   MeasurableSet' := fun s ↦ MeasurableSet s ∧ T ⁻¹' s = s
-  -- also 'MeasurableSet' s := MeasurableSet s ∧ T ⁻¹' s = s'
   measurableSet_empty := by
     constructor
     · exact MeasurableSet.empty
     · exact rfl
   measurableSet_compl := by
-    intro s
-    dsimp only -- problems at least with infoview on this part
-    intro hinit -- the last 3 lines can be abbreviated to: 'intro h hinit'
-    obtain ⟨hinit1, hinit2⟩ := hinit
+    -- intro s
+    -- dsimp only
+    -- intro hinit
+    -- obtain ⟨hinit1, hinit2⟩ := hinit
+    -- the above can be abbreviated as follows
+    intro h ⟨hinit1, hinit2⟩ 
     constructor
     · exact MeasurableSet.compl hinit1
     · exact congrArg compl hinit2 -- this was suggested by Lean
   measurableSet_iUnion := by
+    -- now we explicitly want s, so we need to intro it
     intro s
     dsimp
     intro hinit
@@ -87,11 +88,8 @@ def invSigmaAlg : MeasurableSpace α where
       exact Set.iUnion_congr hi2nd
 
 
-
-
-/- the lemma below was a problem because it was hard to find out what m ≤ m0 meant, when
-m, m0 are measurable spaces. Hovering over the ≤ sign in infoview and following links
-explained it:
+/- it was hard to find out what `m ≤ m0` meant, when `m, m0` are measurable spaces.
+Hovering over the `≤` sign in infoview and following the links explained it:
 instance : LE (MeasurableSpace α) where le m₁ m₂ := ∀ s, MeasurableSet[m₁] s → MeasurableSet[m₂] s
 -/
 lemma leq_InvSigmaAlg_FullAlg : invSigmaAlg T ≤ m0 := by
@@ -105,7 +103,7 @@ open Finset in
 def maxOfSums (x : α) (n : ℕ) :=
     sup' (range (n + 1)) (nonempty_range_succ) (fun k ↦ birkhoffSum T φ (k + 1) x)
 
-/- Note that maxOfSums T φ x n corresponds to Φ_{n+1} -/
+/- Note that maxOfSums T φ x n corresponds to Φ_{n+1} in our notation -/
 
 theorem maxOfSums_zero : maxOfSums T φ x 0 = φ x := by
   unfold maxOfSums
@@ -116,7 +114,7 @@ theorem maxOfSums_succ_le (x : α) (n : ℕ) : (maxOfSums T φ x n) ≤ (maxOfSu
   exact Finset.sup'_mono (fun k ↦ birkhoffSum T φ (k + 1) x)
     (Finset.range_subset.mpr (Nat.le.step Nat.le.refl)) Finset.nonempty_range_succ
 
-/-- `maxOfSums` is monotone (explict version). -/
+/-- `maxOfSums` is monotone (general steps version). -/
 theorem maxOfSums_le_le (x : α) (m n : ℕ) (hmn : m ≤ n) :
     (maxOfSums T φ x m) ≤ (maxOfSums T φ x n) := by
   induction' n with n hi
@@ -136,31 +134,10 @@ open Filter in
 /-- The set of divergent points `{ x | lim_n Φ_n x = ∞}`. -/
 def divSet := { x : α | Tendsto (fun n ↦ maxOfSums T φ x n) atTop atTop }
 
-/- Marco morking here
-
 open Finset in
+-- Marco is working on this
 lemma maxOfSums_measurable : ∀ n, Measurable (fun x ↦ maxOfSums T φ x n) := by
-  intro n
-  have hBSm : ∀ (k : range (n + 1)), Measurable (fun x ↦ birkhoffSum T φ (k+1) x) := by sorry
-  have pivot : maxOfSums T φ x n = ⨆ (k : range (n + 1)), (fun x ↦ birkhoffSum T φ (k+1) x) := by sorry
-  let hend := measurable_iSup hBSm
-  rw [pivot]
-  exact
--/
-
-
-/-
-here I plan to use
-theorem measurable_iSup {α : Type u_1} {δ : Type u_5} [TopologicalSpace α]
-[MeasurableSpace α] [BorelSpace α] [MeasurableSpace δ]
-[ConditionallyCompleteLinearOrder α] [OrderTopology α]
-[TopologicalSpace.SecondCountableTopology α] {ι : Sort u_6}
-[Countable ι] {f : ι → δ → α} (hf : ∀ (i : ι), Measurable (f i)) :
-Measurable fun b => ⨆ i, f i b
--/
-
-  -- XXXXXXX Marco working here!!!
-
+  sorry
 
 
 /- can probably be stated without the '[m0]' part -/
@@ -189,7 +166,7 @@ theorem birkhoffSum_succ_image (n : ℕ) (x : α) :
     simp
     exact add_sub (birkhoffSum T φ n x) (φ (T^[n] x)) (φ x)
 
-/-- Would expect this to be in `Mathlib/Data/Finset/Lattice`.
+/- Would expect this to be in `Mathlib/Data/Finset/Lattice`.
 Or perhaps there is already an easier way to extract it from mathlib? -/
 theorem sup'_eq_iff_le {s : Finset β} [SemilatticeSup α] (H : s.Nonempty) (f : β → α) (hs : a ∈ s) :
     s.sup' H f = f a ↔ ∀ b ∈ s, f b ≤ f a := by
@@ -203,7 +180,7 @@ theorem sup'_eq_iff_le {s : Finset β} [SemilatticeSup α] (H : s.Nonempty) (f :
       exact h1
     exact (LE.le.ge_iff_eq hle).mp (Finset.le_sup' f hs)
 
-/-- convenient because used several times in proving claim 1 -/
+/- convenient because used several times in proving claim 1 -/
 theorem map_range_Nonempty (n : ℕ) : (Finset.map (addLeftEmbedding 1)
     (Finset.range (n + 1))).Nonempty := by
   use 1

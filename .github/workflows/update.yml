@@ -33,7 +33,7 @@ jobs:
         run: lake update
 
       - name: Check if anything was updated
-        uses: tj-actions/verify-changed-files@v18
+        uses: tj-actions/verify-changed-files@v20
         id: check-update
         with:
           files: |

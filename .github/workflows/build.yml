@@ -20,11 +20,7 @@ jobs:
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
-      - name: Install elan
-        run: |
-          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
-          echo "$HOME/.elan/bin" >> $GITHUB_PATH
-      - name: Get cache
-        run: lake exe cache get || true
-      - name: Build project
-        run: lake build
+      - name: Build and test project
+        uses: leanprover/lean-action@main
+        with:
+          test: false

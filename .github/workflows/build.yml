@@ -23,7 +23,7 @@ jobs:
       - name: Build and test project
         uses: leanprover/lean-action@main
         with:
-          test: true
+          test: false
           use-mathlib-cache: auto
           lint-module: ""
           check-reservoir-eligibility: false

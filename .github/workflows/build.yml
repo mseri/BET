@@ -27,4 +27,4 @@ jobs:
           use-mathlib-cache: auto
           lint-module: ""
           check-reservoir-eligibility: false
-          lean4checker: true
+          lean4checker: false

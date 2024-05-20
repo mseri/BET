@@ -24,7 +24,3 @@ jobs:
         uses: leanprover/lean-action@main
         with:
           test: false
-          use-mathlib-cache: auto
-          lint-module: ""
-          check-reservoir-eligibility: false
-          lean4checker: false

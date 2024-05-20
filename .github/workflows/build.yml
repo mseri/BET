@@ -25,6 +25,6 @@ jobs:
         with:
           test: true
           use-mathlib-cache: auto
-          lint-module: BET
+          lint-module: ""
           check-reservoir-eligibility: false
           lean4checker: true

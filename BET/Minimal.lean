@@ -125,6 +125,7 @@ theorem exists_minimal_set (U : Set α) (h : IsCIN f U) :
     have h5 := inter_nested_closed_inv_is_closed_inv_nonempty f C h3 h2 h4
     /- We show that `lb` is in `S`. -/
     choose V' h8 using h3 -- Let's fix some `V ∈ C`.
+    -- same as have h14 : V' ∈ S := by exact h1 h8
     have h14 : V' ∈ S := h1 h8
     have h6 : lb ⊆ U := Subset.trans (sInter_subset_of_mem h8) (h14.left)
     /- We show that `lb` is a lowerbound. -/

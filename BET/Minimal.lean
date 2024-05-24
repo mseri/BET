@@ -146,6 +146,7 @@ def orbit x := { y | ∃ n : ℕ, y = f^[n] x }
 theorem orbit_inv (x : α) : IsInvariant (fun n x ↦ f^[n] x) (orbit f x) := by
   intro n y h0
   choose m h1 using h0
+  -- here we show that f^[n] y = f^[n + m] x
   use n + m
   rw [h1]
   exact (iterate_add_apply f n m x).symm

@@ -44,6 +44,8 @@ def IsMinimal (f : α → α) : Prop := IsMinimalSubset f univ
 /-- In a minimal dynamics, the recurrent set is all the space. -/
 theorem recurrentSet_of_minimal_is_all_space (hf : IsMinimal f) (x : α) :
     x ∈ recurrentSet f := by
+  -- explicitly, we are now proving
+  -- ∀ (ε : ℝ) (N : ℕ), ε > 0 → ∃ m : ℕ, m ≥ N ∧ f^[m] x ∈ ball x ε
   apply (recurrentSet_iff_accumulation_point f x).mpr
   intro ε N hε
   obtain ⟨n, hball⟩ : ∃ n, f^[n] (f^[N] x) ∈ ball x ε :=

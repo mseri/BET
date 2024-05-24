@@ -100,6 +100,9 @@ theorem inter_nested_closed_inv_is_closed_inv_nonempty (f : α → α) (C : Set 
   have htd : DirectedOn (· ⊇ ·) C := IsChain.directedOn hc2.symm
   have hSc : ∀ U ∈ C, IsCompact U := fun U a ↦ IsClosed.isCompact (hScl U a)
   have : Nonempty C := nonempty_coe_sort.mpr hc1
+  -- the use of fun in the constructor in the following refine
+  -- allows one to introduce directly all the relevant terms
+  -- for the proof
   refine' ⟨_, isClosed_sInter hScl, fun n x hx U h2c ↦ _⟩
   -- Nonempty intersection follows from Cantor's intersection theorem
   · exact IsCompact.nonempty_sInter_of_directed_nonempty_isCompact_isClosed htd hne hSc hScl

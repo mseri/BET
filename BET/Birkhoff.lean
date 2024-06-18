@@ -382,9 +382,11 @@ theorem diff_Monotone (x : α) : Monotone (fun n ↦ -(maxOfSums T φ x (n + 1) 
 open Filter in
 /-- ✨ Outside the divergent set the limsup of Birkhoff average is non positive. -/
 theorem non_positive_of_notin_divSet (x : α) (hx : x ∉ divSet T φ) :
-    limsup (fun n ↦ (birkhoffAverage R T φ n x)) ≤ 0 := by
+    limsup (fun n ↦ (birkhoffSum T φ n x)) ≤ 0 := by
   /- By `hx` we know that `n ↦ birkhoffSum T φ n x` is bounded. Conclude dividing by `n`. -/
-  have h0 : ∀ n, 0 ≥ birkhoffSum T φ n x := by
+  have h0 : ∀ n, 0 ≥  birkhoffAverage ℝ T φ n x := by
+    intro n
+    unfold birkhoffAverage
     sorry
   sorry
 

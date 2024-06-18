@@ -262,8 +262,7 @@ theorem claim1 (n : ℕ) (x : α) :
       norm_num
       exact h10
     linarith
-  rw [min_eq_left h8, h1]
-  simp
+  simp [min_eq_left h8, h1]
 
 open Filter in
 /-- Eventual equality - variant with assumption on `T x`. -/

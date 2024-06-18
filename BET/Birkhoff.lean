@@ -106,28 +106,32 @@ open Finset in
 `maxOfSums T φ x n` corresponds to
 `max {birkhoffSum T φ 1 x,..., birkhoffSum T φ (n + 1) x}`.
 This is because `birkhoffSum T φ 0 x := 0` is defined to be a sum over the empty set. -/
-def maxOfSums (x : α) (n : ℕ) :=
-    sup' (range (n + 1)) (nonempty_range_succ) (fun k ↦ birkhoffSum T φ (k + 1) x)
+def maxOfSums (x : α) : OrderHom ℕ ℝ :=
+  partialSups (fun n ↦ birkhoffSum T φ (n+1) x)
+
+-- was:
+-- def maxOfSums (x : α) (n : ℕ) :=
+--     sup' (range (n + 1)) (nonempty_range_succ) (fun k ↦ birkhoffSum T φ (k + 1) x)
 
 /- Note that maxOfSums T φ x n corresponds to Φ_{n+1} in our notates -/
 
 theorem maxOfSums_zero : maxOfSums T φ x 0 = φ x := by
   unfold maxOfSums
-  simp only [zero_add, Finset.range_one, Finset.sup'_singleton, birkhoffSum_one']
+  simp
 
 /-- `maxOfSums` is monotone (one step version). -/
 theorem maxOfSums_succ_le (x : α) (n : ℕ) : (maxOfSums T φ x n) ≤ (maxOfSums T φ x (n + 1)) := by
-  exact Finset.sup'_mono (fun k ↦ birkhoffSum T φ (k + 1) x)
-    (Finset.range_subset.mpr (Nat.le.step Nat.le.refl)) Finset.nonempty_range_succ
+  unfold maxOfSums
+  simp
 
 /-- `maxOfSums` is monotone (general steps version). -/
 theorem maxOfSums_le_le (x : α) (m n : ℕ) (hmn : m ≤ n) :
     (maxOfSums T φ x m) ≤ (maxOfSums T φ x n) := by
   induction' n with n hi
-  rw [Nat.le_zero.mp hmn]
-  rcases Nat.of_le_succ hmn with hc | hc
-  exact le_trans (hi hc) (maxOfSums_succ_le T φ x n)
-  rw [hc]
+  · rw [Nat.le_zero.mp hmn]
+  · rcases Nat.of_le_succ hmn with hc | hc
+    exact le_trans (hi hc) (maxOfSums_succ_le T φ x n)
+    rw [hc]
 
 /-- `maxOfSums` is monotone.
 (Uncertain which is the best phrasing to keep of these options.) -/
@@ -148,21 +152,25 @@ lemma birkhoffSum_measurable
   apply Finset.measurable_sum
   measurability
 
-lemma same {f : α → α} (x: α) : f = (fun x ↦ f x) := by exact rfl
-
 @[measurability]
-lemma maxOfSums_measurable (n : ℕ)
-  : Measurable (fun x ↦ maxOfSums T φ x n) := by
+lemma maxOfSums_measurable
+  : ∀ n : ℕ , Measurable (fun x ↦ maxOfSums T φ x n) := by
+  intro n
   induction n
   · simp only [maxOfSums_zero]
     exact hphim
-  · sorry
+  · unfold maxOfSums
+    measurability
+
+    -- measurability
 
 
+
+#exit
 
 
 /- can probably be stated without the '[m0]' part -/
-lemma divSet_neasurable : MeasurableSet[m0] (divSet T φ) := by sorry
+lemma divSet_measurable : MeasurableSet[m0] (divSet T φ) := by sorry
 /-
 For the above lemma we need to use that the set A, defined by all x s.t.
 lim_n φ_n = ∞ is m0-measurable. Since φ is measurable (b/c integrable)

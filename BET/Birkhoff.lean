@@ -349,7 +349,7 @@ theorem divSet_inv : T⁻¹' (divSet T φ) = (divSet T φ) := by
   · intro hx
     have h2' : ∀ᶠ n in atTop, maxOfSums T φ (T x) n = maxOfSums T φ x (n + 1) - φ x := by
       -- there should be a slicker way of rearranging the equality in Tendsto ------------------
-      simp
+      simp only [eventually_atTop, ge_iff_le]
       have h2 := diff_evenutally_of_divSet' T φ x hx
       simp at h2
       obtain ⟨k, hk⟩ := h2
@@ -359,18 +359,17 @@ theorem divSet_inv : T⁻¹' (divSet T φ) = (divSet T φ) := by
       exact hk n hn
       ------------------------------------------------------------------------------------------
     -- use the eventual equality
-    have h5 : Tendsto (fun n ↦ maxOfSums T φ x (n + 1) - φ x) atTop atTop := by
-      exact Tendsto.congr' h2' hx
+    have h5 : Tendsto (fun n ↦ maxOfSums T φ x (n + 1) - φ x) atTop atTop := Tendsto.congr' h2' hx
     -- rearrange using properties of `Tendsto`
     have h6 : Tendsto (fun n ↦ maxOfSums T φ x (n + 1)) atTop atTop := by
       have h7 := tendsto_atTop_add_const_right atTop (φ x) h5
-      simp at h7
+      simp only [sub_add_cancel] at h7
       exact h7
     refine' (tendsto_add_atTop_iff_nat 1).mp _
     exact h6
   · intro hx
-    have hx' : Tendsto (fun n ↦ maxOfSums T φ x (n + 1)) atTop atTop := by
-      exact (tendsto_add_atTop_iff_nat 1).mpr hx
+    have hx' : Tendsto (fun n ↦ maxOfSums T φ x (n + 1)) atTop atTop :=
+      (tendsto_add_atTop_iff_nat 1).mpr hx
     -- eventually we have a precise equality between the two maxOfSums
     have h2' : ∀ᶠ n in atTop, maxOfSums T φ x (n + 1) - φ x = maxOfSums T φ (T x) n := by
       -- there should be a slicker way of rearranging the equality in Tendsto ------------------
@@ -387,10 +386,9 @@ theorem divSet_inv : T⁻¹' (divSet T φ) = (divSet T φ) := by
 
 /-- Framed formula: the negative difference of maxOfSums is monotone. -/
 theorem diff_Monotone (x : α) : Monotone (fun n ↦ -(maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n)) := by
-  unfold Monotone
-  intros n m hnm
-  simp_rw [claim1]
-  simp
+  intro n m hnm
+  simp only [claim1, neg_sub, tsub_le_iff_right, sub_add_cancel, le_min_iff, min_le_iff, le_refl,
+    true_or, true_and]
   by_cases hc : 0 ≤ maxOfSums T φ (T x) m
   · left
     exact hc

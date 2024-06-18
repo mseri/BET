@@ -63,20 +63,9 @@ This is for two reasons:
 def invSigmaAlg : MeasurableSpace α where
   -- same as `MeasurableSet' s := MeasurableSet s ∧ T ⁻¹' s = s`
   MeasurableSet' := fun s ↦ MeasurableSet s ∧ T ⁻¹' s = s
-  measurableSet_empty := by
-    constructor
-    · exact MeasurableSet.empty
-    · exact rfl
-  measurableSet_compl := by
-    -- intro s
-    -- dsimp only
-    -- intro hinit
-    -- obtain ⟨hinit1, hinit2⟩ := hinit
-    -- the above can be abbreviated as follows
-    intro h ⟨hinit1, hinit2⟩
-    constructor
-    · exact MeasurableSet.compl hinit1
-    · exact congrArg compl hinit2 -- this was suggested by Lean
+  measurableSet_empty := ⟨MeasurableSet.empty, rfl⟩
+  measurableSet_compl := fun h ⟨hinit1, hinit2⟩ ↦ ⟨MeasurableSet.compl hinit1, congrArg compl hinit2⟩
+
   measurableSet_iUnion := by
     -- now we explicitly want s, so we need to intro it
     intro s
@@ -113,11 +102,11 @@ def maxOfSums (x : α) (n : ℕ) :=
 
 theorem maxOfSums_zero : maxOfSums T φ x 0 = φ x := by
   unfold maxOfSums
-  simp only [zero_add, Finset.range_one, Finset.sup'_singleton, birkhoffSum_one']
+  simp
 
 /-- `maxOfSums` is monotone (one step version). -/
-theorem maxOfSums_succ_le (x : α) (n : ℕ) : (maxOfSums T φ x n) ≤ (maxOfSums T φ x (n + 1)) := by
-  exact Finset.sup'_mono (fun k ↦ birkhoffSum T φ (k + 1) x)
+theorem maxOfSums_succ_le (x : α) (n : ℕ) : (maxOfSums T φ x n) ≤ (maxOfSums T φ x (n + 1)) :=
+  Finset.sup'_mono (fun k ↦ birkhoffSum T φ (k + 1) x)
     (Finset.range_subset.mpr (Nat.le.step Nat.le.refl)) Finset.nonempty_range_succ
 
 /-- `maxOfSums` is monotone (general steps version). -/

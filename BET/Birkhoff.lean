@@ -151,7 +151,12 @@ lemma maxOfSums_measurable
 
 
 /- can probably be stated without the '[m0]' part -/
-lemma divSet_measurable : MeasurableSet[m0] (divSet T φ) := by sorry
+lemma divSet_measurable : MeasurableSet[m0] (divSet T φ) := by
+  simp only [divSet]
+  refine measurableSet_tendsto Filter.atTop ?_
+  apply maxOfSums_measurable
+  exact hphim
+
 /-
 For the above lemma we need to use that the set A, defined by all x s.t.
 lim_n φ_n = ∞ is m0-measurable. Since φ is measurable (b/c integrable)
@@ -164,7 +169,6 @@ exactly that becuase φ takes values in ℝ and not in ENNReal (in which
 case we might have had a chance).
 In any case, if we don't find such lemma, I can easily produce it.
 -/
-
 
 /- ∀ `x ∈ A`, `Φ_{n+1}(x) - Φ_{n}(T(x)) = φ(x) - min(0,Φ_{n}(T(x))) ≥ φ(x)` decreases to `φ(x)`. -/
 

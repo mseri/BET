@@ -27,7 +27,6 @@ This file defines Birkhoff sums, other related notions and proves Birkhoff's erg
 /- TODO:
   - define Birkhoff Average on actions, to be done much later, after mathlibization
   - update the proof to this more general setting
-  - refactor using partialSups and ℕ →o ℝ
 -/
 
 section Ergodic_Theory
@@ -100,12 +99,12 @@ def maxOfSums (x : α) : OrderHom ℕ ℝ :=
 
 theorem maxOfSums_zero : maxOfSums T φ x 0 = φ x := by
   unfold maxOfSums
-  simp
+  simp only [partialSups_zero, zero_add, birkhoffSum_one']
 
 /-- `maxOfSums` is monotone (one step version). -/
 theorem maxOfSums_succ_le (x : α) (n : ℕ) : (maxOfSums T φ x n) ≤ (maxOfSums T φ x (n + 1)) := by
   unfold maxOfSums
-  simp
+  simp only [partialSups_succ, le_sup_left]
 
 /-- `maxOfSums` is monotone (general steps version). -/
 theorem maxOfSums_le_le (x : α) (m n : ℕ) (hmn : m ≤ n) :
@@ -113,8 +112,8 @@ theorem maxOfSums_le_le (x : α) (m n : ℕ) (hmn : m ≤ n) :
   induction' n with n hi
   · rw [Nat.le_zero.mp hmn]
   · rcases Nat.of_le_succ hmn with hc | hc
-    exact le_trans (hi hc) (maxOfSums_succ_le T φ x n)
-    rw [hc]
+    . exact le_trans (hi hc) (maxOfSums_succ_le T φ x n)
+    . rw [hc]
 
 /-- `maxOfSums` is monotone.
 (Uncertain which is the best phrasing to keep of these options.) -/
@@ -124,11 +123,12 @@ open Filter in
 /-- The set of divergent points `{ x | lim_n Φ_{n+1} x = ∞}`. -/
 def divSet := { x : α | Tendsto (fun n ↦ maxOfSums T φ x n) atTop atTop }
 
+
 @[measurability]
 lemma birkhoffSum_measurable
-    {f : α → α} (hf : Measurable f)
+    {T : α → α} (hT: Measurable T)
     {φ : α → ℝ} (hφ : Measurable φ) :
-    Measurable (birkhoffSum f φ n) := by
+    Measurable (birkhoffSum T φ n) := by
   apply Finset.measurable_sum
   measurability
 
@@ -137,15 +137,17 @@ lemma maxOfSums_measurable
   : ∀ n : ℕ , Measurable (fun x ↦ maxOfSums T φ x n) := by
   intro n
   induction n
-  · simp only [maxOfSums_zero]
+  case zero := by
+    simp only [maxOfSums_zero]
     exact hphim
-  · unfold maxOfSums
-    measurability
-
-    -- measurability
-
-
-#exit
+  case succ n hn := by
+    unfold maxOfSums
+    simp only [partialSups_succ]
+    refine Measurable.sup ?prev ?cur
+    case cur := by  exact [birkhoffSum_measurable, hT]
+    case prev := by
+      unfold maxOfSums at hn
+      apply hn
 
 
 /- can probably be stated without the '[m0]' part -/
@@ -209,8 +211,7 @@ theorem claim1 (n : ℕ) (x : α) :
         (sup' (map (addLeftEmbedding 1) (range (n + 1))) (map_range_Nonempty n)
         fun k ↦ birkhoffSum T φ (k + 1) x) := by
       unfold maxOfSums
-      rw [h1]
-      simp
+      simp_rw [partialSups_eq_sup'_range, h1]
       exact rfl
     have h3 := max_choice (birkhoffSum T φ 1 x)
       (sup' (map (addLeftEmbedding 1) (range (n + 1))) (map_range_Nonempty n)
@@ -227,8 +228,9 @@ theorem claim1 (n : ℕ) (x : α) :
     simp
     refine' h11.mp _
     unfold maxOfSums at hcl
-    simp at hcl
-    exact hcl
+    rw [partialSups_eq_sup'_range] at hcl
+    rw [hcl]
+    simp only [birkhoffSum_one']
   have h1 : birkhoffSum T φ 1 x = φ x := birkhoffSum_one T φ x
   have h2 : ∀ k, birkhoffSum T φ k (T x) = birkhoffSum T φ (k + 1) x - φ x := by
     intro k
@@ -242,6 +244,7 @@ theorem claim1 (n : ℕ) (x : α) :
     exact h35 k (mem_range_succ_iff.mpr hk)
   have h4 : maxOfSums T φ (T x) n ≤ 0 := by
     unfold maxOfSums
+    rw [partialSups_eq_sup'_range]
     simp only [sup'_le_iff, mem_range]
     intros k hk
     rw [Nat.lt_succ] at hk
@@ -261,7 +264,7 @@ theorem claim1 (n : ℕ) (x : α) :
     simp at h7
     simp at h5
     simp_rw [← h7] at h5
-    simp_rw [← h5, add_comm]
+    simp_rw [partialSups_eq_sup'_range, ← h5, add_comm]
   -- in this case the min is zero
   have h8 : 0 ≤ maxOfSums T φ (T x) n := by
     have h9 : φ x ≤ maxOfSums T φ x (n + 1) := by
@@ -269,6 +272,7 @@ theorem claim1 (n : ℕ) (x : α) :
       have h41 : 0 ∈ (range (n + 1 + 1)) := mem_range.mpr (Nat.add_pos_right (n + 1) Nat.le.refl)
       have h10 := le_sup' (fun k ↦ birkhoffSum T φ (k + 1) x) h41
       simp at h10
+      rw [partialSups_eq_sup'_range]
       norm_num
       exact h10
     linarith

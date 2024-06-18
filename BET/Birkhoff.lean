@@ -90,21 +90,19 @@ open Finset in
 This is because `birkhoffSum T φ 0 x := 0` is defined to be a sum over the empty set. -/
 def maxOfSums (x : α) : OrderHom ℕ ℝ :=
   partialSups (fun n ↦ birkhoffSum T φ (n+1) x)
-
--- was:
--- def maxOfSums (x : α) (n : ℕ) :=
---     sup' (range (n + 1)) (nonempty_range_succ) (fun k ↦ birkhoffSum T φ (k + 1) x)
-
-/- Note that maxOfSums T φ x n corresponds to Φ_{n+1} in our notates -/
+/- was:
+   def maxOfSums (x : α) (n : ℕ) :=
+     sup' (range (n + 1)) (nonempty_range_succ) (fun k ↦ birkhoffSum T φ (k + 1) x)
+   Note that maxOfSums T φ x n corresponds to Φ_{n+1} in our notates -/
 
 theorem maxOfSums_zero : maxOfSums T φ x 0 = φ x := by
   unfold maxOfSums
-  simp only [partialSups_zero, zero_add, birkhoffSum_one']
+  simp [partialSups_zero, zero_add, birkhoffSum_one']
 
 /-- `maxOfSums` is monotone (one step version). -/
 theorem maxOfSums_succ_le (x : α) (n : ℕ) : (maxOfSums T φ x n) ≤ (maxOfSums T φ x (n + 1)) := by
   unfold maxOfSums
-  simp only [partialSups_succ, le_sup_left]
+  simp [partialSups_succ, le_sup_left]
 
 /-- `maxOfSums` is monotone (general steps version). -/
 theorem maxOfSums_le_le (x : α) (m n : ℕ) (hmn : m ≤ n) :
@@ -117,7 +115,8 @@ theorem maxOfSums_le_le (x : α) (m n : ℕ) (hmn : m ≤ n) :
 
 /-- `maxOfSums` is monotone.
 (Uncertain which is the best phrasing to keep of these options.) -/
-theorem maxOfSums_Monotone (x : α) : Monotone (fun n ↦ maxOfSums T φ x n) := maxOfSums_le_le T φ x
+theorem maxOfSums_Monotone (x : α) : Monotone (fun n ↦ maxOfSums T φ x n) :=
+  maxOfSums_le_le T φ x
 
 open Filter in
 /-- The set of divergent points `{ x | lim_n Φ_{n+1} x = ∞}`. -/
@@ -125,12 +124,12 @@ def divSet := { x : α | Tendsto (fun n ↦ maxOfSums T φ x n) atTop atTop }
 
 
 @[measurability]
-lemma birkhoffSum_measurable
-    {T : α → α} (hT: Measurable T)
-    {φ : α → ℝ} (hφ : Measurable φ) :
+lemma birkhoffSum_measurable :
     Measurable (birkhoffSum T φ n) := by
   apply Finset.measurable_sum
-  measurability
+  intro i hi
+  simp only [Finset.mem_range] at hi
+  exact Measurable.comp' hphim (Measurable.iterate hT)
 
 @[measurability]
 lemma maxOfSums_measurable
@@ -143,32 +142,12 @@ lemma maxOfSums_measurable
   case succ n hn := by
     unfold maxOfSums
     simp only [partialSups_succ]
-    refine Measurable.sup ?prev ?cur
-    case cur := by  exact [birkhoffSum_measurable, hT]
-    case prev := by
-      unfold maxOfSums at hn
-      apply hn
-
+    exact Measurable.sup' hn (birkhoffSum_measurable _ _ hphim)
 
 /- can probably be stated without the '[m0]' part -/
 lemma divSet_measurable : MeasurableSet[m0] (divSet T φ) := by
   simp only [divSet]
-  refine measurableSet_tendsto Filter.atTop ?_
-  apply maxOfSums_measurable
-  exact hphim
-
-/-
-For the above lemma we need to use that the set A, defined by all x s.t.
-lim_n φ_n = ∞ is m0-measurable. Since φ is measurable (b/c integrable)
-it all boils down to understanding what Lean means with φ : α → ℝ being
-measurable, that is, wrt to what sigma-algebra in ℝ. Since ℝ is ℝ, Lean
-might assume it's wrt the Lebesgue measurable sets. In this case, we're
-good. Of course we still need to find a lemma in mathlib that says that
-the "counterimage of ∞ is measurable". Note that the lemma can't say
-exactly that becuase φ takes values in ℝ and not in ENNReal (in which
-case we might have had a chance).
-In any case, if we don't find such lemma, I can easily produce it.
--/
+  exact measurableSet_tendsto Filter.atTop (maxOfSums_measurable _ _ hphim)
 
 /- ∀ `x ∈ A`, `Φ_{n+1}(x) - Φ_{n}(T(x)) = φ(x) - min(0,Φ_{n}(T(x))) ≥ φ(x)` decreases to `φ(x)`. -/
 
@@ -404,6 +383,8 @@ open Filter in
 theorem non_positive_of_notin_divSet (x : α) (hx : x ∉ divSet T φ) :
     limsup (fun n ↦ (birkhoffAverage R T φ n x)) ≤ 0 := by
   /- By `hx` we know that `n ↦ birkhoffSum T φ n x` is bounded. Conclude dividing by `n`. -/
+  have h0 : ∀ n, 0 ≤ birkhoffSum T φ n x := by
+    sorry
   sorry
 
 /-- `divSet T φ` is a measurable set -/

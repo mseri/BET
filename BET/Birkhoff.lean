@@ -24,6 +24,12 @@ This file defines Birkhoff sums, other related notions and proves Birkhoff's erg
 
 -/
 
+/- TODO:
+  - define Birkhoff Average on actions, to be done much later, after mathlibization
+  - update the proof to this more general setting
+  - refactor using partialSups and ℕ →o ℝ
+-/
+
 section Ergodic_Theory
 
 open BigOperators MeasureTheory
@@ -67,7 +73,7 @@ def invSigmaAlg : MeasurableSpace α where
     -- intro hinit
     -- obtain ⟨hinit1, hinit2⟩ := hinit
     -- the above can be abbreviated as follows
-    intro h ⟨hinit1, hinit2⟩ 
+    intro h ⟨hinit1, hinit2⟩
     constructor
     · exact MeasurableSet.compl hinit1
     · exact congrArg compl hinit2 -- this was suggested by Lean
@@ -92,18 +98,18 @@ def invSigmaAlg : MeasurableSpace α where
 Hovering over the `≤` sign in infoview and following the links explained it:
 instance : LE (MeasurableSpace α) where le m₁ m₂ := ∀ s, MeasurableSet[m₁] s → MeasurableSet[m₂] s
 -/
-lemma leq_InvSigmaAlg_FullAlg : invSigmaAlg T ≤ m0 := by
-  intro s hs -- here the infoview is faulty and doesn't show everything (known Lean problem, Floris says)
-  exact hs.left
-
+/-- The invariant sigma algebra of T is a subalgebra of the measure space -/
+lemma leq_InvSigmaAlg_FullAlg : invSigmaAlg T ≤ m0 := fun _ hs ↦ hs.left
 
 open Finset in
-/-- The max of the first `n + 1` Birkhoff sums, i.e.,
-`maxOfSums T φ x n` corresponds to `max {birkhoffSum T φ 1 x,..., birkhoffSum T φ (n + 1) x}`. -/
+/-- The max of the first `n` Birkhoff sums, i.e.,
+`maxOfSums T φ x n` corresponds to
+`max {birkhoffSum T φ 1 x,..., birkhoffSum T φ (n + 1) x}`.
+This is because `birkhoffSum T φ 0 x := 0` is defined to be a sum over the empty set. -/
 def maxOfSums (x : α) (n : ℕ) :=
     sup' (range (n + 1)) (nonempty_range_succ) (fun k ↦ birkhoffSum T φ (k + 1) x)
 
-/- Note that maxOfSums T φ x n corresponds to Φ_{n+1} in our notation -/
+/- Note that maxOfSums T φ x n corresponds to Φ_{n+1} in our notates -/
 
 theorem maxOfSums_zero : maxOfSums T φ x 0 = φ x := by
   unfold maxOfSums
@@ -131,13 +137,28 @@ theorem maxOfSums_Monotone (x : α) : Monotone (fun n ↦ maxOfSums T φ x n) :=
   exact maxOfSums_le_le T φ x n m hmn
 
 open Filter in
-/-- The set of divergent points `{ x | lim_n Φ_n x = ∞}`. -/
+/-- The set of divergent points `{ x | lim_n Φ_{n+1} x = ∞}`. -/
 def divSet := { x : α | Tendsto (fun n ↦ maxOfSums T φ x n) atTop atTop }
 
-open Finset in
--- Marco is working on this
-lemma maxOfSums_measurable : ∀ n, Measurable (fun x ↦ maxOfSums T φ x n) := by
-  sorry
+@[measurability]
+lemma birkhoffSum_measurable
+    {f : α → α} (hf : Measurable f)
+    {φ : α → ℝ} (hφ : Measurable φ) :
+    Measurable (birkhoffSum f φ n) := by
+  apply Finset.measurable_sum
+  measurability
+
+lemma same {f : α → α} (x: α) : f = (fun x ↦ f x) := by exact rfl
+
+@[measurability]
+lemma maxOfSums_measurable (n : ℕ)
+  : Measurable (fun x ↦ maxOfSums T φ x n) := by
+  induction n
+  · simp only [maxOfSums_zero]
+    exact hphim
+  · sorry
+
+
 
 
 /- can probably be stated without the '[m0]' part -/

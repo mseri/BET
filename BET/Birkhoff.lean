@@ -43,7 +43,7 @@ The original sigma-algebra is now named m0 because we need to distiguish
 b/w that and the invariant sigma-algebra.
 -/
 variable {μ : MeasureTheory.Measure α} [MeasureTheory.IsProbabilityMeasure μ]
-variable (T : α → α) (hT : MeasurePreserving T μ)
+variable (T : α → α) (hT : MeasurePreserving T μ μ)
 variable (φ : α → ℝ) (hphi : Integrable φ μ) (hphim : Measurable φ)
 /- For the moment it's convenient to also assume that φ is measurable
 because for Lean Integrable means almost everywhere (strongly) measurable
@@ -129,11 +129,11 @@ lemma birkhoffSum_measurable :
   apply Finset.measurable_sum
   intro i hi
   simp only [Finset.mem_range] at hi
-  exact Measurable.comp' hphim (Measurable.iterate hT)
+  exact Measurable.comp' hphim (Measurable.iterate hT.measurable _)
 
 @[measurability]
-lemma maxOfSums_measurable
-  : ∀ n : ℕ , Measurable (fun x ↦ maxOfSums T φ x n) := by
+lemma maxOfSums_measurable :
+  ∀ n : ℕ , Measurable (fun x ↦ maxOfSums T φ x n) := by
   intro n
   induction n
   case zero := by
@@ -142,12 +142,12 @@ lemma maxOfSums_measurable
   case succ n hn := by
     unfold maxOfSums
     simp only [partialSups_succ]
-    exact Measurable.sup' hn (birkhoffSum_measurable _ _ hphim)
+    exact Measurable.sup' hn (birkhoffSum_measurable _ hT _ hphim)
 
 /- can probably be stated without the '[m0]' part -/
 lemma divSet_measurable : MeasurableSet[m0] (divSet T φ) := by
   simp only [divSet]
-  exact measurableSet_tendsto Filter.atTop (maxOfSums_measurable _ _ hphim)
+  exact measurableSet_tendsto Filter.atTop (maxOfSums_measurable _ hT _ hphim)
 
 /- ∀ `x ∈ A`, `Φ_{n+1}(x) - Φ_{n}(T(x)) = φ(x) - min(0,Φ_{n}(T(x))) ≥ φ(x)` decreases to `φ(x)`. -/
 

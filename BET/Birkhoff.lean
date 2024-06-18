@@ -34,7 +34,6 @@ section Ergodic_Theory
 
 open BigOperators MeasureTheory
 
-
 /-
 - `T` is a measure preserving map of a probability space `(α, μ)`,
 - `φ : α → ℝ` is integrable.
@@ -63,36 +62,20 @@ This is for two reasons:
 def invSigmaAlg : MeasurableSpace α where
   -- same as `MeasurableSet' s := MeasurableSet s ∧ T ⁻¹' s = s`
   MeasurableSet' := fun s ↦ MeasurableSet s ∧ T ⁻¹' s = s
-  measurableSet_empty := by
-    constructor
-    · exact MeasurableSet.empty
-    · exact rfl
-  measurableSet_compl := by
-    -- intro s
-    -- dsimp only
-    -- intro hinit
-    -- obtain ⟨hinit1, hinit2⟩ := hinit
-    -- the above can be abbreviated as follows
-    intro h ⟨hinit1, hinit2⟩
-    constructor
-    · exact MeasurableSet.compl hinit1
-    · exact congrArg compl hinit2 -- this was suggested by Lean
+  measurableSet_empty := ⟨MeasurableSet.empty, rfl⟩
+  measurableSet_compl := fun h ⟨hinit1, hinit2⟩ ↦ ⟨MeasurableSet.compl hinit1, congrArg compl hinit2⟩
+
   measurableSet_iUnion := by
     -- now we explicitly want s, so we need to intro it
     intro s
     dsimp
     intro hinit
     constructor
-    · have hi1st : ∀ i, MeasurableSet (s i) := by
-        intro i
-        exact (hinit i).left
+    · have hi1st : ∀ i, MeasurableSet (s i) := fun i ↦(hinit i).left
       exact MeasurableSet.iUnion hi1st
-    · have hi2nd : ∀ i, T ⁻¹'(s i) = s i := by
-        intro i
-        exact (hinit i).right
+    · have hi2nd : ∀ i, T ⁻¹'(s i) = s i := fun i ↦ (hinit i).right
       rw [Set.preimage_iUnion]
       exact Set.iUnion_congr hi2nd
-
 
 /- it was hard to find out what `m ≤ m0` meant, when `m, m0` are measurable spaces.
 Hovering over the `≤` sign in infoview and following the links explained it:
@@ -135,10 +118,7 @@ theorem maxOfSums_le_le (x : α) (m n : ℕ) (hmn : m ≤ n) :
 
 /-- `maxOfSums` is monotone.
 (Uncertain which is the best phrasing to keep of these options.) -/
-theorem maxOfSums_Monotone (x : α) : Monotone (fun n ↦ maxOfSums T φ x n) := by
-  unfold Monotone
-  intros n m hmn
-  exact maxOfSums_le_le T φ x n m hmn
+theorem maxOfSums_Monotone (x : α) : Monotone (fun n ↦ maxOfSums T φ x n) := maxOfSums_le_le T φ x
 
 open Filter in
 /-- The set of divergent points `{ x | lim_n Φ_{n+1} x = ∞}`. -/
@@ -165,7 +145,6 @@ lemma maxOfSums_measurable
     -- measurability
 
 
-
 #exit
 
 
@@ -190,34 +169,18 @@ In any case, if we don't find such lemma, I can easily produce it.
 /-- Convenient combination of `birkhoffSum` terms. -/
 theorem birkhoffSum_succ_image (n : ℕ) (x : α) :
       birkhoffSum T φ n (T x) = birkhoffSum T φ (n + 1) x - φ x := by
-    rw [birkhoffSum_add T φ n 1 x]
-    rw [eq_add_of_sub_eq' (birkhoffSum_apply_sub_birkhoffSum T φ n x)]
-    simp
-    exact add_sub (birkhoffSum T φ n x) (φ (T^[n] x)) (φ x)
+    simp [birkhoffSum_add T φ n 1 x, eq_add_of_sub_eq' (birkhoffSum_apply_sub_birkhoffSum T φ n x),
+      birkhoffSum_one', add_sub (birkhoffSum T φ n x) (φ (T^[n] x)) (φ x)]
 
 /- Would expect this to be in `Mathlib/Data/Finset/Lattice`.
 Or perhaps there is already an easier way to extract it from mathlib? -/
 theorem sup'_eq_iff_le {s : Finset β} [SemilatticeSup α] (H : s.Nonempty) (f : β → α) (hs : a ∈ s) :
-    s.sup' H f = f a ↔ ∀ b ∈ s, f b ≤ f a := by
-  constructor
-  · intros h0 b h2
-    rw [← h0]
-    exact Finset.le_sup' f h2
-  · intro h1
-    have hle : s.sup' H f ≤ f a := by
-      simp only [Finset.sup'_le_iff]
-      exact h1
-    exact (LE.le.ge_iff_eq hle).mp (Finset.le_sup' f hs)
+    s.sup' H f = f a ↔ ∀ b ∈ s, f b ≤ f a := ⟨fun h0 b h2 ↦ (h0 ▸ Finset.le_sup' f h2),
+    fun h1 ↦ (LE.le.ge_iff_eq (by simp [Finset.sup'_le_iff]; exact h1)).mp (Finset.le_sup' f hs)⟩
 
 /- convenient because used several times in proving claim 1 -/
 theorem map_range_Nonempty (n : ℕ) : (Finset.map (addLeftEmbedding 1)
-    (Finset.range (n + 1))).Nonempty := by
-  use 1
-  refine Finset.mem_map.mpr ?h.a
-  use 0
-  constructor
-  · simp only [Finset.mem_range, add_pos_iff, zero_lt_one, or_true]
-  · exact rfl
+    (Finset.range (n + 1))).Nonempty := by simp
 
 open Finset in
 /-- modified from mathlib to make f explicit - isn't the version in mathlib inconvenient? -/
@@ -309,8 +272,7 @@ theorem claim1 (n : ℕ) (x : α) :
       norm_num
       exact h10
     linarith
-  rw [min_eq_left h8, h1]
-  simp
+  simp [min_eq_left h8, h1]
 
 open Filter in
 /-- Eventual equality - variant with assumption on `T x`. -/

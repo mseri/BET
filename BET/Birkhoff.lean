@@ -145,6 +145,7 @@ lemma maxOfSums_measurable :
     exact Measurable.sup' hn (birkhoffSum_measurable _ hT _ hphim)
 
 /- can probably be stated without the '[m0]' part -/
+/-- `divSet T φ` is a measurable set -/
 lemma divSet_measurable : MeasurableSet[m0] (divSet T φ) := by
   simp only [divSet]
   exact measurableSet_tendsto Filter.atTop (maxOfSums_measurable _ hT _ hphim)
@@ -383,14 +384,10 @@ open Filter in
 theorem non_positive_of_notin_divSet (x : α) (hx : x ∉ divSet T φ) :
     limsup (fun n ↦ (birkhoffAverage R T φ n x)) ≤ 0 := by
   /- By `hx` we know that `n ↦ birkhoffSum T φ n x` is bounded. Conclude dividing by `n`. -/
-  have h0 : ∀ n, 0 ≤ birkhoffSum T φ n x := by
+  have h0 : ∀ n, 0 ≥ birkhoffSum T φ n x := by
     sorry
   sorry
 
-/-- `divSet T φ` is a measurable set -/
-theorem divSet_MeasurableSet : MeasurableSet (divSet T φ) := by
-  /- ? -/
-  sorry
 
 open Filter Topology Measure in
 /-- The integral of an observable over the divergent set is nonnegative. -/
@@ -401,7 +398,7 @@ theorem integral_nonneg : 0 ≤ ∫ x in (divSet T φ), φ x ∂μ := by
       intros x hx
       have h00 := maxOfSums_Monotone T φ x hn
       linarith
-    exact setIntegral_nonneg (divSet_MeasurableSet T φ) h01
+    exact setIntegral_nonneg (divSet_measurable T hT φ hphim) h01
   have h1 (n : ℕ) : ∫ x in (divSet T φ), (maxOfSums T φ x (n + 1) - maxOfSums T φ x n) ∂μ =
       ∫ x in (divSet T φ), (maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n) ∂μ := by
     have h10 : ∫ x in (divSet T φ), (maxOfSums T φ x n) ∂μ =
@@ -452,8 +449,8 @@ theorem integral_nonneg : 0 ≤ ∫ x in (divSet T φ), φ x ∂μ := by
 
 /- If `x ∉ A`, `limsup_n (1/n) ∑_{k=0}^{n-1} φ ∘ T^i ≤ 0`. -/
 
-/- If conditional expectation of `φ` is negative, i.e., `∫_C φ dμ = ∫_C φ|_inv_sigmal_algebra dμ < 0` for all `C` in `inv_sigma_algebra` with `μ(C) > 0`,
-then `μ(A) = 0`. -/
+/- If conditional expectation of `φ` is negative, i.e., `∫_C φ dμ = ∫_C φ|_inv_sigmal_algebra dμ < 0`
+for all `C` in `inv_sigma_algebra` with `μ(C) > 0`, then `μ(A) = 0`. -/
 
 /- Then (assumptions as prior step) `limsup_n (1/n) ∑_{k=0}^{n-1} φ ∘ T^i ≤ 0` a.e. -/
 
@@ -465,7 +462,8 @@ then `μ(A) = 0`. -/
 
 /- Replacing `f` with `-f`  we get the lower bound. -/
 
-/- Birkhoff's theorem: Almost surely, `birkhoffAverage ℝ f g n x` converges to the conditional expectation of `f`. -/
+/- Birkhoff's theorem: Almost surely, `birkhoffAverage ℝ f g n x` converges to the conditional
+expectation of `f`. -/
 
 /- If `T` is ergodic, show that the invariant sigma-algebra is a.e. trivial. -/
 

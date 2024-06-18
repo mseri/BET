@@ -131,10 +131,7 @@ theorem maxOfSums_le_le (x : α) (m n : ℕ) (hmn : m ≤ n) :
 
 /-- `maxOfSums` is monotone.
 (Uncertain which is the best phrasing to keep of these options.) -/
-theorem maxOfSums_Monotone (x : α) : Monotone (fun n ↦ maxOfSums T φ x n) := by
-  unfold Monotone
-  intros n m hmn
-  exact maxOfSums_le_le T φ x n m hmn
+theorem maxOfSums_Monotone (x : α) : Monotone (fun n ↦ maxOfSums T φ x n) := maxOfSums_le_le T φ x
 
 open Filter in
 /-- The set of divergent points `{ x | lim_n Φ_{n+1} x = ∞}`. -/
@@ -157,9 +154,6 @@ lemma maxOfSums_measurable (n : ℕ)
   · simp only [maxOfSums_zero]
     exact hphim
   · sorry
-
-
-
 
 /- can probably be stated without the '[m0]' part -/
 lemma divSet_neasurable : MeasurableSet[m0] (divSet T φ) := by sorry

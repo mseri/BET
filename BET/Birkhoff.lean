@@ -11,16 +11,17 @@ import Mathlib.Dynamics.BirkhoffSum.Average
 
 /-!
 # Birkhoff's ergodic theorem
-
-This file defines Birkhoff sums, other related notions and proves Birkhoff's ergodic theorem.
+This file proves Birkhoff's Ergodic Theorem for a probability-preserving map, the version where
+the Birkhoff average of an observable `f` is shown to be the conditional expectation of `f` wrt
+the invariant sigma-algebra. The proof is based on Katok-Hasselblatt's proof.
 
 ## Implementation notes
 
 ...
 
 ## References
-
-* ....
+* A. Katok, B. Hasselblatt, Introduction to the Modern Theory of Dynamical Systems, Cambridge
+University
 
 -/
 
@@ -33,37 +34,36 @@ section Ergodic_Theory
 
 open BigOperators MeasureTheory
 
-/-
-- `T` is a measure preserving map of a probability space `(α, μ)`,
-- `φ : α → ℝ` is integrable.
--/
+/- Main objects:
+`T` is a measure preserving map of a probability space `(α, μ)`,
+`φ : α → ℝ` is an integrable observable. -/
+
 variable {α : Type*} [m0: MeasurableSpace α]
-/-
-The original sigma-algebra is now named m0 because we need to distiguish
-b/w that and the invariant sigma-algebra.
--/
+/- The original sigma-algebra is now named m0 because we need to distiguish
+b/w that and the invariant sigma-algebra, called invSigmaAlg T. -/
+
 variable {μ : MeasureTheory.Measure α} [MeasureTheory.IsProbabilityMeasure μ]
 variable (T : α → α) (hT : MeasurePreserving T μ μ)
+/- Recall that the arguments`MeasurePreserving` are a map between two measutable spaces,
+a measure on its domain and a measure on its codomain -/
+
 variable (φ : α → ℝ) (hphi : Integrable φ μ) (hphim : Measurable φ)
 /- For the moment it's convenient to also assume that φ is measurable
-because for Lean Integrable means almost everywhere (strongly) measurable
-and it's not convenient to carry around "a.e." in the main prooof.
-We can probably fix this later by taking an almost everywhere
-(strongly) measurable fn, turn it into a truly measurable function which is
-a.e. equal to the given function, apply the thoerem to this one and then
-derive conclusions for the original function -/
+because for Lean Integrable implies almost everywhere (strongly) measurable
+and it's not convenient to carry around "a.e." in the main proof. -/
+
 variable (R : Type*) [DivisionSemiring R] [Module R ℝ] -- used for birkhoffAverage
 
 /- when calling the definition below, T will be an explicit argument.
 This is for two reasons:
 - we made T an explicit variable (and we couldn't do otherwise, Floris explained), and
 - we used T in the construction of the definition -/
+
+/-- Definition of invarisant sigma-agebra wrt `T`.-/
 def invSigmaAlg : MeasurableSpace α where
-  -- same as `MeasurableSet' s := MeasurableSet s ∧ T ⁻¹' s = s`
-  MeasurableSet' := fun s ↦ MeasurableSet s ∧ T ⁻¹' s = s
+  MeasurableSet' := fun s ↦ MeasurableSet s ∧ T ⁻¹' s = s -- same as `MeasurableSet' s := MeasurableSet s ∧ T ⁻¹' s = s`
   measurableSet_empty := ⟨MeasurableSet.empty, rfl⟩
   measurableSet_compl := fun h ⟨hinit1, hinit2⟩ ↦ ⟨MeasurableSet.compl hinit1, congrArg compl hinit2⟩
-
   measurableSet_iUnion := by
     -- now we explicitly want s, so we need to intro it
     intro s
@@ -80,7 +80,8 @@ def invSigmaAlg : MeasurableSpace α where
 Hovering over the `≤` sign in infoview and following the links explained it:
 instance : LE (MeasurableSpace α) where le m₁ m₂ := ∀ s, MeasurableSet[m₁] s → MeasurableSet[m₂] s
 -/
-/-- The invariant sigma algebra of T is a subalgebra of the measure space -/
+
+/-- The invariant sigma-algebra of `T` is a subalgebra of the measure space. -/
 lemma leq_InvSigmaAlg_FullAlg : invSigmaAlg T ≤ m0 := fun _ hs ↦ hs.left
 
 open Finset in

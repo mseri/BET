@@ -173,7 +173,7 @@ open Finset in
 theorem comp_sup'_eq_sup'_comp_alt [SemilatticeSup α] [SemilatticeSup γ] {s : Finset β}
     (H : s.Nonempty) (f : β → α)
     (g : α → γ) (g_sup : ∀ x y, g (x ⊔ y) = g x ⊔ g y) : g (s.sup' H f) = s.sup' H (g ∘ f) := by
-  refine' H.cons_induction _ _ <;> intros <;> simp [*]
+  refine H.cons_induction ?_ ?_ <;> intros <;> simp [*]
 
 open Finset in
 /-- Claim 1: a convenient equality for `maxOfSums`. -/
@@ -374,22 +374,43 @@ theorem diff_Monotone (x : α) : Monotone (fun n ↦ -(maxOfSums T φ x (n + 1) 
   simp only [claim1, neg_sub, tsub_le_iff_right, sub_add_cancel, le_min_iff, min_le_iff, le_refl,
     true_or, true_and]
   by_cases hc : 0 ≤ maxOfSums T φ (T x) m
-  · left
-    exact hc
-  · right
-    exact maxOfSums_Monotone T φ (T x) hnm
+  -- the following is equivalent to
+  -- left
+  -- exact hc
+  · exact Or.inl hc
+  -- the following is equivalent to
+  -- right
+  -- exact exact maxOfSums_Monotone T φ (T x) hnm
+  · exact Or.inr <| maxOfSums_Monotone T φ (T x) hnm
+
+lemma bounded_birkhoffSum_of_notin_divSet (x : α) (hx : x ∉ divSet T φ) :
+    ∃ B : ℝ, ∀ n, birkhoffSum T φ n x ≤ B := by
+  have := Filter.tendsto_atTop_atTop_of_monotone (maxOfSums_Monotone T φ x) |>.mt hx
+  push_neg at this
+  rcases this with ⟨B, hB⟩
+  refine ⟨max B 0, fun n ↦ ?_⟩
+  by_cases hn : n = 0
+  · rw [hn, birkhoffSum_zero]
+    exact le_max_right B 0
+  have h_le : birkhoffSum T φ n x ≤ maxOfSums T φ x n := by
+    convert le_partialSups_of_le _ (n.sub_le 1)
+    congr
+    exact (Nat.succ_pred_eq_of_ne_zero hn).symm
+  exact h_le.trans <| (hB n).le.trans (le_max_left B 0)
 
 open Filter in
 /-- ✨ Outside the divergent set the limsup of Birkhoff average is non positive. -/
 theorem non_positive_of_notin_divSet (x : α) (hx : x ∉ divSet T φ) :
-    limsup (fun n ↦ (birkhoffSum T φ n x)) ≤ 0 := by
+    limsup (fun n ↦ (birkhoffAverage ℝ T φ n x)) ≤ 0 := by
   /- By `hx` we know that `n ↦ birkhoffSum T φ n x` is bounded. Conclude dividing by `n`. -/
-  have h0 : ∀ n, 0 ≥  birkhoffAverage ℝ T φ n x := by
-    intro n
-    unfold birkhoffAverage
-    sorry
+  -- have h0 : ∀ n, 0 ≥ birkhoffAverage ℝ T φ n x := by
+  --   intro n
+  --   unfold birkhoffAverage
+  --   sorry
+  simp [divSet, maxOfSums] at hx
+  unfold birkhoffAverage
+  refine ?_
   sorry
-
 
 open Filter Topology Measure in
 /-- The integral of an observable over the divergent set is nonnegative. -/

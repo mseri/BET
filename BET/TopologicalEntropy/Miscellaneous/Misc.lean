@@ -34,8 +34,7 @@ theorem uniformContinuous_ite {X : Type _} [UniformSpace X] (T : X → X) (n : �
     UniformContinuous T^[n] := by
   induction' n with n hn
   · exact uniformContinuous_id
-  · rw [Function.iterate_succ]
-    exact UniformContinuous.comp hn h
+  · exact Function.iterate_succ _ _ ▸ UniformContinuous.comp hn h
 
 theorem prod_map_ite {X Y : Type _} (S : X → X) (T : Y → Y) (n : ℕ) :
     (Prod.map S T)^[n] = Prod.map S^[n] T^[n] := by
@@ -45,15 +44,13 @@ theorem prod_map_ite {X Y : Type _} (S : X → X) (T : Y → Y) (n : ℕ) :
       ← Function.iterate_succ]
 
 theorem prod_map_comp_swap {X : Type _} (f g : X → X) :
-    Prod.map f g ∘ Prod.swap = Prod.swap ∘ Prod.map g f := by
-  rfl
+    Prod.map f g ∘ Prod.swap = Prod.swap ∘ Prod.map g f := rfl
 
 theorem WithTop.eq_top_iff_forall {α : Type _} [Preorder α] {x : WithTop α} :
     x = ⊤ ↔ ∀ y : α, y < x := by
   constructor
   . intro h
-    rw [h]
-    exact fun y : α ↦ WithTop.coe_lt_top y
+    exact h ▸ fun y ↦ WithTop.coe_lt_top y
   . intro h
     by_contra h'
     rcases WithTop.ne_top_iff_exists.1 h' with ⟨y, hy⟩
@@ -64,8 +61,7 @@ theorem WithBot.eq_bot_iff_forall {α : Type _} [Preorder α] {x : WithBot α} :
     x = ⊥ ↔ ∀ y : α, x < y := by
   constructor
   . intro h
-    rw [h]
-    exact fun y : α ↦ WithBot.bot_lt_coe y
+    exact h ▸ fun y : α ↦ WithBot.bot_lt_coe y
   . intro h
     by_contra h'
     rcases WithBot.ne_bot_iff_exists.1 h' with ⟨y, hy⟩
@@ -189,29 +185,25 @@ open Filter
   under/above). These two hypotheses are always satisfied in EReal.
   This specialization avoids them.-/
 theorem EReal_liminf_le_liminf {α : Type _} {f : Filter α} {u v : α → EReal} (h : u ≤ᶠ[f] v) :
-    liminf u f ≤ liminf v f :=
-  liminf_le_liminf h
+    liminf u f ≤ liminf v f := liminf_le_liminf h
 
 /--The theorem `Filter.limsup_le_limsup` uses two hypotheses (that some sequences are bounded
   under/above). These two hypotheses are always satisfied in EReal.
   This specialization avoids them.-/
 theorem EReal_limsup_le_limsup {α : Type _} {f : Filter α} {u v : α → EReal} (h : u ≤ᶠ[f] v) :
-    limsup u f ≤ limsup v f :=
-  limsup_le_limsup h
+    limsup u f ≤ limsup v f := limsup_le_limsup h
 
 theorem EReal.limsup_add_le_lt₂ {α : Type _} {f : Filter α} {u v : α → EReal} {a b : EReal}
   (ha : limsup u f < a) (hb : limsup v f < b) :
     limsup (u+v) f ≤ a+b := by
   rcases eq_or_neBot f with (rfl | _); simp only [limsup_bot, bot_le]
   rw [← @limsup_const EReal α _ f _ (a+b)]
-  apply EReal_limsup_le_limsup
-  apply Eventually.mp (Eventually.and
-    (eventually_lt_of_limsup_lt ha) (eventually_lt_of_limsup_lt hb))
+  apply EReal_limsup_le_limsup _
+  apply Eventually.mp (Eventually.and (eventually_lt_of_limsup_lt ha) (eventually_lt_of_limsup_lt hb))
   apply eventually_of_forall
   intros x
   simp only [Pi.add_apply, and_imp]
-  intros ux_lt_a vx_lt_b
-  exact add_le_add (le_of_lt ux_lt_a) (le_of_lt vx_lt_b)
+  exact fun ux_lt_a vx_lt_b ↦ add_le_add (le_of_lt ux_lt_a) (le_of_lt vx_lt_b)
 
 theorem EReal.limsup_add_bot_ne_top {α : Type _} {f : Filter α} {u : α → EReal} {v : α → EReal}
     (h : limsup u f = ⊥) (h' : limsup v f ≠ ⊤) :
@@ -298,8 +290,7 @@ theorem EReal.ge_iff_le_forall_real_lt (x y : EReal) : y ≤ x ↔ ∀ (z : ℝ)
       intro z_le_y
       apply not_le_of_lt (EReal.bot_lt_coe (z-1))
       specialize h (z-1)
-      apply h
-      apply lt_of_lt_of_le _ z_le_y
+      apply h (lt_of_lt_of_le _ z_le_y)
       norm_cast
       exact sub_one_lt z
     . induction' y using EReal.rec with y
@@ -327,8 +318,7 @@ lemma EReal.liminf_add_ge_gt₂ {α : Type _} {f : Filter α} {u v : α → ERea
   apply eventually_of_forall
   intros x
   simp only [Pi.add_apply, and_imp]
-  intros ux_lt_a vx_lt_b
-  exact add_le_add (le_of_lt ux_lt_a) (le_of_lt vx_lt_b)
+  exact fun ux_lt_a vx_lt_b ↦ add_le_add (le_of_lt ux_lt_a) (le_of_lt vx_lt_b)
 
 lemma EReal.liminf_add_top_ne_bot {α : Type _} {f : Filter α} {u : α → EReal} {v : α → EReal}
     (h : liminf u f = ⊤) (h' : liminf v f ≠ ⊥) :
@@ -384,8 +374,7 @@ theorem EReal.limsup_le_iff {α : Type _} {f : Filter α} {u : α → EReal} {b 
     have key := Filter.eventually_lt_of_limsup_lt (lt_of_le_of_lt h d_lt_c)
     apply Filter.mem_of_superset key
     simp only [Set.setOf_subset_setOf]
-    intro a h'
-    exact le_of_lt h'
+    exact fun a h' ↦ le_of_lt h'
   . intro h c b_lt_c
     rcases eq_or_neBot f with (rfl | _); simp only [limsup_bot, bot_le]
     specialize h c b_lt_c
@@ -396,8 +385,7 @@ theorem EReal.limsup_le_const_forall {α : Type _} {f : Filter α} {u : α → E
     (h : ∀ a : α, u a ≤ b) :
     limsup u f ≤ b := by
   apply EReal.limsup_le_iff.2
-  intro c b_lt_c
-  exact eventually_of_forall (fun a : α ↦ le_trans (h a) (le_of_lt b_lt_c))
+  exact fun c b_lt_c ↦ eventually_of_forall (fun a : α ↦ le_trans (h a) (le_of_lt b_lt_c))
 
 theorem EReal.const_le_limsup_forall {α : Type _} {f : Filter α} [NeBot f] {u : α → EReal}
     {b : EReal} (h : ∀ a : α, b ≤ u a) :
@@ -429,8 +417,7 @@ theorem EReal.limsup_max {α : Type _} {f : Filter α} {u v : α → EReal} :
     apply Filter.mem_of_superset (Filter.inter_mem hu hv); clear hu hv
     intro a
     simp only [Set.mem_inter_iff, Set.mem_setOf_eq, max_le_iff, and_imp]
-    intro hua hva
-    exact ⟨le_of_lt hua, le_of_lt hva⟩
+    exact fun hua hva ↦ ⟨le_of_lt hua, le_of_lt hva⟩
   . apply max_le
     . exact limsup_le_limsup (eventually_of_forall (fun a : α ↦ le_max_left (u a) (v a)))
     . exact limsup_le_limsup (eventually_of_forall (fun a : α ↦ le_max_right (u a) (v a)))

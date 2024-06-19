@@ -28,9 +28,7 @@ noncomputable def EReal.divENNReal : EReal → ENNReal → EReal :=
 noncomputable instance EReal.ENNReal.instHDiv : HDiv EReal ENNReal EReal where
   hDiv := EReal.divENNReal
 
-theorem EReal.div_eq_inv_mul {a : EReal} {b : ENNReal} : a / b = b⁻¹ * a := by
-  rw [EReal.mul_comm]
-  rfl
+theorem EReal.div_eq_inv_mul {a : EReal} {b : ENNReal} : a / b = b⁻¹ * a := EReal.mul_comm _ _
 
 theorem EReal.mul_div {a b : EReal} {c : ENNReal} : a * (b / c) = (a * b) / c := by
   change a * (b * c⁻¹) = (a * b) * c⁻¹
@@ -42,18 +40,17 @@ theorem EReal.mul_div_right {a c : EReal} {b : ENNReal} : (a / b) * c = (a * c) 
 theorem EReal.mul_inv_cancel {a : EReal} {b : ENNReal} (h : b ≠ 0) (h' : b ≠ ⊤) :
     (a / b) * b = a := by
   change (a * b⁻¹) * b = a
-  rw [mul_assoc, ← EReal.coe_ennreal_mul, mul_comm b⁻¹ b, ENNReal.mul_inv_cancel h h',
-    EReal.coe_ennreal_one, mul_one a]
+  simp [mul_assoc, ← EReal.coe_ennreal_mul, mul_comm b⁻¹ b, ENNReal.mul_inv_cancel h h']
 
 @[simp]
 theorem EReal.div_one {a : EReal} : a / (1 : ENNReal) = a := by
   change a * (1 : ENNReal)⁻¹ = a
-  rw [inv_one, EReal.coe_ennreal_one, mul_one a]
+  simp [inv_one, EReal.coe_ennreal_one, mul_one a]
 
 @[simp]
 theorem EReal.div_top {a : EReal} : a / (⊤ : ENNReal) = 0 := by
   change a * (⊤ : ENNReal)⁻¹ = 0
-  rw [ENNReal.inv_top, EReal.coe_ennreal_zero, mul_zero a]
+  simp
 
 theorem EReal.pos_div_zero {a : EReal} (h : 0 < a) : a / (0 : ENNReal) = ⊤ := by
   change a * (0 : ENNReal)⁻¹ = ⊤
@@ -69,18 +66,17 @@ theorem EReal.zero_div {b : ENNReal} : (0 : EReal) / b = 0 :=
 
 theorem EReal.top_div_ntop {b : ENNReal} (h : b ≠ ⊤) : (⊤ : EReal) / b = ⊤ := by
   apply EReal.top_mul_of_pos
-  simp only [EReal.coe_ennreal_pos, ENNReal.inv_pos, ne_eq, h, not_false_eq_true]
+  simp [h]
 
 theorem EReal.bot_div_ntop {b : ENNReal} (h : b ≠ ⊤) : (⊥ : EReal) / b = ⊥ := by
   apply EReal.bot_mul_of_pos
-  simp only [EReal.coe_ennreal_pos, ENNReal.inv_pos, ne_eq, h, not_false_eq_true]
+  simp [h]
 
 theorem EReal.mul_div_mul {a : EReal} {b c : ENNReal} (h : c ≠ 0) (h' : c ≠ ⊤) :
     (a * c) / (b * c) = a / b := by
   change (a * c) * (b * c)⁻¹ = a * b⁻¹
   suffices h : c * (b * c)⁻¹ = b⁻¹
-  · rw [← h, mul_assoc]
-    norm_cast
+  · rw [← h, mul_assoc]; norm_cast
   · calc
       c * (b * c)⁻¹ = c * (b⁻¹ * c⁻¹) := by rw [ENNReal.mul_inv (Or.inr h') (Or.inr h)]
                   _ = b⁻¹ * c⁻¹ * c   := mul_comm c (b⁻¹ * c⁻¹)
@@ -93,13 +89,12 @@ theorem EReal.div_mul {a : EReal} {b c : ENNReal} (h : b ≠ 0 ∨ c ≠ ⊤) (h
   change (a * b⁻¹) * c⁻¹ = a * (b * c)⁻¹
   suffices this :
     b⁻¹ * c⁻¹ = (b * c)⁻¹
-  · rw [← this, mul_assoc]
-    norm_cast
+  · rw [← this, mul_assoc]; norm_cast
   · exact Eq.symm (ENNReal.mul_inv h h')
 
 theorem EReal.div_left_mono (b : ENNReal) : Monotone fun a : EReal ↦ a / b := by
   intro a a' h
-  apply mul_le_mul_of_nonneg_right h _
+  apply mul_le_mul_of_nonneg_right h
   norm_cast
   exact bot_le
 
@@ -125,8 +120,7 @@ theorem EReal.div_left_strictMono' {a a' : EReal} {b : ENNReal} (h₁ : b ≠ 0)
 theorem EReal.le_div_iff_mul_le {a c : EReal} {b : ENNReal} (h : b ≠ 0) (h' : b ≠ ⊤) :
     a ≤ c / b ↔ a * b ≤ c := by
   nth_rw 1 [← @EReal.mul_inv_cancel a b h h']
-  rw [EReal.mul_div_right]
-  exact StrictMono.le_iff_le (EReal.div_left_strictMono h h')
+  exact EReal.mul_div_right ▸ StrictMono.le_iff_le (EReal.div_left_strictMono h h')
 
 theorem EReal.div_le_iff_le_mul {a c : EReal} {b : ENNReal} (h : b ≠ 0) (h' : b ≠ ⊤) :
     a / b ≤ c ↔ a ≤ b * c := by

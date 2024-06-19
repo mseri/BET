@@ -374,7 +374,13 @@ theorem diff_Monotone (x : α) : Monotone (fun n ↦ -(maxOfSums T φ x (n + 1) 
   simp only [claim1, neg_sub, tsub_le_iff_right, sub_add_cancel, le_min_iff, min_le_iff, le_refl,
     true_or, true_and]
   by_cases hc : 0 ≤ maxOfSums T φ (T x) m
+  -- the following is equivalent to
+  -- left
+  -- exact hc
   · exact Or.inl hc
+  -- the following is equivalent to
+  -- right
+  -- exact exact maxOfSums_Monotone T φ (T x) hnm
   · exact Or.inr <| maxOfSums_Monotone T φ (T x) hnm
 
 lemma bounded_birkhoffSum_of_notin_divSet (x : α) (hx : x ∉ divSet T φ) :

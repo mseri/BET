@@ -44,8 +44,10 @@ b/w that and the invariant sigma-algebra, called invSigmaAlg T. -/
 
 variable {μ : MeasureTheory.Measure α} [MeasureTheory.IsProbabilityMeasure μ]
 variable (T : α → α) (hT : MeasurePreserving T μ μ)
-/- Recall that the arguments`MeasurePreserving` are a map between two measutable spaces,
-a measure on its domain and a measure on its codomain -/
+/- The above declaration is explicit. This will make `T` an explicit argument in the defitions
+given below. This is needed because the defitions below use `T` explicitly (clarify this!).
+Also recall that the arguments of `MeasurePreserving` are a map between two measutable spaces,
+a measure on its domain and a measure on its codomain. -/
 
 variable (φ : α → ℝ) (hphi : Integrable φ μ) (hphim : Measurable φ)
 /- For the moment it's convenient to also assume that φ is measurable
@@ -85,10 +87,10 @@ instance : LE (MeasurableSpace α) where le m₁ m₂ := ∀ s, MeasurableSet[m�
 lemma leq_InvSigmaAlg_FullAlg : invSigmaAlg T ≤ m0 := fun _ hs ↦ hs.left
 
 open Finset in
-/-- The max of the first `n` Birkhoff sums, i.e.,
-`maxOfSums T φ x n` corresponds to
-`max {birkhoffSum T φ 1 x,..., birkhoffSum T φ (n + 1) x}`.
-This is because `birkhoffSum T φ 0 x := 0` is defined to be a sum over the empty set. -/
+/-- Defines The max of the first `n+1` Birkhoff sums. More precisely,
+`maxOfSums T φ x n` corresponds to `max {birkhoffSum T φ 1 x,..., birkhoffSum T φ (n + 1) x}`.
+This corresponds to `Φ_{n+1}` in KH's proof. Made this decision because `birkhoffSum T φ 0 x := 0`
+is defined to be a sum over the empty set. -/
 def maxOfSums (x : α) : OrderHom ℕ ℝ :=
   partialSups (fun n ↦ birkhoffSum T φ (n+1) x)
 /- was:
@@ -96,11 +98,11 @@ def maxOfSums (x : α) : OrderHom ℕ ℝ :=
      sup' (range (n + 1)) (nonempty_range_succ) (fun k ↦ birkhoffSum T φ (k + 1) x)
    Note that maxOfSums T φ x n corresponds to Φ_{n+1} in our notates -/
 
-theorem maxOfSums_zero : maxOfSums T φ x 0 = φ x := by
+lemma maxOfSums_zero : maxOfSums T φ x 0 = φ x := by
   unfold maxOfSums
   simp [partialSups_zero, zero_add, birkhoffSum_one']
 
-/-- `maxOfSums` is monotone (one step version). -/
+/-- `maxOfSums` is monotone (one-step version). -/
 theorem maxOfSums_succ_le (x : α) (n : ℕ) : (maxOfSums T φ x n) ≤ (maxOfSums T φ x (n + 1)) := by
   unfold maxOfSums
   simp [partialSups_succ, le_sup_left]
@@ -120,9 +122,8 @@ theorem maxOfSums_Monotone (x : α) : Monotone (fun n ↦ maxOfSums T φ x n) :=
   maxOfSums_le_le T φ x
 
 open Filter in
-/-- The set of divergent points `{ x | lim_n Φ_{n+1} x = ∞}`. -/
+/-- The set of points with divergent `maxOfSums`, i.e., `{ x | lim_n Φ_{n+1} x = ∞}`. -/
 def divSet := { x : α | Tendsto (fun n ↦ maxOfSums T φ x n) atTop atTop }
-
 
 @[measurability]
 lemma birkhoffSum_measurable :

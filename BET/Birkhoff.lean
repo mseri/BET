@@ -102,27 +102,24 @@ lemma maxOfSums_zero : maxOfSums T φ x 0 = φ x := by
   unfold maxOfSums
   simp [partialSups_zero, zero_add, birkhoffSum_one']
 
-/-- `maxOfSums` is monotone (one-step version). -/
-theorem maxOfSums_succ_le (x : α) (n : ℕ) : (maxOfSums T φ x n) ≤ (maxOfSums T φ x (n + 1)) := by
+/-- `n ↦ maxOfSums T φ x n` is `Monotone`. -/
+theorem maxOfSums_mono (x : α) : Monotone (fun n ↦ maxOfSums T φ x n) := by
   unfold maxOfSums
-  simp [partialSups_succ, le_sup_left]
+  exact OrderHom.monotone (partialSups fun k ↦ birkhoffSum T φ (k + 1) x)
 
-/-- `maxOfSums` is monotone (general steps version). -/
+/- now useless
+/-- `maxOfSums` is monotone (one step version). -/
+theorem maxOfSums_succ_le (x : α) (n : ℕ) : (maxOfSums T φ x n) ≤ (maxOfSums T φ x (n + 1)) := by
+  exact OrderHom.apply_mono (by rfl) (Nat.le_add_right n 1)
+-/
+
+/-- `maxOfSums` is monotonic (humanly readable version). -/
 theorem maxOfSums_le_le (x : α) (m n : ℕ) (hmn : m ≤ n) :
     (maxOfSums T φ x m) ≤ (maxOfSums T φ x n) := by
-  induction' n with n hi
-  · rw [Nat.le_zero.mp hmn]
-  · rcases Nat.of_le_succ hmn with hc | hc
-    . exact le_trans (hi hc) (maxOfSums_succ_le T φ x n)
-    . rw [hc]
-
-/-- `maxOfSums` is monotone.
-(Uncertain which is the best phrasing to keep of these options.) -/
-theorem maxOfSums_Monotone (x : α) : Monotone (fun n ↦ maxOfSums T φ x n) :=
-  maxOfSums_le_le T φ x
+  exact OrderHom.apply_mono (by rfl) hmn
 
 open Filter in
-/-- The set of points with divergent `maxOfSums`, i.e., `{ x | lim_n Φ_{n+1} x = ∞}`. -/
+/-- Defines the set of points with divergent `maxOfSums`, i.e., `{ x | lim_n Φ_{n+1} x = ∞}`. -/
 def divSet := { x : α | Tendsto (fun n ↦ maxOfSums T φ x n) atTop atTop }
 
 @[measurability]
@@ -382,12 +379,12 @@ theorem diff_Monotone (x : α) : Monotone (fun n ↦ -(maxOfSums T φ x (n + 1) 
   · exact Or.inl hc
   -- the following is equivalent to
   -- right
-  -- exact exact maxOfSums_Monotone T φ (T x) hnm
-  · exact Or.inr <| maxOfSums_Monotone T φ (T x) hnm
+  -- exact exact maxOfSums_mono T φ (T x) hnm
+  · exact Or.inr <| maxOfSums_mono T φ (T x) hnm
 
 lemma bounded_birkhoffSum_of_notin_divSet (x : α) (hx : x ∉ divSet T φ) :
     ∃ B : ℝ, ∀ n, birkhoffSum T φ n x ≤ B := by
-  have := Filter.tendsto_atTop_atTop_of_monotone (maxOfSums_Monotone T φ x) |>.mt hx
+  have := Filter.tendsto_atTop_atTop_of_monotone (maxOfSums_mono T φ x) |>.mt hx
   push_neg at this
   rcases this with ⟨B, hB⟩
   refine ⟨max B 0, fun n ↦ ?_⟩
@@ -421,7 +418,7 @@ theorem integral_nonneg : 0 ≤ ∫ x in (divSet T φ), φ x ∂μ := by
     have hn : n ≤ (n + 1) := by simp
     have h01 : ∀ x ∈ divSet T φ, 0 ≤ (maxOfSums T φ x (n + 1) - maxOfSums T φ x n) := by
       intros x hx
-      have h00 := maxOfSums_Monotone T φ x hn
+      have h00 := maxOfSums_mono T φ x hn
       linarith
     exact setIntegral_nonneg (divSet_measurable T hT φ hphim) h01
   have h1 (n : ℕ) : ∫ x in (divSet T φ), (maxOfSums T φ x (n + 1) - maxOfSums T φ x n) ∂μ =

@@ -119,7 +119,7 @@ theorem maxOfSums_le_le (x : α) (m n : ℕ) (hmn : m ≤ n) :
   exact OrderHom.apply_mono (by rfl) hmn
 
 open Filter in
-/-- Defines the set of points with divergent `maxOfSums`, i.e., `{ x | lim_n Φ_{n+1} x = ∞}`. -/
+/-- Defines the set of points `x` with divergent `Φ_{n+1}(x) := maxOfSums T φ n x`. -/
 def divSet := { x : α | Tendsto (fun n ↦ maxOfSums T φ x n) atTop atTop }
 
 @[measurability]
@@ -149,9 +149,8 @@ lemma divSet_measurable : MeasurableSet[m0] (divSet T φ) := by
   simp only [divSet]
   exact measurableSet_tendsto Filter.atTop (maxOfSums_measurable _ hT _ hphim)
 
-/- ∀ `x ∈ A`, `Φ_{n+1}(x) - Φ_{n}(T(x)) = φ(x) - min(0,Φ_{n}(T(x))) ≥ φ(x)` decreases to `φ(x)`. -/
+/- `∀ x ∈ A, Φ_{n+1}(x) - Φ_{n}(T(x)) = φ(x) - min(0,Φ_{n}(T(x))) ≥ φ(x)` decreases to `φ(x)`. -/
 
-/-- Convenient combination of `birkhoffSum` terms. -/
 theorem birkhoffSum_succ_image (n : ℕ) (x : α) :
       birkhoffSum T φ n (T x) = birkhoffSum T φ (n + 1) x - φ x := by
     simp [birkhoffSum_add T φ n 1 x, eq_add_of_sub_eq' (birkhoffSum_apply_sub_birkhoffSum T φ n x),

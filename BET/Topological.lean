@@ -26,36 +26,40 @@ TO DO:
 
 -/
 
-open MeasureTheory Filter Metric Function Set
+open MeasureTheory Filter Function Set
 open scoped omegaLimit
 set_option autoImplicit false
 
 section Topological_Dynamics
 
-variable {α : Type*} [MetricSpace α]
+variable {α : Type*} [TopologicalSpace α]
 
 /-- The non-wandering set of `f` is the set of points which return arbitrarily close after some iterate. -/
 def nonWanderingSet (f : α → α) : Set α :=
-  {x | ∀ ε, 0 < ε → ∃ (y : α), ∃ (n : ℕ), y ∈ ball x ε ∧ f^[n] y ∈ ball x ε ∧ n ≠ 0}
+  {x | ∀ U : Set α, x ∈ U -> IsOpen U -> ∃ N : ℕ, (f^[N] '' U) ∩ U |>.Nonempty }
 
 variable [CompactSpace α] (f : α → α) (hf : Continuous f)
 
 /-- Periodic points belong to the non-wandering set. -/
 theorem periodicpts_is_mem (x : α) (n : ℕ) (nnz : n ≠ 0) (pp : IsPeriodicPt f n x) :
     x ∈ nonWanderingSet f := by
-  intro ε hε
-  use x, n
-  refine' ⟨mem_ball_self hε, _, nnz⟩
-  . rw [pp]
-    exact mem_ball_self hε
+  intro U hUx _
+  use n
+  refine ⟨x, ?_⟩
+  rw [mem_inter_iff]
+  apply And.intro _ hUx
+  unfold IsPeriodicPt at pp
+  unfold IsFixedPt at pp
+  use x
 
-lemma periodic_arbitrary_large_time (N : ℕ) (m : ℕ) (hm : 0 < m) (ε : ℝ) (hε : 0 < ε) (x : α)
+lemma periodic_arbitrary_large_time (N : ℕ) (m : ℕ) (hm : 0 < m) (x : α)
     (hx : IsPeriodicPt f m x) :
-    ∃ (y : α), ∃ (n : ℕ), y ∈ ball x ε ∧ f^[n] y ∈ ball x ε ∧ N ≤ n := by
-  use x, m * N
-  refine' ⟨mem_ball_self hε, _, Nat.le_mul_of_pos_left N hm⟩
+    ∀ U : Set α, x ∈ U → ∃ (n : ℕ), N ≤ n ∧ f^[n] x ∈ U := by
+  intro U hUx
+  use m * N
+  refine ⟨Nat.le_mul_of_pos_left N hm, ?_⟩
   · rw [IsPeriodicPt.mul_const hx N]
-    exact mem_ball_self hε
+    exact hUx
 
 lemma inter_subset_empty_of_inter_empty (A : Set α) (B : Set α) (C : Set α) (D : Set α) :
 (A ⊆ C) → (B ⊆ D) → (C ∩ D = ∅) → (A ∩ B = ∅) :=

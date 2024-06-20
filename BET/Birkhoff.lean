@@ -11,16 +11,17 @@ import Mathlib.Dynamics.BirkhoffSum.Average
 
 /-!
 # Birkhoff's ergodic theorem
-
-This file defines Birkhoff sums, other related notions and proves Birkhoff's ergodic theorem.
+This file proves Birkhoff's Ergodic Theorem for a probability-preserving map, the version where
+the Birkhoff average of an observable `f` is shown to be the conditional expectation of `f` wrt
+the invariant sigma-algebra. The proof is based on Katok-Hasselblatt's proof.
 
 ## Implementation notes
 
 ...
 
 ## References
-
-* ....
+* A. Katok, B. Hasselblatt, Introduction to the Modern Theory of Dynamical Systems, Cambridge
+University
 
 -/
 
@@ -33,37 +34,39 @@ section Ergodic_Theory
 
 open BigOperators MeasureTheory
 
-/-
-- `T` is a measure preserving map of a probability space `(α, μ)`,
-- `φ : α → ℝ` is integrable.
--/
+/- Main objects:
+`T` is a measure preserving map of a probability space `(α, μ)`,
+`φ : α → ℝ` is an integrable observable. -/
+
 variable {α : Type*} [m0: MeasurableSpace α]
-/-
-The original sigma-algebra is now named m0 because we need to distiguish
-b/w that and the invariant sigma-algebra.
--/
+/- The original sigma-algebra is now named m0 because we need to distiguish
+b/w that and the invariant sigma-algebra, called invSigmaAlg T. -/
+
 variable {μ : MeasureTheory.Measure α} [MeasureTheory.IsProbabilityMeasure μ]
 variable (T : α → α) (hT : MeasurePreserving T μ μ)
+/- The above declaration of `T` is explicit. This will make `T` an explicit argument in the
+defitions given below. This is needed because the defitions below use `T` explicitly (clarify
+this!).
+Also recall that the arguments of `MeasurePreserving` are a map between two measutable spaces,
+a measure on its domain and a measure on its codomain. -/
+
 variable (φ : α → ℝ) (hphi : Integrable φ μ) (hphim : Measurable φ)
 /- For the moment it's convenient to also assume that φ is measurable
-because for Lean Integrable means almost everywhere (strongly) measurable
-and it's not convenient to carry around "a.e." in the main prooof.
-We can probably fix this later by taking an almost everywhere
-(strongly) measurable fn, turn it into a truly measurable function which is
-a.e. equal to the given function, apply the thoerem to this one and then
-derive conclusions for the original function -/
+because, for Lean, Integrable implies almost everywhere (strongly) measurable
+and it's not convenient to carry around "a.e." in the main proof. -/
+
 variable (R : Type*) [DivisionSemiring R] [Module R ℝ] -- used for birkhoffAverage
 
 /- when calling the definition below, T will be an explicit argument.
 This is for two reasons:
 - we made T an explicit variable (and we couldn't do otherwise, Floris explained), and
 - we used T in the construction of the definition -/
+
+/-- Definition of invarisant sigma-agebra wrt `T`.-/
 def invSigmaAlg : MeasurableSpace α where
-  -- same as `MeasurableSet' s := MeasurableSet s ∧ T ⁻¹' s = s`
-  MeasurableSet' := fun s ↦ MeasurableSet s ∧ T ⁻¹' s = s
+  MeasurableSet' := fun s ↦ MeasurableSet s ∧ T ⁻¹' s = s -- same as `MeasurableSet' s := MeasurableSet s ∧ T ⁻¹' s = s`
   measurableSet_empty := ⟨MeasurableSet.empty, rfl⟩
   measurableSet_compl := fun h ⟨hinit1, hinit2⟩ ↦ ⟨MeasurableSet.compl hinit1, congrArg compl hinit2⟩
-
   measurableSet_iUnion := by
     -- now we explicitly want s, so we need to intro it
     intro s
@@ -80,14 +83,15 @@ def invSigmaAlg : MeasurableSpace α where
 Hovering over the `≤` sign in infoview and following the links explained it:
 instance : LE (MeasurableSpace α) where le m₁ m₂ := ∀ s, MeasurableSet[m₁] s → MeasurableSet[m₂] s
 -/
-/-- The invariant sigma algebra of T is a subalgebra of the measure space -/
+
+/-- The invariant sigma-algebra of `T` is a subalgebra of the measure space. -/
 lemma leq_InvSigmaAlg_FullAlg : invSigmaAlg T ≤ m0 := fun _ hs ↦ hs.left
 
 open Finset in
-/-- The max of the first `n` Birkhoff sums, i.e.,
-`maxOfSums T φ x n` corresponds to
-`max {birkhoffSum T φ 1 x,..., birkhoffSum T φ (n + 1) x}`.
-This is because `birkhoffSum T φ 0 x := 0` is defined to be a sum over the empty set. -/
+/-- Defines The max of the first `n+1` Birkhoff sums. More precisely,
+`maxOfSums T φ x n` corresponds to `max {birkhoffSum T φ 1 x,..., birkhoffSum T φ (n + 1) x}`.
+This corresponds to `Φ_{n+1}` in the blueprint paper proof. Made this decision because
+`birkhoffSum T φ 0 x := 0` is defined to be a sum over the empty set. -/
 def maxOfSums (x : α) : OrderHom ℕ ℝ :=
   partialSups (fun n ↦ birkhoffSum T φ (n+1) x)
 /- was:
@@ -95,33 +99,29 @@ def maxOfSums (x : α) : OrderHom ℕ ℝ :=
      sup' (range (n + 1)) (nonempty_range_succ) (fun k ↦ birkhoffSum T φ (k + 1) x)
    Note that maxOfSums T φ x n corresponds to Φ_{n+1} in our notates -/
 
-theorem maxOfSums_zero : maxOfSums T φ x 0 = φ x := by
+lemma maxOfSums_zero : maxOfSums T φ x 0 = φ x := by
   unfold maxOfSums
   simp [partialSups_zero, zero_add, birkhoffSum_one']
 
+/-- `n ↦ maxOfSums T φ x n` is `Monotone`. -/
+theorem maxOfSums_mono (x : α) : Monotone (fun n ↦ maxOfSums T φ x n) := by
+  unfold maxOfSums
+  exact OrderHom.monotone (partialSups fun k ↦ birkhoffSum T φ (k + 1) x)
+
+/- now useless
 /-- `maxOfSums` is monotone (one step version). -/
 theorem maxOfSums_succ_le (x : α) (n : ℕ) : (maxOfSums T φ x n) ≤ (maxOfSums T φ x (n + 1)) := by
-  unfold maxOfSums
-  simp [partialSups_succ, le_sup_left]
+  exact OrderHom.apply_mono (by rfl) (Nat.le_add_right n 1)
+-/
 
-/-- `maxOfSums` is monotone (general steps version). -/
+/-- `maxOfSums` is monotonic (humanly readable version). -/
 theorem maxOfSums_le_le (x : α) (m n : ℕ) (hmn : m ≤ n) :
     (maxOfSums T φ x m) ≤ (maxOfSums T φ x n) := by
-  induction' n with n hi
-  · rw [Nat.le_zero.mp hmn]
-  · rcases Nat.of_le_succ hmn with hc | hc
-    . exact le_trans (hi hc) (maxOfSums_succ_le T φ x n)
-    . rw [hc]
-
-/-- `maxOfSums` is monotone.
-(Uncertain which is the best phrasing to keep of these options.) -/
-theorem maxOfSums_Monotone (x : α) : Monotone (fun n ↦ maxOfSums T φ x n) :=
-  maxOfSums_le_le T φ x
+  exact OrderHom.apply_mono (by rfl) hmn
 
 open Filter in
-/-- The set of divergent points `{ x | lim_n Φ_{n+1} x = ∞}`. -/
+/-- Defines the set of points `x` with divergent `Φ_{n+1}(x) := maxOfSums T φ n x`. -/
 def divSet := { x : α | Tendsto (fun n ↦ maxOfSums T φ x n) atTop atTop }
-
 
 @[measurability]
 lemma birkhoffSum_measurable :
@@ -145,38 +145,39 @@ lemma maxOfSums_measurable :
     exact Measurable.sup' hn (birkhoffSum_measurable _ hT _ hphim)
 
 /- can probably be stated without the '[m0]' part -/
-/-- `divSet T φ` is a measurable set -/
+/-- Proves that `divSet T φ` is a measurable set -/
 lemma divSet_measurable : MeasurableSet[m0] (divSet T φ) := by
   simp only [divSet]
   exact measurableSet_tendsto Filter.atTop (maxOfSums_measurable _ hT _ hphim)
 
-/- ∀ `x ∈ A`, `Φ_{n+1}(x) - Φ_{n}(T(x)) = φ(x) - min(0,Φ_{n}(T(x))) ≥ φ(x)` decreases to `φ(x)`. -/
+/- The next lemmas prove that
+`∀ x ∈ divSet T φ, Φ_{n+1}(x) - Φ_{n}(T(x)) = φ(x) - min(0,Φ_{n}(T(x))) ≥ φ(x)`
+decreases to `φ(x)`. -/
 
-/-- Convenient combination of `birkhoffSum` terms. -/
-theorem birkhoffSum_succ_image (n : ℕ) (x : α) :
+lemma birkhoffSum_succ_image (n : ℕ) (x : α) :
       birkhoffSum T φ n (T x) = birkhoffSum T φ (n + 1) x - φ x := by
     simp [birkhoffSum_add T φ n 1 x, eq_add_of_sub_eq' (birkhoffSum_apply_sub_birkhoffSum T φ n x),
       birkhoffSum_one', add_sub (birkhoffSum T φ n x) (φ (T^[n] x)) (φ x)]
 
 /- Would expect this to be in `Mathlib/Data/Finset/Lattice`.
 Or perhaps there is already an easier way to extract it from mathlib? -/
-theorem sup'_eq_iff_le {s : Finset β} [SemilatticeSup α] (H : s.Nonempty) (f : β → α) (hs : a ∈ s) :
+lemma sup'_eq_iff_le {s : Finset β} [SemilatticeSup α] (H : s.Nonempty) (f : β → α) (hs : a ∈ s) :
     s.sup' H f = f a ↔ ∀ b ∈ s, f b ≤ f a := ⟨fun h0 b h2 ↦ (h0 ▸ Finset.le_sup' f h2),
     fun h1 ↦ (LE.le.ge_iff_eq (by simp [Finset.sup'_le_iff]; exact h1)).mp (Finset.le_sup' f hs)⟩
 
 /- convenient because used several times in proving claim 1 -/
-theorem map_range_Nonempty (n : ℕ) : (Finset.map (addLeftEmbedding 1)
+lemma map_range_Nonempty (n : ℕ) : (Finset.map (addLeftEmbedding 1)
     (Finset.range (n + 1))).Nonempty := by simp
 
 open Finset in
-/-- modified from mathlib to make f explicit - isn't the version in mathlib inconvenient? -/
-theorem comp_sup'_eq_sup'_comp_alt [SemilatticeSup α] [SemilatticeSup γ] {s : Finset β}
+/- modified from mathlib to make f explicit - isn't the version in mathlib inconvenient? -/
+lemma comp_sup'_eq_sup'_comp_alt [SemilatticeSup α] [SemilatticeSup γ] {s : Finset β}
     (H : s.Nonempty) (f : β → α)
     (g : α → γ) (g_sup : ∀ x y, g (x ⊔ y) = g x ⊔ g y) : g (s.sup' H f) = s.sup' H (g ∘ f) := by
   refine H.cons_induction ?_ ?_ <;> intros <;> simp [*]
 
 open Finset in
-/-- Claim 1: a convenient equality for `maxOfSums`. -/
+/-- A convenient equality for `maxOfSums` (called Claim 1 in the blueprint proof). -/
 theorem claim1 (n : ℕ) (x : α) :
     maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n = φ x - min 0 (maxOfSums T φ (T x) n) := by
   -- Consider `maxOfSums T φ x (n + 1) = max {birkhoffSum T φ 1 x,..., birkhoffSum T φ (n + 2) x}`
@@ -263,7 +264,7 @@ theorem claim1 (n : ℕ) (x : α) :
   simp [min_eq_left h8, h1]
 
 open Filter in
-/-- Eventual equality - variant with assumption on `T x`. -/
+/- Eventual equality - variant with assumption on `T x`. -/
 theorem diff_evenutally_of_divSet' (x : α) (hx : (T x) ∈ divSet T φ ):
     ∀ᶠ n in atTop, maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n = φ x := by
   unfold divSet at hx
@@ -287,7 +288,7 @@ theorem diff_evenutally_of_divSet' (x : α) (hx : (T x) ∈ divSet T φ ):
   exact h3
 
 open Filter in
-/-- Eventual equality - variant with assumption on `x`. -/
+/- Eventual equality - variant with assumption on `x`. -/
 theorem diff_evenutally_of_divSet (x : α) (hx : x ∈ divSet T φ):
     ∀ᶠ n in atTop, maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n = φ x := by
   unfold divSet at hx
@@ -326,7 +327,7 @@ theorem diff_evenutally_of_divSet (x : α) (hx : x ∈ divSet T φ):
   exact h3
 
 open Filter in
-/-- Claim 2: the set of divergent points is invariant. -/
+/-- `divSet T φ` is invariant (a.k.a. Claim 2 in the blueprint proof). -/
 theorem divSet_inv : T⁻¹' (divSet T φ) = (divSet T φ) := by
   ext x
   constructor
@@ -368,8 +369,9 @@ theorem divSet_inv : T⁻¹' (divSet T φ) = (divSet T φ) := by
       ------------------------------------------------------------------------------------------
     exact Tendsto.congr' h2' (tendsto_atTop_add_const_right atTop (- φ x) hx')
 
-/-- Framed formula: the negative difference of maxOfSums is monotone. -/
-theorem diff_Monotone (x : α) : Monotone (fun n ↦ -(maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n)) := by
+/-- The convenient formula involving the difference of two `maxOfSum`'s is decreasing, i.e., its
+opposite is `Monotone` (framed formula in the bluepront proof). -/
+lemma diff_Monotone (x : α) : Monotone (fun n ↦ -(maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n)) := by
   intro n m hnm
   simp only [claim1, neg_sub, tsub_le_iff_right, sub_add_cancel, le_min_iff, min_le_iff, le_refl,
     true_or, true_and]
@@ -380,12 +382,12 @@ theorem diff_Monotone (x : α) : Monotone (fun n ↦ -(maxOfSums T φ x (n + 1) 
   · exact Or.inl hc
   -- the following is equivalent to
   -- right
-  -- exact exact maxOfSums_Monotone T φ (T x) hnm
-  · exact Or.inr <| maxOfSums_Monotone T φ (T x) hnm
+  -- exact exact maxOfSums_mono T φ (T x) hnm
+  · exact Or.inr <| maxOfSums_mono T φ (T x) hnm
 
 lemma bounded_birkhoffSum_of_notin_divSet (x : α) (hx : x ∉ divSet T φ) :
     ∃ B : ℝ, ∀ n, birkhoffSum T φ n x ≤ B := by
-  have := Filter.tendsto_atTop_atTop_of_monotone (maxOfSums_Monotone T φ x) |>.mt hx
+  have := Filter.tendsto_atTop_atTop_of_monotone (maxOfSums_mono T φ x) |>.mt hx
   push_neg at this
   rcases this with ⟨B, hB⟩
   refine ⟨max B 0, fun n ↦ ?_⟩
@@ -419,7 +421,7 @@ theorem integral_nonneg : 0 ≤ ∫ x in (divSet T φ), φ x ∂μ := by
     have hn : n ≤ (n + 1) := by simp
     have h01 : ∀ x ∈ divSet T φ, 0 ≤ (maxOfSums T φ x (n + 1) - maxOfSums T φ x n) := by
       intros x hx
-      have h00 := maxOfSums_Monotone T φ x hn
+      have h00 := maxOfSums_mono T φ x hn
       linarith
     exact setIntegral_nonneg (divSet_measurable T hT φ hphim) h01
   have h1 (n : ℕ) : ∫ x in (divSet T φ), (maxOfSums T φ x (n + 1) - maxOfSums T φ x n) ∂μ =

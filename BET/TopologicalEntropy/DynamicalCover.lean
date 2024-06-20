@@ -260,7 +260,6 @@ theorem finite_mincard_iff (T : X → X) (F : Set X) (U : Set (X × X)) (n : ℕ
     simp only [Set.mem_image, Set.mem_setOf_eq] at key
     simp only [ENat.some_eq_coe, Nat.cast_inj]
     exact key
-    sorry
   · rintro ⟨s, ⟨_, s_mincard⟩⟩
     rw [← s_mincard]
     exact WithTop.coe_lt_top s.card

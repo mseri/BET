@@ -169,7 +169,8 @@ theorem orbit_inv (f: α → α) (x : α) : IsInvariant (fun n x ↦ f^[n] x) (o
   exact (iterate_add_apply f n m x).symm
 
 /-- The closure of an orbit is invariant under the dynamics. -/
-theorem closure_orbit_inv (f: α → α) (x : α) : IsInvariant (fun n x ↦ f^[n] x) (closure (orbit f x)) := by
+theorem closure_orbit_inv (f: α → α) (hf : Continuous f) (x : α) :
+  IsInvariant (fun n x ↦ f^[n] x) (closure (orbit f x)) := by
   let s := orbit f x
   intro n y h0
   have h1 : ContinuousOn f^[n] (closure s) := Continuous.continuousOn (Continuous.iterate hf n)

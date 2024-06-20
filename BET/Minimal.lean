@@ -81,7 +81,7 @@ lemma addActionOrbit_eq_addActionOfFunOrbit [AddMonoid ℕ] [AddAction ℕ α] :
 lemma h (f : α → α) : ∀ x, f^[0] x = x := by
   simp
 
-lemma addActionOfFun_alt [AddMonoid ℕ] [AddAction ℕ α] :
+lemma addActionOfFun_alt [AddAction ℕ α] :
   ∀ (x: α) (n: ℕ), AddAction.toFun ℕ α x n = (fun y ↦ AddAction.toFun ℕ α y 1)^[n] x := by
   intro x n
   let f := fun y ↦ (AddAction.toFun ℕ α) y

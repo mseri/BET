@@ -62,7 +62,44 @@ structure MulAction.IsMinimalSubset (M : Type*) [SMul M α] (U : Set α) : Prop 
 def AddAction.ofFun (f : α → α) : AddAction ℕ α :=
   AddAction.compHom _ <| MonoidHom.toAdditive'' <| powersHom (Function.End α) f
 
-example (n a) : (AddAction.ofFun f).vadd n a = f^[n] a := rfl
+lemma AddActionOfFun_is_iterateOfFun (n : ℕ) (x : α) (f : α → α) :
+  (AddAction.ofFun f).vadd n x = f^[n] x := rfl
+
+lemma addActionOrbit_eq_addActionOfFunOrbit [AddMonoid ℕ] [AddAction ℕ α] :
+  ∀ x: α, (AddAction.orbit ℕ x) = Set.range (fun n ↦ AddAction.toFun ℕ α x n) := by
+  intro x
+  ext y
+  constructor
+  . intro h
+    rcases h with ⟨n, rfl⟩
+    use n
+    rfl
+  . rintro ⟨n, rfl⟩
+    use n
+    rfl
+
+lemma h (f : α → α) : ∀ x, f^[0] x = x := by
+  simp
+
+lemma addActionOfFun_alt [AddMonoid ℕ] [AddAction ℕ α] :
+  ∀ (x: α) (n: ℕ), AddAction.toFun ℕ α x n = (fun y ↦ AddAction.toFun ℕ α y 1)^[n] x := by
+  intro x n
+  let f := fun y ↦ (AddAction.toFun ℕ α) y
+  change f x n = (fun y ↦ f y 1)^[n] x
+  induction n
+  case zero =>
+    simp only [iterate_zero, id_eq]
+    have : f x 0 = 0 +ᵥ x := rfl
+    rw [this]
+    apply zero_vadd ℕ x
+    --- exact zero_vadd ℕ x
+    -- fails with
+    -- type mismatch
+    --   zero_vadd ℕ x
+    -- has type
+    --   0 +ᵥ x = x : Prop
+    -- but is expected to have type
+    --   0 +ᵥ x = x : Prop
 
 -- end MulAction
 
@@ -72,7 +109,16 @@ theorem recurrentSet_of_minimal_is_all_space (M : Type*) [AddMonoid ℕ] [AddAct
   -- explicitly, we are now proving
   -- ∀ (ε : ℝ) (N : ℕ), ε > 0 → ∃ m : ℕ, m ≥ N ∧ f^[m] x ∈ ball x ε
   let f := fun x ↦ AddAction.toFun ℕ α x 1
-  apply (recurrentSet_iff_accumulation_point f x).mpr
+  change x ∈ recurrentSet f
+  obtain ⟨dense_orbit⟩ := hM
+  rw [recurrentSet, mem_setOf_eq, mem_omegaLimit_iff_frequently]
+  simp only [mem_preimage, frequently_atTop]
+  intro U hU N
+  have orbit_intersects_U : (AddAction.orbit ℕ x ∩ U).Nonempty := Dense.inter_nhds_nonempty (dense_orbit x) hU
+  have explicit_action : AddAction.orbit ℕ x = range fun n ↦ (AddAction.toFun ℕ α) x n := addActionOrbit_eq_addActionOfFunOrbit x
+  rw [explicit_action] at orbit_intersects_U
+
+  apply (mem_recurrentSet_is_accumulation_point f x)
   intro ε N hε
   obtain ⟨n, hball⟩ : ∃ n, f^[n] (f^[N] x) ∈ ball x ε :=
     hf.minimal x (f^[N] x) (mem_univ _) (mem_univ _) ε hε

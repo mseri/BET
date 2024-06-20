@@ -3,7 +3,6 @@ import Mathlib.Data.Real.EReal
 import Mathlib.Order.Filter.CountableInter
 import Mathlib.Topology.Instances.EReal
 
-
 /-!
 # Miscellaneous lemmas
 To be inserted in various libraries in Mathlib.
@@ -49,8 +48,7 @@ theorem prod_map_comp_swap {X : Type _} (f g : X → X) :
 theorem WithTop.eq_top_iff_forall {α : Type _} [Preorder α] {x : WithTop α} :
     x = ⊤ ↔ ∀ y : α, y < x := by
   constructor
-  . intro h
-    exact h ▸ fun y ↦ WithTop.coe_lt_top y
+  . exact fun h ↦ h ▸ fun y ↦ WithTop.coe_lt_top y
   . intro h
     by_contra h'
     rcases WithTop.ne_top_iff_exists.1 h' with ⟨y, hy⟩
@@ -60,8 +58,7 @@ theorem WithTop.eq_top_iff_forall {α : Type _} [Preorder α] {x : WithTop α} :
 theorem WithBot.eq_bot_iff_forall {α : Type _} [Preorder α] {x : WithBot α} :
     x = ⊥ ↔ ∀ y : α, x < y := by
   constructor
-  . intro h
-    exact h ▸ fun y : α ↦ WithBot.bot_lt_coe y
+  . exact fun h ↦ h ▸ fun y ↦ WithBot.bot_lt_coe y
   . intro h
     by_contra h'
     rcases WithBot.ne_bot_iff_exists.1 h' with ⟨y, hy⟩
@@ -83,8 +80,7 @@ theorem EReal.add_pos {a b : EReal} (ha : 0 < a) (hb : 0 < b) : 0 < a + b := by
   . induction' b using EReal.rec with b
     . exfalso; exact not_lt_bot hb
     . norm_cast at *; exact Left.add_pos ha hb
-    . rw [EReal.ne_bot_add_top (Ne.symm (ne_of_lt (lt_trans EReal.bot_lt_zero ha)))]
-      exact hb
+    . exact EReal.ne_bot_add_top (Ne.symm (ne_of_lt (lt_trans EReal.bot_lt_zero ha))) ▸ hb
   . rw [EReal.top_add_ne_bot (Ne.symm (ne_of_lt (lt_trans EReal.bot_lt_zero hb)))]
     exact ha
 
@@ -94,25 +90,22 @@ theorem EReal.mul_pos {a b : EReal} (ha : 0 < a) (hb : 0 < b) : 0 < a * b := by
   . induction' b using EReal.rec with b
     . exfalso; exact not_lt_bot hb
     . norm_cast at *; exact Left.mul_pos ha hb
-    . rw [mul_comm, EReal.top_mul_of_pos ha]
-      exact hb
-  . rw [EReal.top_mul_of_pos hb]
-    exact ha
+    . rw [mul_comm, EReal.top_mul_of_pos ha]; exact hb
+  . rw [EReal.top_mul_of_pos hb]; exact ha
 
 @[simp]
 theorem EReal.add_sub_cancel_right {a : EReal} {b : Real} : a + b - b = a := by
   induction' a using EReal.rec with a
   . rw [EReal.bot_add b, EReal.bot_sub b]
-  . norm_cast
-    linarith
+  . norm_cast; linarith
   . rw [EReal.top_add_ne_bot (EReal.coe_ne_bot b), EReal.top_sub_coe]
 
 theorem EReal.right_distrib_of_nneg {a b c : EReal} (ha : 0 ≤ a) (hb : 0 ≤ b) :
     (a + b) * c = a * c + b * c := by
   rcases eq_or_lt_of_le ha with (a_zero | a_pos)
-  . rw [← a_zero]; simp
+  . simp [← a_zero]
   rcases eq_or_lt_of_le hb with (b_zero | b_pos)
-  . rw [← b_zero]; simp
+  . simp [← b_zero]
   clear ha hb
   rcases lt_trichotomy c 0 with (c_neg | c_zero | c_pos)
   . induction' c using EReal.rec with c
@@ -122,8 +115,7 @@ theorem EReal.right_distrib_of_nneg {a b c : EReal} (ha : 0 ≤ a) (hb : 0 ≤ b
       . exfalso; exact not_lt_bot a_pos
       . induction' b using EReal.rec with b
         . norm_cast
-        . norm_cast
-          exact right_distrib a b c
+        . norm_cast; exact right_distrib a b c
         . norm_cast
           rw [EReal.ne_bot_add_top (EReal.coe_ne_bot a), EReal.top_mul_of_neg c_neg,
             EReal.add_bot]
@@ -137,8 +129,7 @@ theorem EReal.right_distrib_of_nneg {a b c : EReal} (ha : 0 ≤ a) (hb : 0 ≤ b
       . exfalso; exact not_lt_bot a_pos
       . induction' b using EReal.rec with b
         . norm_cast
-        . norm_cast
-          exact right_distrib a b c
+        . norm_cast; exact right_distrib a b c
         . norm_cast
           rw [EReal.ne_bot_add_top (EReal.coe_ne_bot a), EReal.top_mul_of_pos c_pos,
             EReal.ne_bot_add_top (EReal.coe_ne_bot (a*c))]
@@ -155,8 +146,7 @@ theorem EReal.left_distrib_of_nneg {a b c : EReal} (ha : 0 ≤ a) (hb : 0 ≤ b)
 theorem EReal.le_iff_le_forall_real_gt (x y : EReal) :
     y ≤ x ↔ ∀ (z : ℝ), (x < z) → (y ≤ z) := by
   constructor
-  . intros h z x_lt_z
-    exact le_trans h (le_of_lt x_lt_z)
+  . exact fun h z x_lt_z ↦ le_trans h (le_of_lt x_lt_z)
   . intro h
     induction' x using EReal.rec with x
     . apply le_of_eq
@@ -250,9 +240,7 @@ theorem EReal.limsup_add_le_add_limsup {α : Type _} {f : Filter α} {u v : α �
     norm_cast at y_lt_x
     linarith
   apply le_of_le_of_eq (EReal.limsup_add_le_lt₂ key₁ key₂); clear key₁ key₂ y_lt_x sum_lt_y
-  rw [← limsup_v_real]
-  norm_cast
-  linarith
+  rw [← limsup_v_real]; norm_cast; linarith
 
 /-theorem EReal.limsup_neg {α : Type _} {f : Filter α} {u : α → EReal} :
 limsup (-u) f = - liminf u f :=

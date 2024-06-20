@@ -146,6 +146,16 @@ theorem recurrentSet_is_nonWandering : recurrentSet f ⊆ (nonWanderingSet f) :=
 noncomputable def doubling_map (x : unitInterval) : unitInterval :=
   ⟨Int.fract (2 * x), by exact unitInterval.fract_mem (2 * x)⟩
 
+theorem mem_recurrentSet_is_accumulation_point (x : α) :
+     x ∈ recurrentSet f →
+     ∀ (U : Set α) (N : ℕ), x ∈ U ∧ IsOpen U → ∃ m : ℕ, N ≤ m ∧ f^[m] x ∈ U := by
+  intro recur_x U N ⟨hUx, hUopen⟩
+  rw [recurrentSet, mem_setOf_eq, mem_omegaLimit_iff_frequently] at recur_x
+  have hUnhds : U ∈ nhds x := IsOpen.mem_nhds hUopen hUx
+  have recur_x_in_U := recur_x U hUnhds
+  simp only [singleton_inter_nonempty, frequently_atTop] at recur_x_in_U
+  exact recur_x_in_U N
+
 -- theorem recurrentSet_iff_clusterPt (x : α) :
 --     x ∈ recurrentSet f ↔ ClusterPt x (Filter.principal (ω⁺ (fun n ↦ f^[n]) ({x}))) := by
 --   constructor

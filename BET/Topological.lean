@@ -83,15 +83,6 @@ theorem closed_arbitrary_large_time (N : ℕ) (x : α) (hx : x ∈ nonWanderingS
 
 /- Show that the non-wandering set of `f` is closed. -/
 theorem nonWanderingSet_isClosed : IsClosed (nonWanderingSet f) := by
-  refine closure_subset_iff_isClosed.mp ?_
-  intro x hx
-  unfold nonWanderingSet
-  simp only [image_inter_nonempty_iff, mem_setOf_eq]
-  intro U hUx hUopen
-  simp at hx
-  change ∃ N, (U ∩ f^[N] ⁻¹' U).Nonempty
-  obtain ⟨y, n, hUy, hfnUy, hn⟩ := closed_arbitrary_large_time f 1 x hx U hUx hUopen
-  -- simp_rw [mem_setOf_eq] at hx
   sorry
 
 /-- The non-wandering set of `f` is compact. -/
@@ -104,12 +95,24 @@ theorem omegaLimit_nonempty (x : α) : Set.Nonempty (ω⁺ (fun n ↦ f^[n]) ({x
 
 /-- The omega-limit set of any point is contained in the non-wandering set. -/
 theorem omegaLimit_is_nonWandering (x : α) : (ω⁺ (fun n ↦ f^[n]) ({x})) ⊆ (nonWanderingSet f) := by
-  intro z hz
+  unfold nonWanderingSet
+  let A := ω atTop (fun n ↦ f^[n]) {x}
+  let B := {x | ∀ (U : Set α), x ∈ U → IsOpen U → ∃ N, (f^[N] '' U ∩ U).Nonempty}
+  change A ⊆ B
+  refine inter_eq_left.mp ?_
+  have : (f ⁻¹' A) ∩ A ≠ ∅ := by
+
+    sorry
+
+  -- intro z hz
+  --
   -- rw [mem_omegaLimit_iff_frequently] at hz
   -- simp only [singleton_inter_nonempty, mem_preimage] at hz
-  -- have subsequence : ∀ U ∈ nhds z, ∃ φ, StrictMono φ ∧ ∀ (n : ℕ), f^[φ n] x ∈ U :=
+  -- rw [mem_setOf_eq]
+  -- intro W hWz hUopen
+  -- have hWnhds : W ∈ nhds z := IsOpen.mem_nhds hUopen hWz
+  -- have subsequence : ∀ U ∈ nhds z, ∃ φ, StrictMono φ ∧ ∀ (n : ℕ), f^[φ n] z ∈ U :=
   --   fun U hU ↦ Filter.extraction_of_frequently_atTop (hz U hU)
-  -- intro U hUz hUopen
   -- obtain ⟨φ, hφ, hφiterate⟩ := subsequence U _
   -- use φ 1
   -- apply inter_nonempty_iff_exists_right.mpr

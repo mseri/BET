@@ -41,74 +41,103 @@ To do: remove invariant, add nonempty. -/
 structure IsMinimalSubset (ϕ : Flow τ α) (U : Set α) : Prop :=
   (isClosed : IsClosed U)
   (isInvariant : IsInvariant ϕ.toFun U)
-  (isMinimal : ∀ V W, IsOpen V → (U ∩ V).Nonempty → IsOpen W → (U ∩ W).Nonempty → ∃ n : τ,
-    ((ϕ n)⁻¹' (V ∩ U)) ∩ (W ∩ U) |>.Nonempty)
+  (isMinimal :  ∀ x : α, DenseRange (fun τ ↦ ϕ τ x))
+
+  -- ∀ V W, IsOpen V → (U ∩ V).Nonempty → IsOpen W → (U ∩ W).Nonempty → ∃ n : τ,
+  --   ((ϕ n)⁻¹' (V ∩ U)) ∩ (W ∩ U) |>.Nonempty)
+
+lemma fun_of_flow_fromIter (f : α → α) (hf : Continuous f) :
+  (Flow.fromIter hf).toFun = fun n x ↦ f^[n] x := rfl
 
 /-- A dynamical system (α,f) is minimal if α is a minimal subset. -/
-def IsMinimal (f : α → α) (hf: Continuous f) : Prop := IsMinimalSubset (Flow.fromIter hf) univ
+def IsMinimal (f : α → α) (hf: Continuous f) : Prop :=
+  IsMinimalSubset (Flow.fromIter hf) univ
 
-#exit
-
-theorem recurrentSet_of_minimal_is_all_space (M : Type*) [AddMonoid ℕ] [AddAction ℕ α]
-  (hM : AddAction.IsMinimal ℕ α) (x : α) :
-    x ∈ recurrentSet (fun x ↦ AddAction.toFun ℕ α x 1) := by
-  -- explicitly, we are now proving
-  -- ∀ (ε : ℝ) (N : ℕ), ε > 0 → ∃ m : ℕ, m ≥ N ∧ f^[m] x ∈ ball x ε
-  let f := fun x ↦ AddAction.toFun ℕ α x 1
-  change x ∈ recurrentSet f
-  obtain ⟨dense_orbit⟩ := hM
-  rw [recurrentSet, mem_setOf_eq, mem_omegaLimit_iff_frequently]
-  simp only [mem_preimage, frequently_atTop]
-  intro U hU N
-  have orbit_intersects_U : (AddAction.orbit ℕ x ∩ U).Nonempty := Dense.inter_nhds_nonempty (dense_orbit x) hU
-  have explicit_action : AddAction.orbit ℕ x = range fun n ↦ (AddAction.toFun ℕ α) x n := addActionOrbit_eq_addActionOfFunOrbit x
-  rw [explicit_action] at orbit_intersects_U
-
-  apply (mem_recurrentSet_is_accumulation_point f x)
-  intro ε N hε
-  obtain ⟨n, hball⟩ : ∃ n, f^[n] (f^[N] x) ∈ ball x ε :=
-    hf.minimal x (f^[N] x) (mem_univ _) (mem_univ _) ε hε
-  exact ⟨n + N, by linarith, (Function.iterate_add_apply _ _ _ _).symm ▸ hball⟩
-
-
-/-- In a minimal dynamics, the recurrent set is all the space. -/
-theorem recurrentSet_of_minimal_is_all_space (hM : MulAction.IsMinimal M α) (x : α) :
+theorem recurrentSet_of_minimal_is_all_space [CompactSpace α]
+    (f : α → α) (hf : Continuous f) (hM : IsMinimal f hf) (x : α) :
     x ∈ recurrentSet f := by
-  -- explicitly, we are now proving
-  -- ∀ (ε : ℝ) (N : ℕ), ε > 0 → ∃ m : ℕ, m ≥ N ∧ f^[m] x ∈ ball x ε
-  apply (recurrentSet_iff_accumulation_point f x).mpr
-  intro ε N hε
-  obtain ⟨n, hball⟩ : ∃ n, f^[n] (f^[N] x) ∈ ball x ε :=
-    hf.minimal x (f^[N] x) (mem_univ _) (mem_univ _) ε hε
-  exact ⟨n + N, by linarith, (Function.iterate_add_apply _ _ _ _).symm ▸ hball⟩
+      -- explicitly, we are now proving
+      -- ∀ (ε : ℝ) (N : ℕ), ε > 0 → ∃ m : ℕ, m ≥ N ∧ f^[m] x ∈ ball x ε
+      -- apply (recurrentSet_iff_accumulation_point f x).mpr
+      -- intro ε N hε
+      -- obtain ⟨n, hball⟩ : ∃ n, f^[n] (f^[N] x) ∈ ball x ε :=
+      --   hf.minimal x (f^[N] x) (mem_univ _) (mem_univ _) ε hε
+      -- exact ⟨n + N, by linarith, (Function.iterate_add_apply _ _ _ _).symm ▸ hball⟩
+    sorry
+    -- unfold IsMinimal at hM
+    -- obtain ⟨_, hInvariant, hMinimal⟩ := hM
+    -- have : (Flow.fromIter hf).toFun = fun n x ↦ f^[n] x := rfl
+    -- rw [this] at hInvariant
+    -- rw [this] at hMinimal
+    -- simp only at hMinimal
+    -- apply (recurrentSet_iff_clusterPt f x).mpr
+    -- rw [clusterPt_iff]
+    -- intro U hU V hV
+    -- -- we want to show that U and the accumulation point have nonempty intersection
+    -- -- so we take x as representative for this
+    -- have orbit_intersects_U : (range fun τ ↦ f^[τ] x) ∩ U |>.Nonempty :=
+    --     Dense.inter_nhds_nonempty (hMinimal x) hU
+    -- unfold orbit_atTop at hV
+    -- have : (range fun τ ↦ f^[τ] x) ∈ (map (fun n ↦ f^[n] x) atTop) := by
+    --   exact range_mem_map
+    -- sorry
+  -- -- explicitly, we are now proving
+  -- -- ∀ (ε : ℝ) (N : ℕ), ε > 0 → ∃ m : ℕ, m ≥ N ∧ f^[m] x ∈ ball x ε
+  -- obtain ⟨dense_orbit⟩ := hM
+  -- rw [recurrentSet, mem_setOf_eq, mem_omegaLimit_iff_frequently]
+  -- simp only [mem_preimage, frequently_atTop]
+  -- intro U hU N
+  -- have orbit_intersects_U : (AddAction.orbit ℕ x ∩ U).Nonempty := Dense.inter_nhds_nonempty (dense_orbit x) hU
+  -- have explicit_action : AddAction.orbit ℕ x = range fun n ↦ (AddAction.toFun ℕ α) x n := addActionOrbit_eq_addActionOfFunOrbit x
+  -- rw [explicit_action] at orbit_intersects_U
+  -- apply (mem_recurrentSet_is_accumulation_point f x)
+  -- intro ε N hε
+  -- obtain ⟨n, hball⟩ : ∃ n, f^[n] (f^[N] x) ∈ ball x ε :=
+  --   hf.minimal x (f^[N] x) (mem_univ _) (mem_univ _) ε hε
+  -- exact ⟨n + N, by linarith, (Function.iterate_add_apply _ _ _ _).symm ▸ hball⟩
+
+
+-- /-- In a minimal dynamics, the recurrent set is all the space. -/
+-- theorem recurrentSet_of_minimal_is_all_space_old (hM : MulAction.IsMinimal M α) (x : α) :
+--     x ∈ recurrentSet f := by
+--   -- explicitly, we are now proving
+--   -- ∀ (ε : ℝ) (N : ℕ), ε > 0 → ∃ m : ℕ, m ≥ N ∧ f^[m] x ∈ ball x ε
+--   apply (recurrentSet_iff_accumulation_point f x).mpr
+--   intro ε N hε
+--   obtain ⟨n, hball⟩ : ∃ n, f^[n] (f^[N] x) ∈ ball x ε :=
+--     hf.minimal x (f^[N] x) (mem_univ _) (mem_univ _) ε hε
+--   exact ⟨n + N, by linarith, (Function.iterate_add_apply _ _ _ _).symm ▸ hball⟩
 
 /-- An example of a continuous dynamics on a compact space in which the recurrent set is all
 the space, but the dynamics is not minimal -/
-example : ¬IsMinimal (id : unitInterval → unitInterval) := by
+example : ¬IsMinimal (id : unitInterval → unitInterval) continuous_id := by
   intro H
-  have minimality :=
-    H.minimal 0 1 (mem_univ 0) (mem_univ 1) ((dist (1 : unitInterval) (0 : unitInterval)) / 2)
+  have minimality := H.isMinimal 0 1
+  rw [fun_of_flow_fromIter] at minimality
+  simp_rw [iterate_id] at minimality
+  have : closure (range (fun τ : ℕ ↦ id 0)) = {0} := by
+    rw [range_const, closure_singleton]
+    rfl
   revert minimality; contrapose!; intro _
-  -- we need this helper twice below
-  have dist_pos : 0 < dist (1 : unitInterval) 0 :=
-    dist_pos.mpr (unitInterval.coe_ne_zero.mp (by norm_num))
-  refine' ⟨div_pos dist_pos (by norm_num), fun n ↦ _⟩
-  simp only [iterate_id, id_eq, mem_ball, not_lt, half_le_self_iff]
-  exact le_of_lt dist_pos
+  rw [range_const, closure_singleton]
+  simp
 
 example (x : unitInterval) : x ∈ recurrentSet (id : unitInterval → unitInterval) :=
-  periodicpts_mem_recurrentSet _ _ 1 (by norm_num) (is_periodic_id 1 x)
+  periodicPt_mem_recurrentSet _ _ 1 (by norm_num) (is_periodic_id 1 x)
 
 /-- Every point in a minimal subset is recurrent. -/
-theorem minimalSubset_mem_recurrentSet (U : Set α) (hU : IsMinimalSubset f U) :
+theorem minimalSubset_mem_recurrentSet (f : α → α) (hf : Continuous f)
+  (U : Set α) (hU : IsMinimalSubset (Flow.fromIter hf) U) :
     U ⊆ recurrentSet f := by
   intro x hx
   rcases hU with ⟨_, hInv, hMin⟩
-  apply (recurrentSet_iff_accumulation_point f x).mpr
-  intro ε N hε
-  obtain ⟨n, hball⟩ : ∃ n, f^[n] (f^[N] x) ∈ ball x ε :=
-    hMin x (f^[N] x) hx (Set.mapsTo'.mp (hInv N) ⟨x, hx, rfl⟩) ε hε
-  exact ⟨n + N, le_add_self, (Function.iterate_add_apply _ _ _ _).symm ▸ hball⟩
+  apply (recurrentSet_iff_clusterPt f x).mpr
+  sorry
+  -- rw [clusterPt_iff]
+  -- intro ε N hε
+  -- obtain ⟨n, hball⟩ : ∃ n, f^[n] (f^[N] x) ∈ ball x ε :=
+  --   hMin x (f^[N] x) hx (Set.mapsTo'.mp (hInv N) ⟨x, hx, rfl⟩) ε hε
+  -- exact ⟨n + N, le_add_self, (Function.iterate_add_apply _ _ _ _).symm ▸ hball⟩
 
 /-- Is a closed, invariant and nonempty set. -/
 structure IsCIN (f : α → α) (U : Set α) : Prop :=

@@ -146,19 +146,17 @@ theorem recurrentSet_is_nonWandering : recurrentSet f ⊆ (nonWanderingSet f) :=
 noncomputable def doubling_map (x : unitInterval) : unitInterval :=
   ⟨Int.fract (2 * x), by exact unitInterval.fract_mem (2 * x)⟩
 
-theorem mem_recurrentSet_is_accumulation_point (x : α) :
-     x ∈ recurrentSet f →
-     ∀ (U : Set α) (N : ℕ), x ∈ U ∧ IsOpen U → ∃ m : ℕ, N ≤ m ∧ f^[m] x ∈ U := by
-  intro recur_x U N ⟨hUx, hUopen⟩
-  rw [recurrentSet, mem_setOf_eq, mem_omegaLimit_iff_frequently] at recur_x
-  have hUnhds : U ∈ nhds x := IsOpen.mem_nhds hUopen hUx
-  have recur_x_in_U := recur_x U hUnhds
-  simp only [singleton_inter_nonempty, frequently_atTop] at recur_x_in_U
-  exact recur_x_in_U N
+-- theorem mem_recurrentSet_is_accumulation_point (x : α) :
+--      x ∈ recurrentSet f →
+--      ∀ (U : Set α) (N : ℕ), x ∈ U ∧ IsOpen U → ∃ m : ℕ, N ≤ m ∧ f^[m] x ∈ U := by
+--   intro recur_x U N ⟨hUx, hUopen⟩
+--   rw [recurrentSet, mem_setOf_eq, mem_omegaLimit_iff_frequently] at recur_x
+--   have hUnhds : U ∈ nhds x := IsOpen.mem_nhds hUopen hUx
+--   have recur_x_in_U := recur_x U hUnhds
+--   simp only [singleton_inter_nonempty, frequently_atTop] at recur_x_in_U
+--   exact recur_x_in_U N
 
 def orbit_atTop (f : α → α) (x : α) : Filter α := Filter.map (fun n ↦ f^[n] x) atTop
--- Filter.principal (Set.range (fun n ↦ f^[n] x))
--- Filter.principal (ω⁺ (fun n ↦ f^[n]) ({x}))
 
 lemma orbit_atTop_eq_mapClusterPt (f : α → α) (x : α) :
   MapClusterPt x atTop (fun n ↦ f^[n] x) = ClusterPt x (orbit_atTop f x) := by

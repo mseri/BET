@@ -250,7 +250,10 @@ theorem finite_mincard_iff (T : X → X) (F : Set X) (U : Set (X × X)) (n : ℕ
       rw [Set.not_nonempty_iff_eq_empty] at h
       simp only [ENat.some_eq_coe, h, Set.image_empty, sInf_empty, lt_self_iff_false]
         at finite_mincard
-    rw [← WithTop.coe_sInf' h_nemp] at k_mincard
+    have h_bddb : BddBelow (Finset.card '' {s : Finset X | IsDynamicalCoverOf T F U n s}) := by
+      use 0
+      simp only [lowerBounds, Set.mem_setOf_eq, zero_le, implies_true]
+    rw [← WithTop.coe_sInf' h_nemp h_bddb] at k_mincard
     norm_cast at k_mincard
     have key := Nat.sInf_mem h_nemp
     rw [← k_mincard] at key

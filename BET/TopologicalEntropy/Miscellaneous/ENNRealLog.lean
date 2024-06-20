@@ -79,9 +79,7 @@ theorem log_strictMono : StrictMono log := by
   unfold log
   rcases ENNReal.trichotomy x with (x_zero | x_top | x_real)
   . rcases ENNReal.trichotomy y with (y_zero | y_top | y_real)
-    . exfalso
-      rw [x_zero, y_zero] at h
-      exact lt_irrefl 0 h
+    . exfalso; rw [x_zero, y_zero] at h; exact lt_irrefl 0 h
     . simp [x_zero, ↓reduceIte, y_top]
     . simp [x_zero, ↓reduceIte, Ne.symm (ne_of_lt (ENNReal.toReal_pos_iff.1 y_real).1),
       ne_of_lt (ENNReal.toReal_pos_iff.1 y_real).2, EReal.bot_lt_coe]
@@ -90,9 +88,7 @@ theorem log_strictMono : StrictMono log := by
   . simp only [Ne.symm (ne_of_lt (ENNReal.toReal_pos_iff.1 x_real).1), ↓reduceIte,
     ne_of_lt (ENNReal.toReal_pos_iff.1 x_real).2]
     rcases ENNReal.trichotomy y with (y_zero | y_top | y_real)
-    . exfalso
-      rw [y_zero, ← ENNReal.bot_eq_zero] at h
-      exact not_lt_bot h
+    . exfalso; rw [y_zero, ← ENNReal.bot_eq_zero] at h; exact not_lt_bot h
     . simp [y_top]
     . simp only [Ne.symm (ne_of_lt (ENNReal.toReal_pos_iff.1 y_real).1), ↓reduceIte,
       ne_of_lt (ENNReal.toReal_pos_iff.1 y_real).2, EReal.coe_lt_coe_iff]

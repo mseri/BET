@@ -9,3 +9,4 @@
 - [ ] Port the whole DynamicalUniformity.lean: necessary cleanup.
 - [ ] Port the whole DynamicalDover.lean: choose a good name for cover entropy
 - [ ] Port the whole Subset.lean: necessary cleanup.
+- [ ] Port the whole Morphism.lean: rename semiconjugacy

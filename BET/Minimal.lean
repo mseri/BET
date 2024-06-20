@@ -44,60 +44,10 @@ structure IsMinimalSubset (ϕ : Flow τ α) (U : Set α) : Prop :=
   (isMinimal : ∀ V W, IsOpen V → (U ∩ V).Nonempty → IsOpen W → (U ∩ W).Nonempty → ∃ n : τ,
     ((ϕ n)⁻¹' (V ∩ U)) ∩ (W ∩ U) |>.Nonempty)
 
+/-- A dynamical system (α,f) is minimal if α is a minimal subset. -/
+def IsMinimal (f : α → α) (hf: Continuous f) : Prop := IsMinimalSubset (Flow.fromIter hf) univ
 
 #exit
-
--- namespace MulAction
-
--- variable (M : Type*) [Monoid M] [MulAction M α]
-
--- -- Any theorem here should have a @[to_additive]...
-
-/-- A dynamical system (α,f) is minimal if α is a minimal subset. -/
-
-def AddAction.ofFun (f : α → α) : AddAction ℕ α :=
-  AddAction.compHom _ <| MonoidHom.toAdditive'' <| powersHom (Function.End α) f
-
-lemma AddActionOfFun_is_iterateOfFun (n : ℕ) (x : α) (f : α → α) :
-  (AddAction.ofFun f).vadd n x = f^[n] x := rfl
-
-lemma addActionOrbit_eq_addActionOfFunOrbit [AddMonoid ℕ] [AddAction ℕ α] :
-  ∀ x: α, (AddAction.orbit ℕ x) = Set.range (fun n ↦ AddAction.toFun ℕ α x n) := by
-  intro x
-  ext y
-  constructor
-  . intro h
-    rcases h with ⟨n, rfl⟩
-    use n
-    rfl
-  . rintro ⟨n, rfl⟩
-    use n
-    rfl
-
-lemma h (f : α → α) : ∀ x, f^[0] x = x := by
-  simp
-
-lemma addActionOfFun_alt [AddAction ℕ α] :
-  ∀ (x: α) (n: ℕ), AddAction.toFun ℕ α x n = (fun y ↦ AddAction.toFun ℕ α y 1)^[n] x := by
-  intro x n
-  let f := fun y ↦ (AddAction.toFun ℕ α) y
-  change f x n = (fun y ↦ f y 1)^[n] x
-  induction n
-  case zero =>
-    simp only [iterate_zero, id_eq]
-    have : f x 0 = 0 +ᵥ x := rfl
-    rw [this]
-    apply zero_vadd ℕ x
-    --- exact zero_vadd ℕ x
-    -- fails with
-    -- type mismatch
-    --   zero_vadd ℕ x
-    -- has type
-    --   0 +ᵥ x = x : Prop
-    -- but is expected to have type
-    --   0 +ᵥ x = x : Prop
-
--- end MulAction
 
 theorem recurrentSet_of_minimal_is_all_space (M : Type*) [AddMonoid ℕ] [AddAction ℕ α]
   (hM : AddAction.IsMinimal ℕ α) (x : α) :

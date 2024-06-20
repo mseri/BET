@@ -264,7 +264,7 @@ theorem claim1 (n : ℕ) (x : α) :
   simp [min_eq_left h8, h1]
 
 open Filter in
-/-- Eventual equality - variant with assumption on `T x`. -/
+/- Eventual equality - variant with assumption on `T x`. -/
 theorem diff_evenutally_of_divSet' (x : α) (hx : (T x) ∈ divSet T φ ):
     ∀ᶠ n in atTop, maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n = φ x := by
   unfold divSet at hx
@@ -288,7 +288,7 @@ theorem diff_evenutally_of_divSet' (x : α) (hx : (T x) ∈ divSet T φ ):
   exact h3
 
 open Filter in
-/-- Eventual equality - variant with assumption on `x`. -/
+/- Eventual equality - variant with assumption on `x`. -/
 theorem diff_evenutally_of_divSet (x : α) (hx : x ∈ divSet T φ):
     ∀ᶠ n in atTop, maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n = φ x := by
   unfold divSet at hx
@@ -327,7 +327,7 @@ theorem diff_evenutally_of_divSet (x : α) (hx : x ∈ divSet T φ):
   exact h3
 
 open Filter in
-/-- Claim 2: the set of divergent points is invariant. -/
+/-- `divSet T φ` is invariant (a.k.a. Claim 2 in the blueprint proof). -/
 theorem divSet_inv : T⁻¹' (divSet T φ) = (divSet T φ) := by
   ext x
   constructor
@@ -369,8 +369,9 @@ theorem divSet_inv : T⁻¹' (divSet T φ) = (divSet T φ) := by
       ------------------------------------------------------------------------------------------
     exact Tendsto.congr' h2' (tendsto_atTop_add_const_right atTop (- φ x) hx')
 
-/-- Framed formula: the negative difference of maxOfSums is monotone. -/
-theorem diff_Monotone (x : α) : Monotone (fun n ↦ -(maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n)) := by
+/-- The convenient formula involving the difference of two `maxOfSum`'s is decreasing, i.e., its
+opposite is `Monotone` (framed formula in the bluepront proof). -/
+lemma diff_Monotone (x : α) : Monotone (fun n ↦ -(maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n)) := by
   intro n m hnm
   simp only [claim1, neg_sub, tsub_le_iff_right, sub_add_cancel, le_min_iff, min_le_iff, le_refl,
     true_or, true_and]

@@ -56,6 +56,7 @@ def IsMinimal (f : α → α) (hf: Continuous f) : Prop :=
 theorem recurrentSet_of_minimal_is_all_space [CompactSpace α]
     (f : α → α) (hf : Continuous f) (hM : IsMinimal f hf) (x : α) :
     x ∈ recurrentSet f := by
+    apply (recurrentSet_iff_clusterPt f x).mpr
       -- explicitly, we are now proving
       -- ∀ (ε : ℝ) (N : ℕ), ε > 0 → ∃ m : ℕ, m ≥ N ∧ f^[m] x ∈ ball x ε
       -- apply (recurrentSet_iff_accumulation_point f x).mpr
@@ -64,49 +65,6 @@ theorem recurrentSet_of_minimal_is_all_space [CompactSpace α]
       --   hf.minimal x (f^[N] x) (mem_univ _) (mem_univ _) ε hε
       -- exact ⟨n + N, by linarith, (Function.iterate_add_apply _ _ _ _).symm ▸ hball⟩
     sorry
-    -- unfold IsMinimal at hM
-    -- obtain ⟨_, hInvariant, hMinimal⟩ := hM
-    -- have : (Flow.fromIter hf).toFun = fun n x ↦ f^[n] x := rfl
-    -- rw [this] at hInvariant
-    -- rw [this] at hMinimal
-    -- simp only at hMinimal
-    -- apply (recurrentSet_iff_clusterPt f x).mpr
-    -- rw [clusterPt_iff]
-    -- intro U hU V hV
-    -- -- we want to show that U and the accumulation point have nonempty intersection
-    -- -- so we take x as representative for this
-    -- have orbit_intersects_U : (range fun τ ↦ f^[τ] x) ∩ U |>.Nonempty :=
-    --     Dense.inter_nhds_nonempty (hMinimal x) hU
-    -- unfold orbit_atTop at hV
-    -- have : (range fun τ ↦ f^[τ] x) ∈ (map (fun n ↦ f^[n] x) atTop) := by
-    --   exact range_mem_map
-    -- sorry
-  -- -- explicitly, we are now proving
-  -- -- ∀ (ε : ℝ) (N : ℕ), ε > 0 → ∃ m : ℕ, m ≥ N ∧ f^[m] x ∈ ball x ε
-  -- obtain ⟨dense_orbit⟩ := hM
-  -- rw [recurrentSet, mem_setOf_eq, mem_omegaLimit_iff_frequently]
-  -- simp only [mem_preimage, frequently_atTop]
-  -- intro U hU N
-  -- have orbit_intersects_U : (AddAction.orbit ℕ x ∩ U).Nonempty := Dense.inter_nhds_nonempty (dense_orbit x) hU
-  -- have explicit_action : AddAction.orbit ℕ x = range fun n ↦ (AddAction.toFun ℕ α) x n := addActionOrbit_eq_addActionOfFunOrbit x
-  -- rw [explicit_action] at orbit_intersects_U
-  -- apply (mem_recurrentSet_is_accumulation_point f x)
-  -- intro ε N hε
-  -- obtain ⟨n, hball⟩ : ∃ n, f^[n] (f^[N] x) ∈ ball x ε :=
-  --   hf.minimal x (f^[N] x) (mem_univ _) (mem_univ _) ε hε
-  -- exact ⟨n + N, by linarith, (Function.iterate_add_apply _ _ _ _).symm ▸ hball⟩
-
-
--- /-- In a minimal dynamics, the recurrent set is all the space. -/
--- theorem recurrentSet_of_minimal_is_all_space_old (hM : MulAction.IsMinimal M α) (x : α) :
---     x ∈ recurrentSet f := by
---   -- explicitly, we are now proving
---   -- ∀ (ε : ℝ) (N : ℕ), ε > 0 → ∃ m : ℕ, m ≥ N ∧ f^[m] x ∈ ball x ε
---   apply (recurrentSet_iff_accumulation_point f x).mpr
---   intro ε N hε
---   obtain ⟨n, hball⟩ : ∃ n, f^[n] (f^[N] x) ∈ ball x ε :=
---     hf.minimal x (f^[N] x) (mem_univ _) (mem_univ _) ε hε
---   exact ⟨n + N, by linarith, (Function.iterate_add_apply _ _ _ _).symm ▸ hball⟩
 
 /-- An example of a continuous dynamics on a compact space in which the recurrent set is all
 the space, but the dynamics is not minimal -/
@@ -151,7 +109,7 @@ structure IsMinimalAlt (f : α → α) (U : Set α) : Prop :=
   (minimal : ∀ (V : Set α), V ⊆ U ∧ IsCIN f V → V = U)
 
 /- The intersection of nested nonempty closed invariant sets is nonempty, closed and invariant. -/
-theorem inter_nested_closed_inv_is_closed_inv_nonempty (f : α → α) (C : Set (Set α))
+theorem inter_nested_closed_inv_is_closed_inv_nonempty [CompactSpace α] (f : α → α) (C : Set (Set α))
     (hc1 : C.Nonempty) (hc2 :  IsChain (· ⊆ ·) C) (hn : ∀ V ∈ C, IsCIN f V) :
     IsCIN f (⋂₀ C) := by
   have hScl := (fun V x ↦ (hn V x).closed)
@@ -169,7 +127,7 @@ theorem inter_nested_closed_inv_is_closed_inv_nonempty (f : α → α) (C : Set 
   · exact (hn U h2c).invariant n (hx U h2c)
 
 /-- Every invariant nonempty closed subset contains at least a minimal invariant subset. -/
-theorem exists_minimal_set (U : Set α) (h : IsCIN f U) :
+theorem exists_minimal_set [CompactSpace α]  (f : α → α) (U : Set α) (h : IsCIN f U) :
     ∃ V : Set α, V ⊆ U ∧ (IsMinimalAlt f V) := by
   /- Consider `S` the set of invariant nonempty closed subsets. -/
   let S : Set (Set α) := {V | V ⊆ U ∧ IsCIN f V}
@@ -199,10 +157,10 @@ theorem exists_minimal_set (U : Set α) (h : IsCIN f U) :
   exact ⟨h1.left, h1.right, h3⟩
 
 /-- The orbit of a point `x` is set of all iterates under `f`. -/
-def orbit x := { y | ∃ n : ℕ, y = f^[n] x }
+def orbit (f: α → α) x := { y | ∃ n : ℕ, y = f^[n] x }
 
 /-- The orbit of a point is invariant. -/
-theorem orbit_inv (x : α) : IsInvariant (fun n x ↦ f^[n] x) (orbit f x) := by
+theorem orbit_inv (f: α → α) (x : α) : IsInvariant (fun n x ↦ f^[n] x) (orbit f x) := by
   intro n y h0
   choose m h1 using h0
   -- here we show that f^[n] y = f^[n + m] x
@@ -211,22 +169,26 @@ theorem orbit_inv (x : α) : IsInvariant (fun n x ↦ f^[n] x) (orbit f x) := by
   exact (iterate_add_apply f n m x).symm
 
 /-- The closure of an orbit is invariant under the dynamics. -/
-theorem closure_orbit_inv (x : α) : IsInvariant (fun n x ↦ f^[n] x) (closure (orbit f x)) := by
+theorem closure_orbit_inv (f: α → α) (x : α) : IsInvariant (fun n x ↦ f^[n] x) (closure (orbit f x)) := by
   let s := orbit f x
   intro n y h0
   have h1 : ContinuousOn f^[n] (closure s) := Continuous.continuousOn (Continuous.iterate hf n)
   have h2 : f^[n] y ∈ f^[n] '' closure s := Exists.intro y { left := h0, right := rfl }
   exact closure_mono (mapsTo'.mp ((orbit_inv f x) n)) (ContinuousOn.image_closure h1 h2)
 
-def everyOrbitDense (U : Set α) := ∀ (x y : α) (_: x ∈ U) (_: y ∈ U) (ε : ℝ),
-    ε > 0 → ∃ n : ℕ, f^[n] y ∈ ball x ε
+-- open Metric in
+-- def everyOrbitDense [MetricSpace α] (f: α → α) (U : Set α) := ∀ (x y : α) (_: x ∈ U) (_: y ∈ U) (ε : ℝ),
+--     ε > 0 → ∃ n : ℕ, f^[n] y ∈ ball x ε
+
+open Metric in
+def everyOrbitDense (f: α → α) (U : Set α) := ∀ x ∈ U, Dense (orbit f x)
 
 /-- If the orbit of any point in a set `U` is dense then `U` is invariant. -/
-theorem invariant_if_everyOrbitDense (U : Set α) (hd : everyOrbitDense f U) (hcl : IsClosed U) :
+theorem invariant_if_everyOrbitDense (f: α → α) (U : Set α) (hd : everyOrbitDense f U) (hcl : IsClosed U) :
     IsInvariant (fun n x ↦ f^[n] x) U := by
   sorry
 
-theorem minimalAlt_if_minimal (U : Set α) (hd : everyOrbitDense f U) (hcl : IsClosed U)
+theorem minimalAlt_if_minimal (f: α → α)  (U : Set α) (hd : everyOrbitDense f U) (hcl : IsClosed U)
     (hn : U.Nonempty) : IsMinimalAlt f U := by
   -- `U` is a minimal subset and so `U` is nonempty and closed by definition.
   refine { cin.closed := hcl, cin.invariant := ?_, cin.nonempty := hn, minimal := ?_ }
@@ -264,18 +226,20 @@ Hence, the oribit of any point is dense in `U`.
 -/
 
 /-- The two definitions are equivalent. -/
-theorem minimal_equiv
-    (U : Set α) : (IsMinimalAlt f U) ↔ (IsMinimalSubset f U) := sorry
+theorem minimal_equiv (f: α → α) (hf: Continuous f)
+    (U : Set α) : (IsMinimalAlt f U) ↔ (IsMinimalSubset (Flow.fromIter hf) U) := sorry
 
 /-- Every invariant nonempty closed subset contains at least a minimal invariant subset. -/
 theorem nonempty_invariant_closed_subset_has_minimalSubset
+    (f: α → α) (hf: Continuous f)
     (U : Set α) (hne : Nonempty U) (hC : IsClosed U) (hI : IsInvariant (fun n x => f^[n] x) U) :
-    ∃ V : Set α, V ⊆ U → (hinv : MapsTo f U U) → IsMinimalSubset f U := by
+    ∃ V : Set α, V ⊆ U → (hinv : MapsTo f U U) → IsMinimalSubset (Flow.fromIter hf) U := by
   -- This follows from `exists_minimal_set` and `minimal_equiv`
   sorry
 
 /-- The recurrent set of `f` is nonempty -/
-theorem recurrentSet_nonempty [Nonempty α]: Set.Nonempty (recurrentSet f) := by
+theorem recurrentSet_nonempty [Nonempty α] [CompactSpace α] (f : α → α) (hf: Continuous f) :
+  Set.Nonempty (recurrentSet f) := by
   -- There exists a minimal set, this is a nonempty set.
   have h1 : IsCIN f univ :=
     { nonempty := univ_nonempty, closed := isClosed_univ, invariant := fun _ _ a ↦ a }
@@ -283,5 +247,5 @@ theorem recurrentSet_nonempty [Nonempty α]: Set.Nonempty (recurrentSet f) := by
   have h5 := h4.cin.nonempty
   -- The minimal set is contained within the recurrent set.
   rw [minimal_equiv] at h4
-  have h6 : V ⊆ recurrentSet f := minimalSubset_mem_recurrentSet f V h4
+  have h6 : V ⊆ recurrentSet f := minimalSubset_mem_recurrentSet f hf V h4
   exact Nonempty.mono h6 h5

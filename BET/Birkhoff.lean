@@ -44,14 +44,15 @@ b/w that and the invariant sigma-algebra, called invSigmaAlg T. -/
 
 variable {μ : MeasureTheory.Measure α} [MeasureTheory.IsProbabilityMeasure μ]
 variable (T : α → α) (hT : MeasurePreserving T μ μ)
-/- The above declaration is explicit. This will make `T` an explicit argument in the defitions
-given below. This is needed because the defitions below use `T` explicitly (clarify this!).
+/- The above declaration of `T` is explicit. This will make `T` an explicit argument in the
+defitions given below. This is needed because the defitions below use `T` explicitly (clarify
+this!).
 Also recall that the arguments of `MeasurePreserving` are a map between two measutable spaces,
 a measure on its domain and a measure on its codomain. -/
 
 variable (φ : α → ℝ) (hphi : Integrable φ μ) (hphim : Measurable φ)
 /- For the moment it's convenient to also assume that φ is measurable
-because for Lean Integrable implies almost everywhere (strongly) measurable
+because, for Lean, Integrable implies almost everywhere (strongly) measurable
 and it's not convenient to carry around "a.e." in the main proof. -/
 
 variable (R : Type*) [DivisionSemiring R] [Module R ℝ] -- used for birkhoffAverage
@@ -144,7 +145,7 @@ lemma maxOfSums_measurable :
     exact Measurable.sup' hn (birkhoffSum_measurable _ hT _ hphim)
 
 /- can probably be stated without the '[m0]' part -/
-/-- `divSet T φ` is a measurable set -/
+/-- Proves that `divSet T φ` is a measurable set -/
 lemma divSet_measurable : MeasurableSet[m0] (divSet T φ) := by
   simp only [divSet]
   exact measurableSet_tendsto Filter.atTop (maxOfSums_measurable _ hT _ hphim)

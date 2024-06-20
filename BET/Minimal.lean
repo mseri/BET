@@ -5,6 +5,7 @@ Authors: Guillaume Dubach, Marco Lenci, Sébastien Gouëzel, Marcello Seri, Oliv
 -/
 
 import Mathlib.Dynamics.Minimal
+import Mathlib.Dynamics.Flow
 import BET.Topological
 
 /-!
@@ -32,24 +33,19 @@ open scoped omegaLimit
 set_option autoImplicit false
 
 variable {α : Type*}[TopologicalSpace α]
+-- latter properties are required by Flow
+variable {τ : Type*} [AddMonoid τ] [TopologicalSpace τ] [ContinuousAdd τ]
 
 /- A subset is minimal if it is nonempty, closed, and every orbit is dense.
 To do: remove invariant, add nonempty. -/
-structure AddAction.IsMinimalSubset (M : Type*) [VAdd M α] (U : Set α) : Prop :=
+structure IsMinimalSubset (ϕ : Flow τ α) (U : Set α) : Prop :=
   (isClosed : IsClosed U)
-  (isInvariant : IsInvariant (fun (n : M) (x : α) ↦ n +ᵥ x) U)
-  (isMinimal : ∀ V W, IsOpen V → (U ∩ V).Nonempty → IsOpen W → (U ∩ W).Nonempty → ∃ (n : M),
-    ((fun (x : α) ↦ n +ᵥ x) ⁻¹' (V ∩ U)) ∩ (W ∩ U) |>.Nonempty)
+  (isInvariant : IsInvariant ϕ.toFun U)
+  (isMinimal : ∀ V W, IsOpen V → (U ∩ V).Nonempty → IsOpen W → (U ∩ W).Nonempty → ∃ n : τ,
+    ((ϕ n)⁻¹' (V ∩ U)) ∩ (W ∩ U) |>.Nonempty)
 
 
-/- A subset is minimal if it is nonempty, closed, and every orbit is dense.
-To do: remove invariant, add nonempty. -/
-@[to_additive]
-structure MulAction.IsMinimalSubset (M : Type*) [SMul M α] (U : Set α) : Prop :=
-  (isClosed : IsClosed U)
-  (isInvariant : IsInvariant (fun (n : M) (x : α) ↦ n • x) U)
-  (isMinimal : ∀ V W, IsOpen V → (U ∩ V).Nonempty → IsOpen W → (U ∩ W).Nonempty → ∃ (n : M),
-    ((fun (x : α) ↦ n • x) ⁻¹' (V ∩ U)) ∩ (W ∩ U) |>.Nonempty)
+#exit
 
 -- namespace MulAction
 

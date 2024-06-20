@@ -178,10 +178,8 @@ theorem log_pow {x : ENNReal} {n : ℕ} : log (x ^ n) = (n : ENNReal) * log x :=
     simp
   replace h_n_pos := Nat.pos_of_ne_zero h_n_pos
   rcases ENNReal.trichotomy x with (x_zero | x_top | x_real)
-  · rw [x_zero, zero_pow (Ne.symm (ne_of_lt h_n_pos)), log_zero, EReal.mul_bot_of_pos]
-    norm_cast
-  · rw [x_top, ENNReal.top_pow h_n_pos, log_top, EReal.mul_top_of_pos]
-    norm_cast
+  · rw [x_zero, zero_pow (Ne.symm (ne_of_lt h_n_pos)), log_zero, EReal.mul_bot_of_pos]; norm_cast
+  · rw [x_top, ENNReal.top_pow h_n_pos, log_top, EReal.mul_top_of_pos]; norm_cast
   · replace x_real := ENNReal.toReal_pos_iff.1 x_real
     have x_ne_zero := Ne.symm (LT.lt.ne x_real.1)
     have x_ne_top := LT.lt.ne x_real.2
@@ -205,10 +203,8 @@ theorem log_rpow {x : ENNReal} {y : ℝ} : log (x ^ y) = y * log x := by
       exact ENNReal.toReal_rpow x y ▸ Real.log_rpow x_real y
   · rw [y_zero, @ENNReal.rpow_zero x, log_one, EReal.coe_zero, zero_mul]
   · rcases ENNReal.trichotomy x with (x_zero | x_top | x_real)
-    · rw [x_zero, ENNReal.zero_rpow_of_pos y_pos, log_zero, EReal.mul_bot_of_pos]
-      norm_cast
-    · rw [x_top, ENNReal.top_rpow_of_pos y_pos, log_top, EReal.mul_top_of_pos]
-      norm_cast
+    · rw [x_zero, ENNReal.zero_rpow_of_pos y_pos, log_zero, EReal.mul_bot_of_pos]; norm_cast
+    · rw [x_top, ENNReal.top_rpow_of_pos y_pos, log_top, EReal.mul_top_of_pos]; norm_cast
     · have x_ne_zero := Ne.symm (LT.lt.ne (ENNReal.toReal_pos_iff.1 x_real).1)
       have x_ne_top := LT.lt.ne (ENNReal.toReal_pos_iff.1 x_real).2
       simp only [log, rpow_eq_zero_iff, x_ne_zero, false_and, x_ne_top, or_self, ↓reduceIte,

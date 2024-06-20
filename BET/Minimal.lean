@@ -4,18 +4,21 @@ Released under Apache 2.0 license as described in the file LICENSE
 Authors: Guillaume Dubach, Marco Lenci, Sébastien Gouëzel, Marcello Seri, Oliver Butterley, Lorenzo Luccioli, Pietro Monticone
 -/
 
-import «BET».Topological
+import Mathlib.Dynamics.Minimal
+import BET.Topological
 
 /-!
 # Minimal sets
 
 This file contains various details related to minimal sets and minimal actions.
 
-Much of the minimal stuff probably in `Mathlib/Dynamics/Minimal.lean` but missing the definition of a minimal set and the existence proof.
+Much of the minimal stuff probably in `Mathlib/Dynamics/Minimal.lean` but missing the definition of
+a minimal set and the existence proof.
 
 TO DO:
 - Align contents here with `Mathlib/Dynamics/Minimal.lean`.
-- Upgrade the statements and proofs swapping the metric space requirement for merely requiring a topological space.
+- Upgrade the statements and proofs swapping the metric space requirement for merely requiring a
+  topological space.
 - Only use compactSpace when really required.
 - Upgrade all for a general action as per the stuff already in mathlib.
 - Improve the naming of theorems and definitions.
@@ -24,25 +27,60 @@ TO DO:
 
 -/
 
-open MeasureTheory Filter Metric Function Set
+open MeasureTheory Filter Function Set
 open scoped omegaLimit
 set_option autoImplicit false
 
-variable {α : Type*} [MetricSpace α]
-variable [CompactSpace α] (f : α → α) (hf : Continuous f)
+variable {α : Type*}[TopologicalSpace α]
 
 /- A subset is minimal if it is nonempty, closed, and every orbit is dense.
 To do: remove invariant, add nonempty. -/
-structure IsMinimalSubset (f : α → α) (U : Set α) : Prop :=
-  (closed : IsClosed U)
-  (invariant : IsInvariant (fun n x ↦ f^[n] x) U)
-  (minimal : ∀ (x y : α), x ∈ U → y ∈ U → ∀ (ε : ℝ), ε > 0 → ∃ n : ℕ, f^[n] y ∈ ball x ε)
+structure AddAction.IsMinimalSubset (M : Type*) [VAdd M α] (U : Set α) : Prop :=
+  (isClosed : IsClosed U)
+  (isInvariant : IsInvariant (fun (n : M) (x : α) ↦ n +ᵥ x) U)
+  (isMinimal : ∀ V W, IsOpen V → (U ∩ V).Nonempty → IsOpen W → (U ∩ W).Nonempty → ∃ (n : M),
+    ((fun (x : α) ↦ n +ᵥ x) ⁻¹' (V ∩ U)) ∩ (W ∩ U) |>.Nonempty)
+
+
+/- A subset is minimal if it is nonempty, closed, and every orbit is dense.
+To do: remove invariant, add nonempty. -/
+@[to_additive]
+structure MulAction.IsMinimalSubset (M : Type*) [SMul M α] (U : Set α) : Prop :=
+  (isClosed : IsClosed U)
+  (isInvariant : IsInvariant (fun (n : M) (x : α) ↦ n • x) U)
+  (isMinimal : ∀ V W, IsOpen V → (U ∩ V).Nonempty → IsOpen W → (U ∩ W).Nonempty → ∃ (n : M),
+    ((fun (x : α) ↦ n • x) ⁻¹' (V ∩ U)) ∩ (W ∩ U) |>.Nonempty)
+
+-- namespace MulAction
+
+-- variable (M : Type*) [Monoid M] [MulAction M α]
+
+-- -- Any theorem here should have a @[to_additive]...
 
 /-- A dynamical system (α,f) is minimal if α is a minimal subset. -/
-def IsMinimal (f : α → α) : Prop := IsMinimalSubset f univ
+
+def AddAction.ofFun (f : α → α) : AddAction ℕ α :=
+  AddAction.compHom _ <| MonoidHom.toAdditive'' <| powersHom (Function.End α) f
+
+example (n a) : (AddAction.ofFun f).vadd n a = f^[n] a := rfl
+
+-- end MulAction
+
+theorem recurrentSet_of_minimal_is_all_space (M : Type*) [AddMonoid ℕ] [AddAction ℕ α]
+  (hM : AddAction.IsMinimal ℕ α) (x : α) :
+    x ∈ recurrentSet (fun x ↦ AddAction.toFun ℕ α x 1) := by
+  -- explicitly, we are now proving
+  -- ∀ (ε : ℝ) (N : ℕ), ε > 0 → ∃ m : ℕ, m ≥ N ∧ f^[m] x ∈ ball x ε
+  let f := fun x ↦ AddAction.toFun ℕ α x 1
+  apply (recurrentSet_iff_accumulation_point f x).mpr
+  intro ε N hε
+  obtain ⟨n, hball⟩ : ∃ n, f^[n] (f^[N] x) ∈ ball x ε :=
+    hf.minimal x (f^[N] x) (mem_univ _) (mem_univ _) ε hε
+  exact ⟨n + N, by linarith, (Function.iterate_add_apply _ _ _ _).symm ▸ hball⟩
+
 
 /-- In a minimal dynamics, the recurrent set is all the space. -/
-theorem recurrentSet_of_minimal_is_all_space (hf : IsMinimal f) (x : α) :
+theorem recurrentSet_of_minimal_is_all_space (hM : MulAction.IsMinimal M α) (x : α) :
     x ∈ recurrentSet f := by
   -- explicitly, we are now proving
   -- ∀ (ε : ℝ) (N : ℕ), ε > 0 → ∃ m : ℕ, m ≥ N ∧ f^[m] x ∈ ball x ε

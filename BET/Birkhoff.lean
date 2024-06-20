@@ -90,8 +90,8 @@ lemma leq_InvSigmaAlg_FullAlg : invSigmaAlg T ≤ m0 := fun _ hs ↦ hs.left
 open Finset in
 /-- Defines The max of the first `n+1` Birkhoff sums. More precisely,
 `maxOfSums T φ x n` corresponds to `max {birkhoffSum T φ 1 x,..., birkhoffSum T φ (n + 1) x}`.
-This corresponds to `Φ_{n+1}` in KH's proof. Made this decision because `birkhoffSum T φ 0 x := 0`
-is defined to be a sum over the empty set. -/
+This corresponds to `Φ_{n+1}` in the blueprint paper proof. Made this decision because
+`birkhoffSum T φ 0 x := 0` is defined to be a sum over the empty set. -/
 def maxOfSums (x : α) : OrderHom ℕ ℝ :=
   partialSups (fun n ↦ birkhoffSum T φ (n+1) x)
 /- was:
@@ -150,32 +150,34 @@ lemma divSet_measurable : MeasurableSet[m0] (divSet T φ) := by
   simp only [divSet]
   exact measurableSet_tendsto Filter.atTop (maxOfSums_measurable _ hT _ hphim)
 
-/- `∀ x ∈ A, Φ_{n+1}(x) - Φ_{n}(T(x)) = φ(x) - min(0,Φ_{n}(T(x))) ≥ φ(x)` decreases to `φ(x)`. -/
+/- The next lemmas prove that
+`∀ x ∈ divSet T φ, Φ_{n+1}(x) - Φ_{n}(T(x)) = φ(x) - min(0,Φ_{n}(T(x))) ≥ φ(x)`
+decreases to `φ(x)`. -/
 
-theorem birkhoffSum_succ_image (n : ℕ) (x : α) :
+lemma birkhoffSum_succ_image (n : ℕ) (x : α) :
       birkhoffSum T φ n (T x) = birkhoffSum T φ (n + 1) x - φ x := by
     simp [birkhoffSum_add T φ n 1 x, eq_add_of_sub_eq' (birkhoffSum_apply_sub_birkhoffSum T φ n x),
       birkhoffSum_one', add_sub (birkhoffSum T φ n x) (φ (T^[n] x)) (φ x)]
 
 /- Would expect this to be in `Mathlib/Data/Finset/Lattice`.
 Or perhaps there is already an easier way to extract it from mathlib? -/
-theorem sup'_eq_iff_le {s : Finset β} [SemilatticeSup α] (H : s.Nonempty) (f : β → α) (hs : a ∈ s) :
+lemma sup'_eq_iff_le {s : Finset β} [SemilatticeSup α] (H : s.Nonempty) (f : β → α) (hs : a ∈ s) :
     s.sup' H f = f a ↔ ∀ b ∈ s, f b ≤ f a := ⟨fun h0 b h2 ↦ (h0 ▸ Finset.le_sup' f h2),
     fun h1 ↦ (LE.le.ge_iff_eq (by simp [Finset.sup'_le_iff]; exact h1)).mp (Finset.le_sup' f hs)⟩
 
 /- convenient because used several times in proving claim 1 -/
-theorem map_range_Nonempty (n : ℕ) : (Finset.map (addLeftEmbedding 1)
+lemma map_range_Nonempty (n : ℕ) : (Finset.map (addLeftEmbedding 1)
     (Finset.range (n + 1))).Nonempty := by simp
 
 open Finset in
-/-- modified from mathlib to make f explicit - isn't the version in mathlib inconvenient? -/
-theorem comp_sup'_eq_sup'_comp_alt [SemilatticeSup α] [SemilatticeSup γ] {s : Finset β}
+/- modified from mathlib to make f explicit - isn't the version in mathlib inconvenient? -/
+lemma comp_sup'_eq_sup'_comp_alt [SemilatticeSup α] [SemilatticeSup γ] {s : Finset β}
     (H : s.Nonempty) (f : β → α)
     (g : α → γ) (g_sup : ∀ x y, g (x ⊔ y) = g x ⊔ g y) : g (s.sup' H f) = s.sup' H (g ∘ f) := by
   refine H.cons_induction ?_ ?_ <;> intros <;> simp [*]
 
 open Finset in
-/-- Claim 1: a convenient equality for `maxOfSums`. -/
+/-- A convenient equality for `maxOfSums` (called Claim 1 in the blueprint proof). -/
 theorem claim1 (n : ℕ) (x : α) :
     maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n = φ x - min 0 (maxOfSums T φ (T x) n) := by
   -- Consider `maxOfSums T φ x (n + 1) = max {birkhoffSum T φ 1 x,..., birkhoffSum T φ (n + 2) x}`

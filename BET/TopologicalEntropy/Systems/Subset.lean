@@ -34,14 +34,8 @@ theorem cover_of_monotone_space {T : X → X} {F G : Set X} (F_sub_G : F ⊆ G) 
 theorem cover_mincard_monotone_space (T : X → X) (U : Set (X × X)) (n : ℕ) :
     Monotone (fun F : Set X ↦ Mincard T F U n) := by
   intro F G F_sub_G
-  simp only
-  rw [mincard_eq_sInf T F U n, mincard_eq_sInf T G U n]
-  apply sInf_le_sInf
-  apply Set.image_mono
-  apply Set.image_mono
-  rw [Set.setOf_subset_setOf]
-  intro _
-  exact cover_of_monotone_space F_sub_G
+  simp only [mincard_eq_sInf T F U n, mincard_eq_sInf T G U n]
+  exact sInf_le_sInf (Set.image_mono (Set.image_mono fun _ ↦ cover_of_monotone_space F_sub_G))
 
 theorem cover_entropy_monotone_space (T : X → X) (U : Set (X × X)) :
     Monotone (fun F : Set X ↦ CoverEntropy T F U) := by

@@ -101,24 +101,7 @@ theorem omegaLimit_is_nonWandering (x : α) : (ω⁺ (fun n ↦ f^[n]) ({x})) �
   change A ⊆ B
   refine inter_eq_left.mp ?_
   have : (f ⁻¹' A) ∩ A ≠ ∅ := by
-
     sorry
-
-  -- intro z hz
-  --
-  -- rw [mem_omegaLimit_iff_frequently] at hz
-  -- simp only [singleton_inter_nonempty, mem_preimage] at hz
-  -- rw [mem_setOf_eq]
-  -- intro W hWz hUopen
-  -- have hWnhds : W ∈ nhds z := IsOpen.mem_nhds hUopen hWz
-  -- have subsequence : ∀ U ∈ nhds z, ∃ φ, StrictMono φ ∧ ∀ (n : ℕ), f^[φ n] z ∈ U :=
-  --   fun U hU ↦ Filter.extraction_of_frequently_atTop (hz U hU)
-  -- obtain ⟨φ, hφ, hφiterate⟩ := subsequence U _
-  -- use φ 1
-  -- apply inter_nonempty_iff_exists_right.mpr
-  -- use z
-  -- wrong...
-  -- refine ⟨hUz, hφiterate 1⟩
   sorry
 
 /-- The non-wandering set is non-empty -/

@@ -35,12 +35,10 @@ open Function UniformSpace DynamicalUniformity Fintype
 def ShiftOS (A : Type _) := fun (u : ℕ → A) ↦ (fun n : ℕ ↦ u (n+1))
 
 theorem ShiftOS_apply {A : Type _} (u : ℕ → A) :
-    ShiftOS A u = (fun n : ℕ ↦ u (n+1)) := by
-  rfl
+    ShiftOS A u = (fun n : ℕ ↦ u (n+1)) := rfl
 
 theorem ShiftOS_apply' {A : Type _} (u : ℕ → A) (n : ℕ) :
-    ShiftOS A u n = u (n+1) := by
-  rfl
+    ShiftOS A u n = u (n+1) := rfl
 
 theorem ShiftOS_ite (A : Type _) (k : ℕ) :
     (ShiftOS A)^[k] = fun (u : ℕ → A) ↦ (fun n : ℕ ↦ u (n+k)) := by
@@ -323,10 +321,10 @@ lemma technical_lemma {k : ℕ} (h : 0 < k) (x : ENNReal) :
         (Or.inl <| natCast_ne_top n), one_mul, Nat.cast_le, Nat.add_sub_assoc h n]
       exact Nat.le_add_right n (k-1)
     . use 0
-      simp only [zero_le, Filter.eventually_map, Filter.eventually_atTop, implies_true,
+      simp [zero_le, Filter.eventually_map, Filter.eventually_atTop, implies_true,
         exists_const]
     . use ⊤
-      simp only [Filter.eventually_map, Filter.eventually_atTop, le_top, implies_true]
+      simp [Filter.eventually_map, Filter.eventually_atTop, le_top, implies_true]
   exact tendsto_of_le_liminf_of_limsup_le one_le_liminf limsup_le_one
 
 theorem shift_cover_entropy_le_log_card (A : Type _) [Fintype A] (k : ℕ) :

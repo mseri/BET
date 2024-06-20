@@ -5,6 +5,7 @@ Authors: Guillaume Dubach, Marco Lenci, Sébastien Gouëzel, Marcello Seri, Oliv
 -/
 
 import Mathlib.Tactic
+import Mathlib.Topology.Separation
 import Mathlib.Dynamics.OmegaLimit
 import Mathlib.Dynamics.Ergodic.AddCircle
 
@@ -16,9 +17,7 @@ import Mathlib.Dynamics.Ergodic.AddCircle
 ## Implementation notes
 
 TO DO:
-- Coordinate with the related stuff that already exists in mathlin.
-- Upgrade the statements and proofs swapping the metric space requirement for merely requiring a topological space.
-- Upgrade all for a general action, not only discrete systems.
+- Coordinate with the related stuff that already exists in mathlib.
 
 ## References
 
@@ -71,7 +70,7 @@ def IsNotPeriodicPt (f : α → α)  (x : α) := ∀ n : ℕ, 0 < n → ¬IsPeri
 
 /-- If `x` belongs to the non-wandering set, there are points `y` arbitrarily close to `x`
 and arbitrarily large times for which `f^[n] y` comes back close to `x`. -/
-theorem arbitrary_large_time (N : ℕ) (x : α) (hx : x ∈ nonWanderingSet f)
+theorem closed_arbitrary_large_time (N : ℕ) (x : α) (hx : x ∈ nonWanderingSet f)
   (U : Set α) (hUx : x ∈ U) (hUopen : IsOpen U) :
     ∃ y : α, ∃ n : ℕ, y ∈ U ∧ f^[n] y ∈ U ∧ N + 1 < n := by
   obtain ⟨n, y, hyn, hUy⟩ := hx U hUx hUopen
@@ -84,13 +83,14 @@ theorem arbitrary_large_time (N : ℕ) (x : α) (hx : x ∈ nonWanderingSet f)
 
 /- Show that the non-wandering set of `f` is closed. -/
 theorem nonWanderingSet_isClosed : IsClosed (nonWanderingSet f) := by
-  unfold nonWanderingSet
   refine closure_subset_iff_isClosed.mp ?_
   intro x hx
+  unfold nonWanderingSet
   simp only [image_inter_nonempty_iff, mem_setOf_eq]
   intro U hUx hUopen
   simp at hx
   change ∃ N, (U ∩ f^[N] ⁻¹' U).Nonempty
+  obtain ⟨y, n, hUy, hfnUy, hn⟩ := closed_arbitrary_large_time f 1 x hx U hUx hUopen
   -- simp_rw [mem_setOf_eq] at hx
   sorry
 
@@ -156,56 +156,29 @@ theorem mem_recurrentSet_is_accumulation_point (x : α) :
   simp only [singleton_inter_nonempty, frequently_atTop] at recur_x_in_U
   exact recur_x_in_U N
 
--- theorem recurrentSet_iff_clusterPt (x : α) :
---     x ∈ recurrentSet f ↔ ClusterPt x (Filter.principal (ω⁺ (fun n ↦ f^[n]) ({x}))) := by
---   constructor
---   -- we prove =>
---   . intro recur_x
---     rw [recurrentSet, mem_setOf_eq] at recur_x
---     apply ClusterPt.of_nhds_le
---     refine le_principal_iff.mpr ?_
---     simp only [mem_omegaLimit_iff_frequently] at recur_x
+def orbit_atTop (f : α → α) (x : α) : Filter α := Filter.map (fun n ↦ f^[n] x) atTop
+-- Filter.principal (Set.range (fun n ↦ f^[n] x))
+-- Filter.principal (ω⁺ (fun n ↦ f^[n]) ({x}))
 
---   . intro hcluster
---     rw [recurrentSet, mem_setOf_eq, mem_omegaLimit_iff_frequently]
---     unfold ClusterPt at hcluster
+lemma orbit_atTop_eq_mapClusterPt (f : α → α) (x : α) :
+  MapClusterPt x atTop (fun n ↦ f^[n] x) = ClusterPt x (orbit_atTop f x) := by
+  rw [orbit_atTop, MapClusterPt]
 
-
---     simp only [singleton_inter_nonempty, mem_preimage, frequently_atTop]
---     intro U hU N
---     apply frequently_atTop
-
--- theorem recurrentSet_iff_accumulation_point (x : α) :
---     x ∈ recurrentSet f ↔
---     ∀ (W : Set α) (N : ℕ), x ∈ W → ∃ U : Set α, x ∈ U ∧ U ⊆ W ∧ IsOpen U → ∃ m : ℕ, N ≤ m ∧ f^[m] x ∈ U := by
---   constructor
---   -- we prove =>
---   . intro recur_x W N hWx
---     use (interior W)
---     intro ⟨hWx, hWcontained, hWopen⟩
---     have hUnhds : (interior W) ∈ nhds x := IsOpen.mem_nhds hWopen hWx
---     rw [recurrentSet, mem_setOf_eq, mem_omegaLimit_iff_frequently] at recur_x
---     have recur_x_in_U := recur_x (interior W) hUnhds
---     simp only [singleton_inter_nonempty, frequently_atTop] at recur_x_in_U
---     exact recur_x_in_U N
---   -- we prove <=
---   . intro hf
---     rw [recurrentSet, mem_setOf_eq, mem_omegaLimit_iff_frequently]
---     intro U hUnhds
---     simp only [singleton_inter_nonempty, mem_preimage, frequently_atTop]
---     -- the goal is now `∀ (a : ℕ), ∃ b, a ≤ b ∧ f^[b] x ∈ U`
---     intro N
---     have hintUnhds : (interior U) ∈ nhds x := by
---       refine IsOpen.mem_nhds ?_ ?_
---       sorry
---     refine nonempty_def.mp ?mpr.a
---     have : ∃ U_1, x ∈ U_1 ∧ U_1 ⊆ interior U ∧ IsOpen U_1 → ∃ m, N ≤ m ∧ f^[m] x ∈ U_1 := by apply hf (interior U) N (mem_of_mem_nhds hintUnhds)
---     obtain ⟨U_1, hU1x, hU1contained, hU1open⟩ := this
-
---     refine ⟨mem_of_mem_nhds hUnhs, ?_⟩
---     apply isOpen_iff_mem_nhds.mpr
---     intro z hUz
---     apply mem_nhds_iff.mpr
---     sorry
+theorem recurrentSet_iff_clusterPt (x : α) :
+    x ∈ recurrentSet f ↔ ClusterPt x (orbit_atTop f x) := by
+  constructor
+  -- we prove =>
+  . intro recur_x
+    rw [recurrentSet, mem_setOf_eq] at recur_x
+    rw [mem_omegaLimit_singleton_iff_map_cluster_point atTop (fun n ↦ f^[n]) x x] at recur_x
+    rw [orbit_atTop_eq_mapClusterPt] at recur_x
+    exact recur_x
+  -- we prove <=
+  . intro hcluster
+    rw [recurrentSet]
+    rw [mem_setOf_eq]
+    rw [←orbit_atTop_eq_mapClusterPt] at hcluster
+    rw [mem_omegaLimit_singleton_iff_map_cluster_point atTop (fun n ↦ f^[n]) x x]
+    exact hcluster
 
 end Topological_Dynamics

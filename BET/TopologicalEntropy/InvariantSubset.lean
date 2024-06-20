@@ -39,12 +39,10 @@ theorem image_of_orbit_eq_orbit_of_image (x : X) (n : ℕ) :
     . rw [← iterate_add_apply, add_comm, iterate_add_apply, Tnkx_eq_y]
 
 /-- A subset F is T-invariant if, for any x ∈ F, T(x) ∈ F. Written with preimages. -/
-def IsInvariant (T : X → X) (F : Set X) : Prop :=
-  F ⊆ T ⁻¹' F
+def IsInvariant (T : X → X) (F : Set X) : Prop := F ⊆ T ⁻¹' F
 
 theorem inv_def' {T : X → X} {F : Set X} (F_inv : IsInvariant T F) {x : X} (h : x ∈ F) :
-    T x ∈ F :=
-  F_inv h
+    T x ∈ F := F_inv h
 
 theorem iter_of_inv_in_inv {T : X → X} {F : Set X} (F_inv : IsInvariant T F) (n : ℕ) :
     F ⊆ T^[n] ⁻¹' F := by

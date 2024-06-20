@@ -34,11 +34,11 @@ lemma continuousAt_mul_symm1 {a b : EReal}
       ∘ (fun p : EReal × EReal ↦ p.1 * p.2) ∘ (fun p : EReal × EReal ↦ (-p.1, p.2)) := by
     ext p
     simp only [Function.comp_apply, neg_mul, neg_neg]
-  rw [this]; clear this
+  rw [this]
   apply ContinuousAt.comp (Continuous.continuousAt continuous_neg)
     <| ContinuousAt.comp _ (ContinuousAt.prod_map (Continuous.continuousAt continuous_neg)
       (Continuous.continuousAt continuous_id))
-  simp only [neg_neg, id_eq, h]
+  simp [neg_neg, id_eq, h]
 
 lemma continuousAt_mul_symm2 {a b : EReal}
     (h : ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (a, b)) :
@@ -52,7 +52,7 @@ lemma continuousAt_mul_symm3 {a b : EReal}
 
 lemma continuousAt_mul_coe_coe (a b : ℝ) :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (a, b) := by
-  simp only [ContinuousAt, EReal.nhds_coe_coe, ← EReal.coe_mul, Filter.tendsto_map'_iff,
+  simp [ContinuousAt, EReal.nhds_coe_coe, ← EReal.coe_mul, Filter.tendsto_map'_iff,
     (· ∘ ·), EReal.tendsto_coe, tendsto_mul]
 
 lemma continuousAt_mul_top_top :
@@ -69,9 +69,8 @@ lemma continuousAt_mul_top_top :
     rw [mul_one p.1] at this
     exact lt_of_lt_of_le p1_gt_x this
   . exact IsOpen.prod isOpen_Ioi isOpen_Ioi
-  . simp only [Set.mem_Ioi, max_lt_iff, EReal.coe_lt_top, EReal.zero_lt_top, and_self]
-  . rw [Set.mem_Ioi, ← EReal.coe_one]
-    exact EReal.coe_lt_top 1
+  . simp
+  . rw [Set.mem_Ioi, ← EReal.coe_one]; exact EReal.coe_lt_top 1
 
 lemma continuousAt_mul_top_pos {a : ℝ} (h : 0 < a) :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (⊤, a) := by
@@ -89,8 +88,7 @@ lemma continuousAt_mul_top_pos {a : ℝ} (h : 0 < a) :
       apply mul_nonneg _ (le_of_lt (inv_pos_of_pos h))
       simp only [gt_iff_lt, Nat.ofNat_pos, mul_nonneg_iff_of_pos_left, le_max_iff, le_refl, or_true]
     have a2_pos : 0 < ((a/2 : ℝ) : EReal) := by
-      rw [EReal.coe_pos]
-      linarith
+      rw [EReal.coe_pos]; linarith
     have lock := mul_le_mul_of_nonneg_right (le_of_lt p1_gt) (le_of_lt a2_pos)
     have key := mul_le_mul_of_nonneg_left (le_of_lt p2_gt) (le_of_lt p1_pos)
     replace lock := le_trans lock key; clear key
@@ -100,14 +98,13 @@ lemma continuousAt_mul_top_pos {a : ℝ} (h : 0 < a) :
     simp only [ne_eq, Ne.symm (ne_of_lt h), not_false_eq_true, div_self, OfNat.ofNat_ne_zero,
       one_mul, lt_max_iff, lt_add_iff_pos_right, zero_lt_one, true_or]
   . exact IsOpen.prod isOpen_Ioi isOpen_Ioi
-  . simp only [Set.mem_Ioi, EReal.coe_lt_top]
-  . simp only [Set.mem_Ioi, EReal.coe_lt_coe_iff, half_lt_self_iff, h]
+  . simp
+  . simp [h]
 
 lemma continuousAt_mul_top_ne_zero {a : ℝ} (h : a ≠ 0) :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (⊤, a) := by
   rcases (lt_or_gt_of_ne h) with a_neg | a_pos
-  . rw [← neg_neg (a : EReal)]
-    exact continuousAt_mul_symm2 (continuousAt_mul_top_pos (neg_pos.2 a_neg))
+  . exact neg_neg (a : EReal) ▸ continuousAt_mul_symm2 (continuousAt_mul_top_pos (neg_pos.2 a_neg))
   . exact continuousAt_mul_top_pos a_pos
 
 /-- The multiplication on `EReal` is continuous except at indeterminacies

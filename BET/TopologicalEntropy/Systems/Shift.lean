@@ -35,31 +35,25 @@ open Function UniformSpace DynamicalUniformity Fintype
 def ShiftOS (A : Type _) := fun (u : ℕ → A) ↦ (fun n : ℕ ↦ u (n+1))
 
 theorem ShiftOS_apply {A : Type _} (u : ℕ → A) :
-    ShiftOS A u = (fun n : ℕ ↦ u (n+1)) := by
-  rfl
+    ShiftOS A u = (fun n : ℕ ↦ u (n+1)) := rfl
 
 theorem ShiftOS_apply' {A : Type _} (u : ℕ → A) (n : ℕ) :
-    ShiftOS A u n = u (n+1) := by
-  rfl
+    ShiftOS A u n = u (n+1) := rfl
 
 theorem ShiftOS_ite (A : Type _) (k : ℕ) :
     (ShiftOS A)^[k] = fun (u : ℕ → A) ↦ (fun n : ℕ ↦ u (n+k)) := by
   induction' k with k hk
-  . simp only [Nat.zero_eq, iterate_zero, add_zero]
-    rfl
+  . simp only [iterate_zero, add_zero]; rfl
   . ext u n
     rw [iterate_succ, (Commute.iterate_self (ShiftOS A) k).comp_eq, comp_apply, hk,
       ShiftOS_apply (fun n : ℕ ↦ u (n+k))]
-    simp only
-    rw [add_assoc n 1 k, add_comm 1 k]
+    simp [add_assoc n 1 k, add_comm 1 k]
 
 theorem ShiftOS_ite_apply {A : Type _} (u : ℕ → A) (k : ℕ) :
-    (ShiftOS A)^[k] u = (fun n : ℕ ↦ u (n+k)) := by
-  rw [ShiftOS_ite A k]
+    (ShiftOS A)^[k] u = (fun n : ℕ ↦ u (n+k)) := by rw [ShiftOS_ite A k]
 
 theorem ShiftOS_ite_apply' {A : Type _} (u : ℕ → A) (k n : ℕ) :
-    (ShiftOS A)^[k] u n = u (n+k) := by
-  rw [ShiftOS_ite_apply u k]
+    (ShiftOS A)^[k] u n = u (n+k) := by rw [ShiftOS_ite_apply u k]
 
 theorem uniformContinuous_ShiftOS {A : Type _} [UniformSpace A] :
     UniformContinuous (ShiftOS A) :=
@@ -69,18 +63,15 @@ theorem uniformContinuous_ShiftOS {A : Type _} [UniformSpace A] :
 def CylUni (A : Type _) (n : ℕ) := {xy : (ℕ → A) × (ℕ → A) | ∀ k < n, xy.1 k = xy.2 k}
 
 theorem cylinder_mem {A : Type _} (n : ℕ) (x y : ℕ → A) :
-    (x, y) ∈ (CylUni A n) ↔ ∀ k < n, x k = y k := by
-  simp only [CylUni, Set.mem_setOf_eq]
+    (x, y) ∈ (CylUni A n) ↔ ∀ k < n, x k = y k := by simp [CylUni]
 
 @[simp]
-theorem cylinder_time_zero {A : Type _} : CylUni A 0 = Set.univ := by
-  simp only [CylUni, not_lt_zero', IsEmpty.forall_iff, forall_const, Set.setOf_true]
+theorem cylinder_time_zero {A : Type _} : CylUni A 0 = Set.univ := by simp [CylUni]
 
 theorem cylinder_antitone_time (A : Type _) : Antitone fun n : ℕ ↦ CylUni A n := by
   intro m n m_le_n
   simp only [CylUni, Set.le_eq_subset, Set.setOf_subset_setOf, Prod.forall]
-  intro x y h k k_lt_m
-  exact h k (lt_of_lt_of_le k_lt_m m_le_n)
+  exact fun x y h k k_lt_m ↦ h k (lt_of_lt_of_le k_lt_m m_le_n)
 
 theorem cylinder_in_uniformity {A : Type _} [UniformSpace A] {U : Set ((ℕ → A) × (ℕ → A))}
     (h : U ∈ 𝓤 (ℕ → A)) :
@@ -99,8 +90,7 @@ theorem cylinder_in_uniformity {A : Type _} [UniformSpace A] {U : Set ((ℕ → 
   rw [cylinder_mem (n+1) x y] at h_xy
   specialize h_xy i (lt_of_le_of_lt ((mem_upperBounds.1 hn) i i_in_I) (lt_add_one n))
   simp only [Set.mem_preimage]
-  rw [h_xy]
-  exact refl_mem_uniformity W_uni
+  exact h_xy ▸ refl_mem_uniformity W_uni
 
 theorem cylinder_uniformity_basis {A : Type _} [UniformSpace A] (h : 𝓤 A = Filter.principal idRel)
     (U : Set ((ℕ → A) × (ℕ → A))) :
@@ -117,12 +107,10 @@ theorem cylinder_uniformity_basis {A : Type _} [UniformSpace A] (h : 𝓤 A = Fi
   . intro i
     rw [h, Filter.mem_comap]
     use idRel
-    constructor; exact Filter.mem_principal_self idRel
-    intro (x, y)
-    simp only [Set.mem_preimage, mem_idRel, Set.mem_setOf_eq, imp_self]
-  . ext xy
-    simp only [CylUni, Set.mem_setOf_eq, Set.iInter_coe_set, Set.mem_Ico, zero_le, true_and,
-      Set.mem_iInter]
+    constructor
+    · exact Filter.mem_principal_self idRel
+    · intro (x, y); simp
+  . ext xy; simp [CylUni]
 
 theorem cylinder_is_uniformity {A : Type _} [UniformSpace A] (h : 𝓤 A = Filter.principal idRel)
     (n : ℕ) :
@@ -140,35 +128,28 @@ theorem shift_of_cylinder (A : Type _) {k n : ℕ} (h : 0 < k) (h' : 0 < n) :
     rcases (lt_or_le i k) with (i_lt_k | i_ge_k)
     . specialize hyp 0 h'
       exact (cylinder_mem k x y).1 hyp i i_lt_k
-    . have : i-k+1 < n := by
-        apply Nat.add_lt_of_lt_sub
-        apply Nat.sub_lt_left_of_lt_add i_ge_k
-        rw [← Nat.add_sub_assoc h' k, add_comm k n]
-        exact i_lt_nk
+    . have : i-k+1 < n := by omega
       specialize hyp (i-k+1) this; clear this
       rw [cylinder_mem k ((ShiftOS A)^[i-k+1] x) ((ShiftOS A)^[i-k+1] y)] at hyp
       specialize hyp (k-1) (Nat.sub_one_lt_of_le h (le_refl k))
       rw [ShiftOS_ite_apply' x (i-k+1) (k-1), ShiftOS_ite_apply' y (i-k+1) (k-1)] at hyp
-      have : (k-1) + (i-k+1) = i := by
-        rw [← Nat.sub_add_comm h, ← add_assoc, Nat.add_one_sub_one, Nat.add_sub_of_le i_ge_k]
+      have : (k-1) + (i-k+1) = i := by omega
       rw [this] at hyp
       exact hyp
   . intro hyp i i_lt_n
     apply (cylinder_mem k ((ShiftOS A)^[i] x) ((ShiftOS A)^[i] y)).2
     intro j j_lt_k
     rw [ShiftOS_ite_apply' x i j, ShiftOS_ite_apply' y i j]
-    apply hyp (j+i)
-    apply Nat.le_sub_one_of_lt
+    apply hyp (j+i) (Nat.le_sub_one_of_lt _)
     rw [← Nat.succ_add j i, add_comm n k]
     exact add_lt_add_of_le_of_lt (Nat.succ_le.2 j_lt_k) i_lt_n
 
 lemma cylinder_injection (A : Type _) [Nonempty A] (n : ℕ) :
     ∀ x : Fin n → A, ∃ y : ℕ → A, ∀ i : Fin n, x i = y i := by
   intro x
-  have a := Classical.arbitrary A
-  use Function.extend Fin.val x (fun _ ↦ a)
-  intro i
-  exact Eq.symm (Function.Injective.extend_apply Fin.val_injective x (fun _ ↦ a) i)
+  use Function.extend Fin.val x (fun _ ↦ Classical.arbitrary A)
+  exact fun i ↦ Eq.symm (Function.Injective.extend_apply Fin.val_injective x
+    (fun _ ↦ Classical.arbitrary A) i)
 
 theorem shift_mincard (A : Type _) [Fintype A] (k n : ℕ) :
     DynamicalCover.Mincard (ShiftOS A) Set.univ (CylUni A k) n ≤ (card A)^(n+k-1) := by
@@ -180,8 +161,7 @@ theorem shift_mincard (A : Type _) [Fintype A] (k n : ℕ) :
       split_ands
       . use 0
       . exact A_emp
-    rw [Set.univ_eq_empty_iff.2 key, DynamicalCover.mincard_of_empty]
-    exact zero_le _
+    exact Set.univ_eq_empty_iff.2 key ▸ DynamicalCover.mincard_of_empty ▸ zero_le _
   /-WLOG, n is positive.-/
   rcases Nat.eq_zero_or_pos n with (rfl | n_pos)
   . rw [zero_add]
@@ -190,10 +170,9 @@ theorem shift_mincard (A : Type _) [Fintype A] (k n : ℕ) :
     exact Nat.one_le_pow (k-1) (card A) card_pos
   /-WLOG, k is positive.-/
   rcases Nat.eq_zero_or_pos k with (rfl | k_pos)
-  . rw [cylinder_time_zero, add_zero]
-    apply le_trans (DynamicalCover.mincard_by_univ_le (ShiftOS A) Set.univ n)
+  . apply cylinder_time_zero ▸ le_trans (DynamicalCover.mincard_by_univ_le (ShiftOS A) Set.univ n)
     norm_cast
-    exact Nat.one_le_pow (n-1) (card A) card_pos
+    exact (Nat.one_le_pow (n-1) (card A) card_pos)
   /-Main case.-/
   choose! f f_cyl_id using cylinder_injection A (n+k-1)
   let s := Set.range f
@@ -213,8 +192,7 @@ theorem shift_mincard (A : Type _) [Fintype A] (k n : ℕ) :
   use f (fun i : Fin (n+k-1) ↦ x i)
   simp only [Set.mem_range, exists_apply_eq_apply, ball, Set.mem_preimage, true_and, s]
   rw [shift_of_cylinder A k_pos n_pos, cylinder_mem (n+k-1) _ x]
-  intro i i_lt_nk
-  exact Eq.symm (f_cyl_id (fun i : Fin (n+k-1) ↦ x i) ⟨i, i_lt_nk⟩)
+  exact fun i i_lt_nk ↦ Eq.symm (f_cyl_id (fun i : Fin (n+k-1) ↦ x i) ⟨i, i_lt_nk⟩)
 
 theorem shift_maxcard (A : Type _) [Fintype A] {k n : ℕ} (k_pos : 0 < k) (n_pos : 0 < n) :
     (card A)^(n+k-1) ≤ DynamicalNet.Maxcard (ShiftOS A) Set.univ (CylUni A k) n := by
@@ -222,12 +200,9 @@ theorem shift_maxcard (A : Type _) [Fintype A] {k n : ℕ} (k_pos : 0 < k) (n_po
   /-WLOG, A is nonempty.-/
   rcases isEmpty_or_nonempty A with (A_emp | A_nemp)
   . rw [card_eq_zero, ENat.coe_zero]
-    apply @le_of_eq_of_le ℕ∞ (0^(n + k - 1)) 0 _ _ _ (zero_le _)
-    apply zero_pow
-    apply ne_of_gt
-    apply Nat.sub_pos_of_lt
-    apply lt_of_eq_of_lt _ (Nat.add_lt_add_of_le_of_lt n_pos k_pos)
-    rw [add_zero, ← Nat.one_eq_succ_zero]
+    apply @le_of_eq_of_le ℕ∞ (0^(n + k - 1)) 0 _ _ (zero_pow _) (zero_le _)
+    apply ne_of_gt (Nat.sub_pos_of_lt (lt_of_eq_of_lt _ (Nat.add_lt_add_of_le_of_lt n_pos k_pos)))
+    simp
   /-Main case.-/
   choose! f f_cyl_id using cylinder_injection A (n+k-1)
   let s := Set.range f
@@ -323,10 +298,9 @@ lemma technical_lemma {k : ℕ} (h : 0 < k) (x : ENNReal) :
         (Or.inl <| natCast_ne_top n), one_mul, Nat.cast_le, Nat.add_sub_assoc h n]
       exact Nat.le_add_right n (k-1)
     . use 0
-      simp only [zero_le, Filter.eventually_map, Filter.eventually_atTop, implies_true,
-        exists_const]
+      simp
     . use ⊤
-      simp only [Filter.eventually_map, Filter.eventually_atTop, le_top, implies_true]
+      simp
   exact tendsto_of_le_liminf_of_limsup_le one_le_liminf limsup_le_one
 
 theorem shift_cover_entropy_le_log_card (A : Type _) [Fintype A] (k : ℕ) :
@@ -338,8 +312,7 @@ theorem shift_cover_entropy_le_log_card (A : Type _) [Fintype A] (k : ℕ) :
       split_ands
       . use 0
       . exact A_emp
-    rw [Set.univ_eq_empty_iff.2 key, DynamicalCover.cover_entropy_of_empty]
-    exact bot_le
+    exact Set.univ_eq_empty_iff.2 key ▸ DynamicalCover.cover_entropy_of_empty ▸ bot_le
   /-WLOG, k is positive.-/
   rcases (Nat.eq_zero_or_pos k) with (rfl | k_pos)
   . rw [cylinder_time_zero]
@@ -357,8 +330,7 @@ theorem shift_cover_entropy_le_log_card (A : Type _) [Fintype A] (k : ℕ) :
     rw [Filter.EventuallyLE, Filter.eventually_atTop]
     use 0
     intro n _
-    apply EReal.div_left_mono
-    apply log_monotone
+    apply EReal.div_left_mono _ (log_monotone _)
     norm_cast
     rw [← ENat.toENNReal_coe, ENat.toENNReal_le]
     exact shift_mincard A k n
@@ -408,9 +380,6 @@ theorem shift_entropy'_eq_log_card {A : Type _} [Fintype A] [UniformSpace A]
     DynamicalCover.Entropy' (ShiftOS A) Set.univ = log (card A) := by
   rw [← DynamicalCover.entropy_eq_entropy' (ShiftOS A) (InvariantSubset.univ_is_inv (ShiftOS A))]
   exact shift_entropy_eq_log_card h
-
-
-
 
 end EntropyShift
 

@@ -58,10 +58,8 @@ theorem cover_mincard_union (T : X → X) (F G : Set X) (U : Set (X × X)) (n : 
   /-Construct a cover of `F ×ˢ G` and show that is has the right cardinality-/
   have := cover_of_union s_cover t_cover
   rw [← Finset.coe_union s t] at this
-  apply le_trans (mincard_le_card this); clear this
-  apply le_trans (WithTop.coe_mono (Finset.card_union_le s t))
-  simp only [WithTop.coe_add, ENat.some_eq_coe, le_refl]
-
+  apply le_trans (mincard_le_card this) (le_trans (WithTop.coe_mono (Finset.card_union_le s t)) _)
+  simp
 /-
 theorem cover_entropy'_union (T : X → X) (F G : Set X) (U : Set (X × X)) :
     CoverEntropy' T (F ∪ G) U = max (CoverEntropy' T F U) (CoverEntropy' T G U) := by

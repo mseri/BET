@@ -135,8 +135,7 @@ theorem EReal.npos_div {a : EReal} {b : ENNReal} (h : a ≤ 0) : a / b ≤ 0 :=
   le_of_le_of_eq (EReal.div_left_mono b h) EReal.zero_div
 
 theorem EReal.div_right_distrib_of_nneg {a b : EReal} {c : ENNReal} (h : 0 ≤ a) (h' : 0 ≤ b) :
-    (a + b) / c = (a / c) + (b / c) :=
-  EReal.right_distrib_of_nneg h h'
+    (a + b) / c = (a / c) + (b / c) := EReal.right_distrib_of_nneg h h'
 
 end ERealDiv
 

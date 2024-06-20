@@ -10,3 +10,7 @@
 - [ ] Port the whole DynamicalDover.lean: choose a good name for cover entropy
 - [ ] Port the whole Subset.lean: necessary cleanup.
 - [ ] Port the whole Morphism.lean: rename semiconjugacy
+- [ ] Port the whole EReal.lean: necessary cleanup
+- [ ] Port the whole Shift.lean: almost
+- [ ] Union.lean is unfinished and painful (ideally bypassing limits)
+- [ ] Product.lean is unfinished but close to completion

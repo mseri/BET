@@ -138,17 +138,12 @@ theorem shift_of_cylinder (A : Type _) {k n : ℕ} (h : 0 < k) (h' : 0 < n) :
     rcases (lt_or_le i k) with (i_lt_k | i_ge_k)
     . specialize hyp 0 h'
       exact (cylinder_mem k x y).1 hyp i i_lt_k
-    . have : i-k+1 < n := by
-        apply Nat.add_lt_of_lt_sub
-        apply Nat.sub_lt_left_of_lt_add i_ge_k
-        rw [← Nat.add_sub_assoc h' k, add_comm k n]
-        exact i_lt_nk
+    . have : i-k+1 < n := by omega
       specialize hyp (i-k+1) this; clear this
       rw [cylinder_mem k ((ShiftOS A)^[i-k+1] x) ((ShiftOS A)^[i-k+1] y)] at hyp
       specialize hyp (k-1) (Nat.sub_one_lt_of_le h (le_refl k))
       rw [ShiftOS_ite_apply' x (i-k+1) (k-1), ShiftOS_ite_apply' y (i-k+1) (k-1)] at hyp
-      have : (k-1) + (i-k+1) = i := by
-        rw [← Nat.sub_add_comm h, ← add_assoc, Nat.add_one_sub_one, Nat.add_sub_of_le i_ge_k]
+      have : (k-1) + (i-k+1) = i := by omega
       rw [this] at hyp
       exact hyp
   . intro hyp i i_lt_n

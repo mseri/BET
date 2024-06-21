@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2024 Damien Thomine. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Author: Damien Thomine
+Author: Damien Thomine, Pietro Monticone
 -/
 import Mathlib.Tactic
 import Mathlib.Data.Real.EReal

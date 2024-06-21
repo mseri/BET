@@ -303,4 +303,30 @@ theorem image_of_invcomp_is_invcomp {T : X → X} (T_cont : Continuous T) {F : S
 
 end InvariantCompact
 
+section InvariantDense
+
+variable {X : Type _} [TopologicalSpace X]
+
+/-- The orbit of x under T is dense -/
+def IsDenseOrbit (T : X → X) (x : X) : Prop := Dense (orbit T x)
+/-- The orbit of all pounts in the set U under the iteration of T are dense -/
+def AllOrbitsDense (T : X → X) (U : Set X) : Prop := ∀ x ∈ U, IsDenseOrbit T x
+
+/-- The closure of an orbit is invariant under the dynamics. -/
+theorem closure_orbit_inv (T: X → X) (hf : Continuous T) (x : X) :
+  IsInvariant (fun x ↦ T^[n] x) (closure (orbit T x)) := by
+  intro y hclosure
+  have image_subset_orbit : T^[n] '' (orbit T x) ⊆ orbit T x := by
+    apply Set.mapsTo'.mp
+    intro z hz
+    refine iter_of_inv_in_inv' (orbit_is_inv T x) n hz
+  exact map_mem_closure (Continuous.iterate hf n) hclosure (Set.mapsTo'.mpr image_subset_orbit)
+
+/-- If the orbit of any point in a set `U` is dense then `U` is invariant. -/
+theorem inv_if_allOrbitsDense (T: X → X) (U : Set X) (hcl : IsClosed U) (hd : AllOrbitsDense f U) :
+    IsInvariant (fun x ↦ T^[n] x) U := by
+  sorry
+
+end InvariantDense
+
 #lint

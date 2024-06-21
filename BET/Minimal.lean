@@ -7,6 +7,8 @@ Authors: Guillaume Dubach, Marco Lenci, Sébastien Gouëzel, Marcello Seri, Oliv
 import Mathlib.Dynamics.Minimal
 import Mathlib.Dynamics.Flow
 import BET.Topological
+import BET.TopologicalEntropy.InvariantSubset
+
 
 /-!
 # Minimal sets
@@ -156,45 +158,14 @@ theorem exists_minimal_set [CompactSpace α]  (f : α → α) (U : Set α) (h : 
     fun V' h4 ↦ h2.right V' ⟨(subset_trans h4.left h1.left), h4.right⟩ h4.left
   exact ⟨h1.left, h1.right, h3⟩
 
-/-- The orbit of a point `x` is set of all iterates under `f`. -/
-def orbit (f: α → α) x := { y | ∃ n : ℕ, y = f^[n] x }
+open InvariantSubset
 
-/-- The orbit of a point is invariant. -/
-theorem orbit_inv (f: α → α) (x : α) : IsInvariant (fun n x ↦ f^[n] x) (orbit f x) := by
-  intro n y h0
-  choose m h1 using h0
-  -- here we show that f^[n] y = f^[n + m] x
-  use n + m
-  rw [h1]
-  exact (iterate_add_apply f n m x).symm
-
-/-- The closure of an orbit is invariant under the dynamics. -/
-theorem closure_orbit_inv (f: α → α) (hf : Continuous f) (x : α) :
-  IsInvariant (fun n x ↦ f^[n] x) (closure (orbit f x)) := by
-  let s := orbit f x
-  intro n y h0
-  have h1 : ContinuousOn f^[n] (closure s) := Continuous.continuousOn (Continuous.iterate hf n)
-  have h2 : f^[n] y ∈ f^[n] '' closure s := Exists.intro y { left := h0, right := rfl }
-  exact closure_mono (mapsTo'.mp ((orbit_inv f x) n)) (ContinuousOn.image_closure h1 h2)
-
--- open Metric in
--- def everyOrbitDense [MetricSpace α] (f: α → α) (U : Set α) := ∀ (x y : α) (_: x ∈ U) (_: y ∈ U) (ε : ℝ),
---     ε > 0 → ∃ n : ℕ, f^[n] y ∈ ball x ε
-
-open Metric in
-def everyOrbitDense (f: α → α) (U : Set α) := ∀ x ∈ U, Dense (orbit f x)
-
-/-- If the orbit of any point in a set `U` is dense then `U` is invariant. -/
-theorem invariant_if_everyOrbitDense (f: α → α) (U : Set α) (hd : everyOrbitDense f U) (hcl : IsClosed U) :
-    IsInvariant (fun n x ↦ f^[n] x) U := by
-  sorry
-
-theorem minimalAlt_if_minimal (f: α → α)  (U : Set α) (hd : everyOrbitDense f U) (hcl : IsClosed U)
+theorem minimalAlt_if_minimal (f: α → α)  (U : Set α) (hd : AllOrbitsDense f U) (hcl : IsClosed U)
     (hn : U.Nonempty) : IsMinimalAlt f U := by
   -- `U` is a minimal subset and so `U` is nonempty and closed by definition.
   refine { cin.closed := hcl, cin.invariant := ?_, cin.nonempty := hn, minimal := ?_ }
   -- Invariance follows from prior result.
-  · exact invariant_if_everyOrbitDense f U hd hcl
+  · exact invariant_if_allOrbitsDense f U hd hcl
   -- Suppose that `V` is a nonempty closed invariant subset of `U` and show that `V = U`.
   intro V h8
   -- Since `V` is nonempty, there exists `x ∈ V`.
@@ -202,8 +173,8 @@ theorem minimalAlt_if_minimal (f: α → α)  (U : Set α) (hd : everyOrbitDense
   have h3 : x ∈ V := Nonempty.some_mem h8.right.nonempty
   -- The orbit of each point in `U` is dense in `U` and `V` is a closed invariant subset.
   -- Consequently `U = closure orbit x ⊆ V`.
-  have h4 : U = closure (orbit f x) := by
-    unfold everyOrbitDense at hd
+  have h4 : U = closure (InvariantSubset.orbit f x) := by
+    unfold AllOrbitsDense at hd
     refine Set.eq_of_subset_of_subset (fun y h18 ↦ ?_) (fun y h19 ↦ ?_)
     · sorry
     · sorry

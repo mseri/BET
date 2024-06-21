@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2024 Damien Thomine. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Author: Damien Thomine
+Author: Damien Thomine, Pietro Monticone
 -/
 import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
 import Mathlib.Topology.Instances.EReal
@@ -9,11 +9,11 @@ import Mathlib.Topology.Instances.EReal
 /-!
 # Extended nonnegative real logarithm
 We define `log` as an extension of the logarithm of a positive real
-to the extended nonnegative reals `ENNReal`. The function takes values
+to the extended nonnegative reals `ℝ≥0∞`. The function takes values
 in the extended reals `EReal`, with `log 0 = ⊥` and `log ⊤ = ⊤`.
 
 ## Main definitions
-- `log`: The extension of the real logarithm to `ENNReal`.
+- `log`: The extension of the real logarithm to `ℝ≥0∞`.
 - `log_OrderIso`, `log_equiv`: `log` seen respectively
 as an order isomorphism and an homeomorphism.
 
@@ -37,12 +37,12 @@ namespace ENNReal
 section Definition
 
 /--
-The logarithm function defined on the extended nonnegative reals `ENNReal`
+The logarithm function defined on the extended nonnegative reals `ℝ≥0∞`
 to the extended reals `EReal`. Coincides with the usual logarithm function
 and with `Real.log` on positive reals, and takes values `log 0 = ⊥` and `log ⊤ = ⊤`.
-Conventions about multiplication in `ENNReal` and addition in `EReal` make the identity
+Conventions about multiplication in `ℝ≥0∞` and addition in `EReal` make the identity
 `log (x * y) = log x + log y` unconditionnal. --/
-noncomputable def log (x : ENNReal) : EReal :=
+noncomputable def log (x : ℝ≥0∞) : EReal :=
   if x = 0 then ⊥
     else if x = ⊤ then ⊤
     else Real.log (ENNReal.toReal x)
@@ -56,10 +56,10 @@ theorem log_one : log 1 = 0 := by simp [log]
 @[simp]
 theorem log_top : log ⊤ = ⊤ := by simp [log]
 
-theorem log_pos_real {x : ENNReal} (h : x ≠ 0) (h' : x ≠ ⊤) :
+theorem log_pos_real {x : ℝ≥0∞} (h : x ≠ 0) (h' : x ≠ ⊤) :
     log x = Real.log (ENNReal.toReal x) := by simp [log, h, h']
 
-theorem log_pos_real' {x : ENNReal} (h : 0 < x.toReal) :
+theorem log_pos_real' {x : ℝ≥0∞} (h : 0 < x.toReal) :
     log x = Real.log (ENNReal.toReal x) := by
   simp [log, Ne.symm (ne_of_lt (ENNReal.toReal_pos_iff.1 h).1),
     ne_of_lt (ENNReal.toReal_pos_iff.1 h).2]
@@ -114,45 +114,45 @@ theorem log_surjective : Function.Surjective log := by
 theorem log_bijective : Function.Bijective log := ⟨log_injective, log_surjective⟩
 
 /-- `log` as an order isomorphism. --/
-noncomputable def log_OrderIso : ENNReal ≃o EReal :=
+noncomputable def log_OrderIso : ℝ≥0∞ ≃o EReal :=
   StrictMono.orderIsoOfSurjective log log_strictMono log_surjective
 
 @[simp]
-theorem log_eq_iff {x y : ENNReal} : log x = log y ↔ x = y :=
+theorem log_eq_iff {x y : ℝ≥0∞} : log x = log y ↔ x = y :=
   Iff.intro (@log_injective x y) (fun h ↦ by rw [h])
 
 @[simp]
-theorem log_eq_bot_iff {x : ENNReal} : log x = ⊥ ↔ x = 0 := log_zero ▸ @log_eq_iff x 0
+theorem log_eq_bot_iff {x : ℝ≥0∞} : log x = ⊥ ↔ x = 0 := log_zero ▸ @log_eq_iff x 0
 
 @[simp]
-theorem log_eq_one_iff {x : ENNReal} : log x = 0 ↔ x = 1 := log_one ▸ @log_eq_iff x 1
+theorem log_eq_one_iff {x : ℝ≥0∞} : log x = 0 ↔ x = 1 := log_one ▸ @log_eq_iff x 1
 
 @[simp]
-theorem log_eq_top_iff {x : ENNReal} : log x = ⊤ ↔ x = ⊤ := log_top ▸ @log_eq_iff x ⊤
+theorem log_eq_top_iff {x : ℝ≥0∞} : log x = ⊤ ↔ x = ⊤ := log_top ▸ @log_eq_iff x ⊤
 
 @[simp]
-theorem log_lt_iff_lt {x y : ENNReal} : log x < log y ↔ x < y := OrderIso.lt_iff_lt log_OrderIso
+theorem log_lt_iff_lt {x y : ℝ≥0∞} : log x < log y ↔ x < y := OrderIso.lt_iff_lt log_OrderIso
 
 @[simp]
-theorem log_bot_lt_iff {x : ENNReal} : ⊥ < log x ↔ 0 < x := log_zero ▸ @log_lt_iff_lt 0 x
+theorem log_bot_lt_iff {x : ℝ≥0∞} : ⊥ < log x ↔ 0 < x := log_zero ▸ @log_lt_iff_lt 0 x
 
 @[simp]
-theorem log_lt_top_iff {x : ENNReal} : log x < ⊤ ↔ x < ⊤ := log_top ▸ @log_lt_iff_lt x ⊤
+theorem log_lt_top_iff {x : ℝ≥0∞} : log x < ⊤ ↔ x < ⊤ := log_top ▸ @log_lt_iff_lt x ⊤
 
 @[simp]
-theorem log_lt_one_iff {x : ENNReal} : log x < 0 ↔ x < 1 := log_one ▸ @log_lt_iff_lt x 1
+theorem log_lt_one_iff {x : ℝ≥0∞} : log x < 0 ↔ x < 1 := log_one ▸ @log_lt_iff_lt x 1
 
 @[simp]
-theorem log_one_lt_iff {x : ENNReal} : 0 < log x ↔ 1 < x := log_one ▸ @log_lt_iff_lt 1 x
+theorem log_one_lt_iff {x : ℝ≥0∞} : 0 < log x ↔ 1 < x := log_one ▸ @log_lt_iff_lt 1 x
 
 @[simp]
-theorem log_le_iff_le {x y : ENNReal} : log x ≤ log y ↔ x ≤ y := OrderIso.le_iff_le log_OrderIso
+theorem log_le_iff_le {x y : ℝ≥0∞} : log x ≤ log y ↔ x ≤ y := OrderIso.le_iff_le log_OrderIso
 
 @[simp]
-theorem log_le_one_iff (x : ENNReal) : log x ≤ 0 ↔ x ≤ 1 := log_one ▸ @log_le_iff_le x 1
+theorem log_le_one_iff (x : ℝ≥0∞) : log x ≤ 0 ↔ x ≤ 1 := log_one ▸ @log_le_iff_le x 1
 
 @[simp]
-theorem log_one_le_iff {x : ENNReal} : 0 ≤ log x ↔ 1 ≤ x := log_one ▸ @log_le_iff_le 1 x
+theorem log_one_le_iff {x : ℝ≥0∞} : 0 ≤ log x ↔ 1 ≤ x := log_one ▸ @log_le_iff_le 1 x
 
 end Monotonicity
 
@@ -161,7 +161,7 @@ end Monotonicity
 
 section Morphism
 
-theorem log_mul_add {x y : ENNReal} : log (x * y) = log x + log y := by
+theorem log_mul_add {x y : ℝ≥0∞} : log (x * y) = log x + log y := by
   rcases ENNReal.trichotomy x with (rfl | rfl | x_real)
   · simp
   · rw [log_top]
@@ -180,22 +180,20 @@ theorem log_mul_add {x y : ENNReal} : log (x * y) = log x + log y := by
       rw_mod_cast [log_pos_real' xy_real, log_pos_real' y_real, ENNReal.toReal_mul]
       exact Real.log_mul (Ne.symm (ne_of_lt x_real)) (Ne.symm (ne_of_lt y_real))
 
-theorem log_pow {x : ENNReal} {n : ℕ} : log (x ^ n) = (n : ENNReal) * log x := by
-  by_cases h_n_pos : n = 0
-  · rw [h_n_pos, pow_zero x]
-    simp
-  replace h_n_pos := Nat.pos_of_ne_zero h_n_pos
+theorem log_pow {x : ℝ≥0∞} {n : ℕ} : log (x ^ n) = (n : ℝ≥0∞) * log x := by
+  cases' Nat.eq_zero_or_pos n with n_zero n_pos
+  · simp [n_zero, pow_zero x]
   rcases ENNReal.trichotomy x with (rfl | rfl | x_real)
-  · rw [zero_pow (Ne.symm (ne_of_lt h_n_pos)), log_zero, EReal.mul_bot_of_pos]; norm_cast
-  · rw [ENNReal.top_pow h_n_pos, log_top, EReal.mul_top_of_pos]; norm_cast
+  · rw [zero_pow (Ne.symm (ne_of_lt n_pos)), log_zero, EReal.mul_bot_of_pos]; norm_cast
+  · rw [ENNReal.top_pow n_pos, log_top, EReal.mul_top_of_pos]; norm_cast
   · replace x_real := ENNReal.toReal_pos_iff.1 x_real
     have x_ne_zero := Ne.symm (LT.lt.ne x_real.1)
     have x_ne_top := LT.lt.ne x_real.2
-    simp only [log, pow_eq_zero_iff', x_ne_zero, pow_eq_top_iff, x_ne_top, toReal_pow,
-      Real.log_pow, EReal.coe_mul]
+    simp only [log, pow_eq_zero_iff', x_ne_zero, ne_eq, false_and, ↓reduceIte, pow_eq_top_iff,
+      x_ne_top, toReal_pow, Real.log_pow, EReal.coe_mul]
     rfl
 
-theorem log_rpow {x : ENNReal} {y : ℝ} : log (x ^ y) = y * log x := by
+theorem log_rpow {x : ℝ≥0∞} {y : ℝ} : log (x ^ y) = y * log x := by
   rcases lt_trichotomy y 0 with (y_neg | rfl | y_pos)
   · rcases ENNReal.trichotomy x with (rfl | rfl | x_real)
     · simp only [ENNReal.zero_rpow_def y, not_lt_of_lt y_neg, ne_of_lt y_neg, log_top, log_zero]
@@ -227,7 +225,7 @@ end Morphism
 section Continuity
 
 /-- `log` as an homeomorphism. --/
-noncomputable def log_Homeomorph : ENNReal ≃ₜ EReal := OrderIso.toHomeomorph log_OrderIso
+noncomputable def log_Homeomorph : ℝ≥0∞ ≃ₜ EReal := OrderIso.toHomeomorph log_OrderIso
 
 @[continuity, fun_prop]
 theorem log_Continuous : Continuous log := Homeomorph.continuous log_Homeomorph

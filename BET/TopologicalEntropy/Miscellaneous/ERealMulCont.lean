@@ -15,7 +15,7 @@ and leverage as much as possible the symmetries of the multiplication.
 
 namespace ERealMulCont
 
-lemma continuousAt_mul_swap {a b : EReal}
+private lemma continuousAt_mul_swap {a b : EReal}
     (h : ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (a, b)) :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (b, a) := by
   have : (fun p : EReal × EReal ↦ p.1 * p.2) = (fun p : EReal × EReal ↦ p.1 * p.2)
@@ -27,7 +27,7 @@ lemma continuousAt_mul_swap {a b : EReal}
   apply ContinuousAt.comp _ (Continuous.continuousAt continuous_swap)
   simp [h]
 
-lemma continuousAt_mul_symm1 {a b : EReal}
+private lemma continuousAt_mul_symm1 {a b : EReal}
     (h : ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (a, b)) :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (-a, b) := by
   have : (fun p : EReal × EReal ↦ p.1 * p.2) = (fun x : EReal ↦ -x)
@@ -40,22 +40,22 @@ lemma continuousAt_mul_symm1 {a b : EReal}
       (Continuous.continuousAt continuous_id))
   simp [neg_neg, id_eq, h]
 
-lemma continuousAt_mul_symm2 {a b : EReal}
+private lemma continuousAt_mul_symm2 {a b : EReal}
     (h : ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (a, b)) :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (a, -b) :=
   continuousAt_mul_swap (continuousAt_mul_symm1 (continuousAt_mul_swap h))
 
-lemma continuousAt_mul_symm3 {a b : EReal}
+private lemma continuousAt_mul_symm3 {a b : EReal}
     (h : ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (a, b)) :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (-a, -b) :=
   continuousAt_mul_symm1 (continuousAt_mul_symm2 h)
 
-lemma continuousAt_mul_coe_coe (a b : ℝ) :
+private lemma continuousAt_mul_coe_coe (a b : ℝ) :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (a, b) := by
   simp [ContinuousAt, EReal.nhds_coe_coe, ← EReal.coe_mul, Filter.tendsto_map'_iff,
     (· ∘ ·), EReal.tendsto_coe, tendsto_mul]
 
-lemma continuousAt_mul_top_top :
+private lemma continuousAt_mul_top_top :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (⊤, ⊤) := by
   simp only [ContinuousAt, EReal.top_mul_top, EReal.tendsto_nhds_top_iff_real]
   intro x
@@ -72,7 +72,7 @@ lemma continuousAt_mul_top_top :
   . simp
   . rw [Set.mem_Ioi, ← EReal.coe_one]; exact EReal.coe_lt_top 1
 
-lemma continuousAt_mul_top_pos {a : ℝ} (h : 0 < a) :
+private lemma continuousAt_mul_top_pos {a : ℝ} (h : 0 < a) :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (⊤, a) := by
   simp only [ContinuousAt, EReal.top_mul_coe_of_pos h, EReal.tendsto_nhds_top_iff_real]
   intro x
@@ -101,7 +101,7 @@ lemma continuousAt_mul_top_pos {a : ℝ} (h : 0 < a) :
   . simp
   . simp [h]
 
-lemma continuousAt_mul_top_ne_zero {a : ℝ} (h : a ≠ 0) :
+private lemma continuousAt_mul_top_ne_zero {a : ℝ} (h : a ≠ 0) :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (⊤, a) := by
   rcases (lt_or_gt_of_ne h) with a_neg | a_pos
   . exact neg_neg (a : EReal) ▸ continuousAt_mul_symm2 (continuousAt_mul_top_pos (neg_pos.2 a_neg))

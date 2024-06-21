@@ -85,7 +85,7 @@ theorem dynnet_le_dyncover {T : X → X} {F : Set X} {U : Set (X × X)} (U_symm 
     simp only [Finset.coe_sort_coe, Set.mem_iUnion, Subtype.exists, exists_prop] at ht
     exact ht
   choose! F F_to_cover using this
-  apply Finset.card_le_card_of_inj_on F _ _
+  apply Finset.card_le_card_of_injOn F _ _
   . intro x x_in_s
     exact (F_to_cover x x_in_s).1
   . intro x x_in_s y y_in_s Fx_eq_Fy
@@ -327,7 +327,7 @@ theorem log_maxcard_of_empty {T : X → X} {U : Set (X × X)} {n : ℕ} : log (M
 theorem nneg_log_maxcard_of_nonempty (T : X → X) {F : Set X} (F_nonempty : F.Nonempty)
     (U : Set (X × X)) (n : ℕ) :
     0 ≤ log (Maxcard T F U n) := by
-  apply log_one_le_iff.1
+  apply log_one_le_iff.2
   rw [← ENat.toENNReal_one, ENat.toENNReal_le]
   exact (pos_maxcard_of_nonempty T F U n).1 F_nonempty
 
@@ -436,12 +436,12 @@ theorem cover_entropy'_comp_le_net_entropy' (T : X → X) (F : Set X) {U : Set (
 /-- The entropy of T restricted to F, obtained by taking the supremum over uniformity neighbourhoods.
 Note that this supremum is approached by taking small neighbourhoods.-/
 noncomputable def Entropy [UniformSpace X] (T : X → X) (F : Set X) :=
-  ⨆ (U : Set (X × X)) (_ : U ∈ 𝓤 X), NetEntropy T F U
+  ⨆ U ∈ 𝓤 X, NetEntropy T F U
 
 /-- An alternative definition of the entropy of T restricted to F, using a liminf instead of
 a limsup.-/
 noncomputable def Entropy' [UniformSpace X] (T : X → X) (F : Set X) :=
-  ⨆ (U : Set (X × X)) (_ : U ∈ 𝓤 X), NetEntropy' T F U
+  ⨆ U ∈ 𝓤 X, NetEntropy' T F U
 
 theorem entropy_antitone_filter (T : X → X) (F : Set X) :
     Antitone fun (u : UniformSpace X) ↦ @Entropy X u T F := by

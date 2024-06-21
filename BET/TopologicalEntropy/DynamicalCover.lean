@@ -141,15 +141,15 @@ theorem dyncover_iterate {T : X → X} {F : Set X} (F_inv : IsInvariant T F) {V 
       use y
       intro z z_in_inter
       simp only [ball, DynamicalUni, Function.iterate_prod_map, Set.mem_preimage, Set.mem_iInter,
-        Prod_map, mem_compRel]
+        Prod.map_apply, mem_compRel]
       simp only [ball, DynamicalUni, Function.iterate_prod_map, Set.mem_iInter, Set.mem_preimage,
-        Prod_map, Subtype.forall, Finset.mem_range] at z_in_inter
+        Prod.map_apply, Subtype.forall, Finset.mem_range] at z_in_inter
       intro k k_lt_mn
       have kdivm_lt_n : k / m < n := Nat.div_lt_of_lt_mul k_lt_mn
       specialize z_in_inter ⟨(k / m), kdivm_lt_n⟩ (k % m) (Nat.mod_lt k m_pos)
       rw [← Function.iterate_add_apply T (k % m) (m * (k / m)), Nat.mod_add_div k m] at z_in_inter
       simp only [ball, DynamicalUni, Function.iterate_prod_map, Set.mem_iInter, Set.mem_preimage,
-        Prod_map, Subtype.forall, Finset.mem_range] at y_in_inter
+        Prod.map_apply, Subtype.forall, Finset.mem_range] at y_in_inter
       specialize y_in_inter ⟨(k / m), kdivm_lt_n⟩ (k % m) (Nat.mod_lt k m_pos)
       rw [← Function.iterate_add_apply T (k % m) (m * (k / m)), Nat.mod_add_div k m] at y_in_inter
       exact mem_comp_of_mem_ball V_symm y_in_inter z_in_inter
@@ -446,7 +446,7 @@ theorem log_mincard_of_empty {T : X → X} {U : Set (X × X)} {n : ℕ} :
 theorem nneg_log_mincard_of_nonempty (T : X → X) {F : Set X} (h : F.Nonempty) (U : Set (X × X))
     (n : ℕ) :
     0 ≤ log (Mincard T F U n) := by
-  apply log_one_le_iff.1
+  apply log_one_le_iff.2
   rw [← ENat.toENNReal_one, ENat.toENNReal_le]
   exact (pos_mincard_of_nonempty T F U n).1 h
 
@@ -461,11 +461,11 @@ theorem log_mincard_upper_bound {T : X → X} {F : Set X} (F_inv : IsInvariant T
       exact EReal.bot_div_ntop ENNReal.zero_ne_top
     · rw [mincard_time_zero_of_nonempty T F_nonempty (compRel V V), ENat.toENNReal_one, log_one,
         EReal.zero_div]
-      apply log_one_le_iff.1
+      apply log_one_le_iff.2
       rw [← ENat.toENNReal_one, ENat.toENNReal_le]
       exact (pos_mincard_of_nonempty T F V m).1 F_nonempty
   · apply (@EReal.div_le_iff_le_mul _ _ n _ _).2
-    · rw [← log_pow, ← log_le_iff_le]
+    · rw [← log_pow, log_le_iff_le]
       nth_rw 2 [← ENat.toENNRealRingHom_apply]
       rw [← RingHom.map_pow ENat.toENNRealRingHom _ n, ENat.toENNRealRingHom_apply,
         ENat.toENNReal_le]
@@ -488,7 +488,7 @@ theorem log_mincard_upper_bound' {T : X → X} {F : Set X} (F_inv : IsInvariant 
       EReal.zero_div]
     apply mul_nonneg
     · apply EReal.nneg_div
-      rw [← log_one_le_iff, ← ENat.toENNReal_one, ENat.toENNReal_le]
+      rw [log_one_le_iff, ← ENat.toENNReal_one, ENat.toENNReal_le]
       exact (pos_mincard_of_nonempty T F V m).1 F_nonempty
     · exact EReal.coe_ennreal_nonneg _
   have n_ne_zero : (n : ENNReal) ≠ 0 := by exact_mod_cast n_pos.ne.symm
@@ -682,7 +682,7 @@ CoverEntropy T F U < ⊤ := by
   rcases finite_mincard_of_compact F_inv F_compact V_uni 1 with ⟨s, ⟨s_cover, _⟩⟩
   apply lt_of_le_of_lt (cover_entropy_antitone_uni T F V_comp_U)
   apply lt_of_le_of_lt (cover_entropy_le_card_div F_inv V_symm zero_lt_one s_cover)
-  rw [Nat.cast_one, EReal.div_one, ← log_lt_top_iff]
+  rw [Nat.cast_one, EReal.div_one, log_lt_top_iff]
   change ((Finset.card s : ENat) : ENNReal) < ⊤
   rw [← ENat.toENNReal_top, ENat.toENNReal_lt]
   exact Ne.lt_top (ENat.coe_ne_top (Finset.card s))
@@ -690,12 +690,12 @@ CoverEntropy T F U < ⊤ := by
 /-- The entropy of T restricted to F, obtained by taking the supremum over uniformity neighbourhoods.
 Note that this supremum is approached by taking small neighbourhoods.--/
 noncomputable def Entropy [UniformSpace X] (T : X → X) (F : Set X) :=
-  ⨆ (U : Set (X × X)) (_ : U ∈ 𝓤 X), CoverEntropy T F U
+  ⨆ U ∈ 𝓤 X, CoverEntropy T F U
 
 /-- An alternative definition of the entropy of T restricted to F, using a limsup instead of
 a liminf.--/
 noncomputable def Entropy' [UniformSpace X] (T : X → X) (F : Set X) :=
-  ⨆ (U : Set (X × X)) (_ : U ∈ 𝓤 X), CoverEntropy' T F U
+  ⨆ U ∈ 𝓤 X, CoverEntropy' T F U
 
 theorem entropy_antitone_filter (T : X → X) (F : Set X) :
     Antitone fun (u : UniformSpace X) ↦ @Entropy X u T F := by

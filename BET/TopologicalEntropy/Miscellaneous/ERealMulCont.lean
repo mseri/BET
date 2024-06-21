@@ -8,7 +8,7 @@ import BET.TopologicalEntropy.Miscellaneous.ERealDiv
 
 /-!
 # Continuity of the multiplication on EReal
-Outside of indeterminacies `0 × ±∞` and `±∞ × 0`, the multiplication on extended reals `EReal`
+Outside of indeterminacies `(0, ±∞)` and `(±∞, 0)`, the multiplication on extended reals `EReal`
 is continuous. There are many different cases to consider, so we first prove some special cases
 and leverage as much as possible the symmetries of the multiplication.
 -/

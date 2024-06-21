@@ -158,14 +158,12 @@ theorem exists_minimal_set [CompactSpace α]  (f : α → α) (U : Set α) (h : 
     fun V' h4 ↦ h2.right V' ⟨(subset_trans h4.left h1.left), h4.right⟩ h4.left
   exact ⟨h1.left, h1.right, h3⟩
 
-open InvariantSubset
-
 theorem minimalAlt_if_minimal (f: α → α)  (U : Set α) (hd : AllOrbitsDense f U) (hcl : IsClosed U)
     (hn : U.Nonempty) : IsMinimalAlt f U := by
   -- `U` is a minimal subset and so `U` is nonempty and closed by definition.
   refine { cin.closed := hcl, cin.invariant := ?_, cin.nonempty := hn, minimal := ?_ }
   -- Invariance follows from prior result.
-  · exact invariant_if_allOrbitsDense f U hd hcl
+  · apply inv_if_allOrbitsDense f U hcl hd
   -- Suppose that `V` is a nonempty closed invariant subset of `U` and show that `V = U`.
   intro V h8
   -- Since `V` is nonempty, there exists `x ∈ V`.

@@ -8,6 +8,8 @@ import Mathlib.Tactic
 import Mathlib.Topology.Separation
 import Mathlib.Dynamics.OmegaLimit
 import Mathlib.Dynamics.Ergodic.AddCircle
+import BET.TopologicalEntropy.InvariantSubset
+
 
 /-!
 # Topological dynamics
@@ -142,12 +144,7 @@ noncomputable def doubling_map (x : unitInterval) : unitInterval :=
 --   simp only [singleton_inter_nonempty, frequently_atTop] at recur_x_in_U
 --   exact recur_x_in_U N
 
-def orbit_atTop (f : α → α) (x : α) : Filter α := Filter.map (fun n ↦ f^[n] x) atTop
-
-lemma orbit_atTop_eq_mapClusterPt (f : α → α) (x : α) :
-  MapClusterPt x atTop (fun n ↦ f^[n] x) = ClusterPt x (orbit_atTop f x) := by
-  rw [orbit_atTop, MapClusterPt]
-
+open InvariantSubset
 theorem recurrentSet_iff_clusterPt (x : α) :
     x ∈ recurrentSet f ↔ ClusterPt x (orbit_atTop f x) := by
   constructor

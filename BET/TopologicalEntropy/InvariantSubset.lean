@@ -38,6 +38,13 @@ theorem image_of_orbit_eq_orbit_of_image (x : X) (n : ℕ) :
     . use k
     . rw [← iterate_add_apply, add_comm, iterate_add_apply, Tnkx_eq_y]
 
+/-- A filter for the accumulation points of an orbit -/
+def orbit_atTop (T : X → X) (x : X) : Filter X := Filter.map (fun n ↦ T^[n] x) Filter.atTop
+
+lemma orbit_atTop_eq_mapClusterPt [TopologicalSpace X] (T : X → X) (x : X) :
+  MapClusterPt x Filter.atTop (fun n ↦ T^[n] x) = ClusterPt x (orbit_atTop T x) := by
+  rw [orbit_atTop, MapClusterPt]
+
 /-- A subset F is T-invariant if, for any x ∈ F, T(x) ∈ F. Written with preimages. -/
 def IsInvariant (T : X → X) (F : Set X) : Prop :=
   F ⊆ T ⁻¹' F
@@ -110,6 +117,8 @@ theorem sUnion_of_inv_is_inv {T : X → X} {A : Set (Set X)}
   simp only [Set.preimage_sUnion, Set.mem_iUnion, Set.mem_preimage, exists_prop]
   use F
   exact ⟨F_in_A, inv_def' (h F F_in_A) x_in_F⟩
+
+end InvariantSubset
 
 /--
 Definition of the set of points whose forward orbit stays in F. This is the largest invariant subset
@@ -312,19 +321,10 @@ def IsDenseOrbit (T : X → X) (x : X) : Prop := Dense (orbit T x)
 /-- The orbit of all pounts in the set U under the iteration of T are dense -/
 def AllOrbitsDense (T : X → X) (U : Set X) : Prop := ∀ x ∈ U, IsDenseOrbit T x
 
-/-- The closure of an orbit is invariant under the dynamics. -/
-theorem closure_orbit_inv (T: X → X) (hf : Continuous T) (x : X) :
-  IsInvariant (fun x ↦ T^[n] x) (closure (orbit T x)) := by
-  intro y hclosure
-  have image_subset_orbit : T^[n] '' (orbit T x) ⊆ orbit T x := by
-    apply Set.mapsTo'.mp
-    intro z hz
-    refine iter_of_inv_in_inv' (orbit_is_inv T x) n hz
-  exact map_mem_closure (Continuous.iterate hf n) hclosure (Set.mapsTo'.mpr image_subset_orbit)
-
 /-- If the orbit of any point in a set `U` is dense then `U` is invariant. -/
 theorem inv_if_allOrbitsDense (T: X → X) (U : Set X) (hcl : IsClosed U) (hd : AllOrbitsDense f U) :
     IsInvariant (fun x ↦ T^[n] x) U := by
+
   sorry
 
 end InvariantDense

@@ -320,7 +320,7 @@ theorem shift_cover_entropy_le_log_card (A : Type _) [Fintype A] (k : ℕ) :
       let a := Classical.arbitrary A
       use fun _ : ℕ ↦ a
     rw [DynamicalCover.cover_entropy_by_univ_of_nonempty (ShiftOS A)
-      (Set.nonempty_iff_univ_nonempty.1 this), ← log_one_le_iff]
+      (Set.nonempty_iff_univ_nonempty.1 this), log_one_le_iff]
     norm_cast
     exact Fintype.card_pos
   /-Main case.-/

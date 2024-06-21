@@ -60,7 +60,7 @@ theorem preimage_of_dynamical_net {F : Set X} {V : Set (Y × Y)} {n : ℕ} {t : 
     apply h'.2 x' x'_in_t y' y'_in_t
     rcases inter_nonempty with ⟨z, z_in_inter⟩
     rw [← DynamicalUniformity.preimage_of_dynamical_uni h V n] at z_in_inter
-    simp only [ball, Set.mem_inter_iff, Set.mem_preimage, Prod_map] at z_in_inter
+    simp only [ball, Set.mem_inter_iff, Set.mem_preimage, Prod.map_apply] at z_in_inter
     rw [(f_section x' x'_in_t).2, (f_section y' y'_in_t).2] at z_in_inter
     use (φ z)
     exact z_in_inter

@@ -61,8 +61,8 @@ theorem log_pos_real {x : ENNReal} (h : x ≠ 0) (h' : x ≠ ⊤) :
 
 theorem log_pos_real' {x : ENNReal} (h : 0 < x.toReal) :
     log x = Real.log (ENNReal.toReal x) := by
-  simp [log, Ne.symm (ne_of_lt (ENNReal.toReal_pos_iff.1 h).1), ↓reduceIte,
-  ne_of_lt (ENNReal.toReal_pos_iff.1 h).2]
+  simp [log, Ne.symm (ne_of_lt (ENNReal.toReal_pos_iff.1 h).1),
+    ne_of_lt (ENNReal.toReal_pos_iff.1 h).2]
 
 theorem log_of_nNReal {x : NNReal} (h : x ≠ 0) :
     log (ENNReal.ofReal x) = Real.log x := by simp [log, h]
@@ -77,24 +77,23 @@ section Monotonicity
 theorem log_strictMono : StrictMono log := by
   intro x y h
   unfold log
-  rcases ENNReal.trichotomy x with (x_zero | x_top | x_real)
-  . rcases ENNReal.trichotomy y with (y_zero | y_top | y_real)
-    . exfalso; rw [x_zero, y_zero] at h; exact lt_irrefl 0 h
-    . simp [x_zero, ↓reduceIte, y_top]
-    . simp [x_zero, ↓reduceIte, Ne.symm (ne_of_lt (ENNReal.toReal_pos_iff.1 y_real).1),
+  rcases ENNReal.trichotomy x with (rfl | rfl | x_real)
+  . rcases ENNReal.trichotomy y with (rfl | rfl | y_real)
+    . exfalso; exact lt_irrefl 0 h
+    . simp
+    . simp [Ne.symm (ne_of_lt (ENNReal.toReal_pos_iff.1 y_real).1),
       ne_of_lt (ENNReal.toReal_pos_iff.1 y_real).2, EReal.bot_lt_coe]
-  . exfalso
-    exact (ne_top_of_lt h) x_top
-  . simp only [Ne.symm (ne_of_lt (ENNReal.toReal_pos_iff.1 x_real).1), ↓reduceIte,
-    ne_of_lt (ENNReal.toReal_pos_iff.1 x_real).2]
-    rcases ENNReal.trichotomy y with (y_zero | y_top | y_real)
-    . exfalso; rw [y_zero, ← ENNReal.bot_eq_zero] at h; exact not_lt_bot h
-    . simp [y_top]
+  . exfalso; exact (ne_top_of_lt h) (Eq.refl ⊤)
+  . simp only [Ne.symm (ne_of_lt (ENNReal.toReal_pos_iff.1 x_real).1),
+      ne_of_lt (ENNReal.toReal_pos_iff.1 x_real).2]
+    rcases ENNReal.trichotomy y with (rfl | rfl | y_real)
+    . exfalso; rw [← ENNReal.bot_eq_zero] at h; exact not_lt_bot h
+    . simp
     . simp only [Ne.symm (ne_of_lt (ENNReal.toReal_pos_iff.1 y_real).1), ↓reduceIte,
-      ne_of_lt (ENNReal.toReal_pos_iff.1 y_real).2, EReal.coe_lt_coe_iff]
-      exact Real.log_lt_log x_real
-        ((ENNReal.toReal_lt_toReal (ne_of_lt (ENNReal.toReal_pos_iff.1 x_real).2)
-        (ne_of_lt (ENNReal.toReal_pos_iff.1 y_real).2)).2 h)
+        ne_of_lt (ENNReal.toReal_pos_iff.1 y_real).2, EReal.coe_lt_coe_iff]
+      apply Real.log_lt_log x_real
+      exact (ENNReal.toReal_lt_toReal (ne_of_lt (ENNReal.toReal_pos_iff.1 x_real).2)
+        (ne_of_lt (ENNReal.toReal_pos_iff.1 y_real).2)).2 h
 
 theorem log_monotone : Monotone log := StrictMono.monotone log_strictMono
 
@@ -115,36 +114,45 @@ theorem log_surjective : Function.Surjective log := by
 theorem log_bijective : Function.Bijective log := ⟨log_injective, log_surjective⟩
 
 /-- `log` as an order isomorphism. --/
-@[simps!]
 noncomputable def log_OrderIso : ENNReal ≃o EReal :=
   StrictMono.orderIsoOfSurjective log log_strictMono log_surjective
 
-theorem log_eq_iff {x y : ENNReal} : x = y ↔ log x = log y :=
-  Iff.intro (fun h ↦ by rw [h]) (@log_injective x y)
+@[simp]
+theorem log_eq_iff {x y : ENNReal} : log x = log y ↔ x = y :=
+  Iff.intro (@log_injective x y) (fun h ↦ by rw [h])
 
-theorem log_eq_bot_iff {x : ENNReal} : x = 0 ↔ log x = ⊥ := log_zero ▸ @log_eq_iff x 0
+@[simp]
+theorem log_eq_bot_iff {x : ENNReal} : log x = ⊥ ↔ x = 0 := log_zero ▸ @log_eq_iff x 0
 
-theorem log_eq_one_iff {x : ENNReal} : x = 1 ↔ log x = 0 := log_one ▸ @log_eq_iff x 1
+@[simp]
+theorem log_eq_one_iff {x : ENNReal} : log x = 0 ↔ x = 1 := log_one ▸ @log_eq_iff x 1
 
-theorem log_eq_top_iff {x : ENNReal} : x = ⊤ ↔ log x = ⊤ := log_top ▸ @log_eq_iff x ⊤
+@[simp]
+theorem log_eq_top_iff {x : ENNReal} : log x = ⊤ ↔ x = ⊤ := log_top ▸ @log_eq_iff x ⊤
 
-theorem log_lt_iff_lt {x y : ENNReal} : x < y ↔ log x < log y :=
-  Iff.symm (OrderIso.lt_iff_lt log_OrderIso)
+@[simp]
+theorem log_lt_iff_lt {x y : ENNReal} : log x < log y ↔ x < y := OrderIso.lt_iff_lt log_OrderIso
 
-theorem log_bot_lt_iff {x : ENNReal} : 0 < x ↔ ⊥ < log x := log_zero ▸ @log_lt_iff_lt 0 x
+@[simp]
+theorem log_bot_lt_iff {x : ENNReal} : ⊥ < log x ↔ 0 < x := log_zero ▸ @log_lt_iff_lt 0 x
 
-theorem log_lt_top_iff {x : ENNReal} : x < ⊤ ↔ log x < ⊤ := log_top ▸ @log_lt_iff_lt x ⊤
+@[simp]
+theorem log_lt_top_iff {x : ENNReal} : log x < ⊤ ↔ x < ⊤ := log_top ▸ @log_lt_iff_lt x ⊤
 
-theorem log_lt_one_iff {x : ENNReal} : x < 1 ↔ log x < 0 := log_one ▸ @log_lt_iff_lt x 1
+@[simp]
+theorem log_lt_one_iff {x : ENNReal} : log x < 0 ↔ x < 1 := log_one ▸ @log_lt_iff_lt x 1
 
-theorem log_one_lt_iff {x : ENNReal} : 1 < x ↔ 0 < log x := log_one ▸ @log_lt_iff_lt 1 x
+@[simp]
+theorem log_one_lt_iff {x : ENNReal} : 0 < log x ↔ 1 < x := log_one ▸ @log_lt_iff_lt 1 x
 
-theorem log_le_iff_le {x y : ENNReal} : x ≤ y ↔ log x ≤ log y :=
-  Iff.symm (OrderIso.le_iff_le log_OrderIso)
+@[simp]
+theorem log_le_iff_le {x y : ENNReal} : log x ≤ log y ↔ x ≤ y := OrderIso.le_iff_le log_OrderIso
 
-theorem log_le_one_iff (x : ENNReal) : x ≤ 1 ↔ log x ≤ 0 := log_one ▸ @log_le_iff_le x 1
+@[simp]
+theorem log_le_one_iff (x : ENNReal) : log x ≤ 0 ↔ x ≤ 1 := log_one ▸ @log_le_iff_le x 1
 
-theorem log_one_le_iff {x : ENNReal} : 1 ≤ x ↔ 0 ≤ log x := log_one ▸ @log_le_iff_le 1 x
+@[simp]
+theorem log_one_le_iff {x : ENNReal} : 0 ≤ log x ↔ 1 ≤ x := log_one ▸ @log_le_iff_le 1 x
 
 end Monotonicity
 
@@ -154,19 +162,19 @@ end Monotonicity
 section Morphism
 
 theorem log_mul_add {x y : ENNReal} : log (x * y) = log x + log y := by
-  rcases ENNReal.trichotomy x with (x_zero | x_top | x_real)
-  · simp only [x_zero, zero_mul, log_zero, EReal.bot_add]
-  · rw [x_top, log_top]
-    rcases ENNReal.trichotomy y with (y_zero | y_top | y_real)
-    · rw [y_zero, mul_zero, log_zero, EReal.add_bot]
-    · simp only [y_top, ne_eq, top_ne_zero, not_false_eq_true, mul_top, log_top, EReal.top_add_top]
-    · rw [log_pos_real' y_real, ENNReal.top_mul', EReal.top_add_coe, ← log_eq_top_iff]
+  rcases ENNReal.trichotomy x with (rfl | rfl | x_real)
+  · simp
+  · rw [log_top]
+    rcases ENNReal.trichotomy y with (rfl | rfl | y_real)
+    · rw [mul_zero, log_zero, EReal.add_bot]
+    · simp
+    · rw [log_pos_real' y_real, ENNReal.top_mul', EReal.top_add_coe, log_eq_top_iff]
       simp only [ite_eq_right_iff, zero_ne_top, imp_false]
       exact Ne.symm (ne_of_lt (ENNReal.toReal_pos_iff.1 y_real).1)
   · rw [log_pos_real' x_real]
-    rcases ENNReal.trichotomy y with (y_zero | y_top | y_real)
-    · simp [y_zero]
-    · simp [y_top, mul_top', Ne.symm (ne_of_lt (ENNReal.toReal_pos_iff.1 x_real).1)]
+    rcases ENNReal.trichotomy y with (rfl | rfl | y_real)
+    · simp
+    · simp [Ne.symm (ne_of_lt (ENNReal.toReal_pos_iff.1 x_real).1)]
     · have xy_real := Real.mul_pos x_real y_real
       rw [← ENNReal.toReal_mul] at xy_real
       rw_mod_cast [log_pos_real' xy_real, log_pos_real' y_real, ENNReal.toReal_mul]
@@ -177,23 +185,22 @@ theorem log_pow {x : ENNReal} {n : ℕ} : log (x ^ n) = (n : ENNReal) * log x :=
   · rw [h_n_pos, pow_zero x]
     simp
   replace h_n_pos := Nat.pos_of_ne_zero h_n_pos
-  rcases ENNReal.trichotomy x with (x_zero | x_top | x_real)
-  · rw [x_zero, zero_pow (Ne.symm (ne_of_lt h_n_pos)), log_zero, EReal.mul_bot_of_pos]; norm_cast
-  · rw [x_top, ENNReal.top_pow h_n_pos, log_top, EReal.mul_top_of_pos]; norm_cast
+  rcases ENNReal.trichotomy x with (rfl | rfl | x_real)
+  · rw [zero_pow (Ne.symm (ne_of_lt h_n_pos)), log_zero, EReal.mul_bot_of_pos]; norm_cast
+  · rw [ENNReal.top_pow h_n_pos, log_top, EReal.mul_top_of_pos]; norm_cast
   · replace x_real := ENNReal.toReal_pos_iff.1 x_real
     have x_ne_zero := Ne.symm (LT.lt.ne x_real.1)
     have x_ne_top := LT.lt.ne x_real.2
-    simp only [log, pow_eq_zero_iff', x_ne_zero, ne_eq, false_and, ↓reduceIte, pow_eq_top_iff,
-      x_ne_top, toReal_pow, Real.log_pow, EReal.coe_mul]
+    simp only [log, pow_eq_zero_iff', x_ne_zero, pow_eq_top_iff, x_ne_top, toReal_pow,
+      Real.log_pow, EReal.coe_mul]
     rfl
 
 theorem log_rpow {x : ENNReal} {y : ℝ} : log (x ^ y) = y * log x := by
-  rcases lt_trichotomy y 0 with (y_neg | y_zero | y_pos)
-  · rcases ENNReal.trichotomy x with (x_zero | x_top | x_real)
-    · simp only [x_zero, ENNReal.zero_rpow_def y, not_lt_of_lt y_neg, ↓reduceIte, ne_of_lt y_neg,
-        log_top, log_zero]
+  rcases lt_trichotomy y 0 with (y_neg | rfl | y_pos)
+  · rcases ENNReal.trichotomy x with (rfl | rfl | x_real)
+    · simp only [ENNReal.zero_rpow_def y, not_lt_of_lt y_neg, ne_of_lt y_neg, log_top, log_zero]
       exact Eq.symm (EReal.coe_mul_bot_of_neg y_neg)
-    · rw [x_top, ENNReal.top_rpow_of_neg y_neg, log_zero, log_top]
+    · rw [ENNReal.top_rpow_of_neg y_neg, log_zero, log_top]
       exact Eq.symm (EReal.coe_mul_top_of_neg y_neg)
     · have x_ne_zero := Ne.symm (LT.lt.ne (ENNReal.toReal_pos_iff.1 x_real).1)
       have x_ne_top := LT.lt.ne (ENNReal.toReal_pos_iff.1 x_real).2
@@ -201,10 +208,10 @@ theorem log_rpow {x : ENNReal} {y : ℝ} : log (x ^ y) = y * log x := by
         rpow_eq_top_iff]
       norm_cast
       exact ENNReal.toReal_rpow x y ▸ Real.log_rpow x_real y
-  · rw [y_zero, @ENNReal.rpow_zero x, log_one, EReal.coe_zero, zero_mul]
-  · rcases ENNReal.trichotomy x with (x_zero | x_top | x_real)
-    · rw [x_zero, ENNReal.zero_rpow_of_pos y_pos, log_zero, EReal.mul_bot_of_pos]; norm_cast
-    · rw [x_top, ENNReal.top_rpow_of_pos y_pos, log_top, EReal.mul_top_of_pos]; norm_cast
+  · simp
+  · rcases ENNReal.trichotomy x with (rfl | rfl | x_real)
+    · rw [ENNReal.zero_rpow_of_pos y_pos, log_zero, EReal.mul_bot_of_pos]; norm_cast
+    · rw [ENNReal.top_rpow_of_pos y_pos, log_top, EReal.mul_top_of_pos]; norm_cast
     · have x_ne_zero := Ne.symm (LT.lt.ne (ENNReal.toReal_pos_iff.1 x_real).1)
       have x_ne_top := LT.lt.ne (ENNReal.toReal_pos_iff.1 x_real).2
       simp only [log, rpow_eq_zero_iff, x_ne_zero, false_and, x_ne_top, or_self, ↓reduceIte,
@@ -220,10 +227,9 @@ end Morphism
 section Continuity
 
 /-- `log` as an homeomorphism. --/
-@[simps!]
 noncomputable def log_Homeomorph : ENNReal ≃ₜ EReal := OrderIso.toHomeomorph log_OrderIso
 
-@[continuity]
+@[continuity, fun_prop]
 theorem log_Continuous : Continuous log := Homeomorph.continuous log_Homeomorph
 
 end Continuity

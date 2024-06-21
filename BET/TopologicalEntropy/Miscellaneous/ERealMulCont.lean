@@ -15,7 +15,7 @@ and leverage as much as possible the symmetries of the multiplication.
 
 namespace ERealMulCont
 
-lemma continuousAt_mul_swap {a b : EReal}
+private lemma continuousAt_mul_swap {a b : EReal}
     (h : ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (a, b)) :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (b, a) := by
   have : (fun p : EReal × EReal ↦ p.1 * p.2) = (fun p : EReal × EReal ↦ p.1 * p.2)
@@ -27,35 +27,35 @@ lemma continuousAt_mul_swap {a b : EReal}
   apply ContinuousAt.comp _ (Continuous.continuousAt continuous_swap)
   simp [h]
 
-lemma continuousAt_mul_symm1 {a b : EReal}
+private lemma continuousAt_mul_symm1 {a b : EReal}
     (h : ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (a, b)) :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (-a, b) := by
   have : (fun p : EReal × EReal ↦ p.1 * p.2) = (fun x : EReal ↦ -x)
       ∘ (fun p : EReal × EReal ↦ p.1 * p.2) ∘ (fun p : EReal × EReal ↦ (-p.1, p.2)) := by
     ext p
-    simp only [Function.comp_apply, neg_mul, neg_neg]
+    simp
   rw [this]
   apply ContinuousAt.comp (Continuous.continuousAt continuous_neg)
     <| ContinuousAt.comp _ (ContinuousAt.prod_map (Continuous.continuousAt continuous_neg)
       (Continuous.continuousAt continuous_id))
-  simp [neg_neg, id_eq, h]
+  simp [h]
 
-lemma continuousAt_mul_symm2 {a b : EReal}
+private lemma continuousAt_mul_symm2 {a b : EReal}
     (h : ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (a, b)) :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (a, -b) :=
   continuousAt_mul_swap (continuousAt_mul_symm1 (continuousAt_mul_swap h))
 
-lemma continuousAt_mul_symm3 {a b : EReal}
+private lemma continuousAt_mul_symm3 {a b : EReal}
     (h : ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (a, b)) :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (-a, -b) :=
   continuousAt_mul_symm1 (continuousAt_mul_symm2 h)
 
-lemma continuousAt_mul_coe_coe (a b : ℝ) :
+private lemma continuousAt_mul_coe_coe (a b : ℝ) :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (a, b) := by
   simp [ContinuousAt, EReal.nhds_coe_coe, ← EReal.coe_mul, Filter.tendsto_map'_iff,
     (· ∘ ·), EReal.tendsto_coe, tendsto_mul]
 
-lemma continuousAt_mul_top_top :
+private lemma continuousAt_mul_top_top :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (⊤, ⊤) := by
   simp only [ContinuousAt, EReal.top_mul_top, EReal.tendsto_nhds_top_iff_real]
   intro x
@@ -72,7 +72,7 @@ lemma continuousAt_mul_top_top :
   . simp
   . rw [Set.mem_Ioi, ← EReal.coe_one]; exact EReal.coe_lt_top 1
 
-lemma continuousAt_mul_top_pos {a : ℝ} (h : 0 < a) :
+private lemma continuousAt_mul_top_pos {a : ℝ} (h : 0 < a) :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (⊤, a) := by
   simp only [ContinuousAt, EReal.top_mul_coe_of_pos h, EReal.tendsto_nhds_top_iff_real]
   intro x
@@ -87,8 +87,7 @@ lemma continuousAt_mul_top_pos {a : ℝ} (h : 0 < a) :
       rw [EReal.coe_nonneg]
       apply mul_nonneg _ (le_of_lt (inv_pos_of_pos h))
       simp only [gt_iff_lt, Nat.ofNat_pos, mul_nonneg_iff_of_pos_left, le_max_iff, le_refl, or_true]
-    have a2_pos : 0 < ((a/2 : ℝ) : EReal) := by
-      rw [EReal.coe_pos]; linarith
+    have a2_pos : 0 < ((a/2 : ℝ) : EReal) := by rw [EReal.coe_pos]; linarith
     have lock := mul_le_mul_of_nonneg_right (le_of_lt p1_gt) (le_of_lt a2_pos)
     have key := mul_le_mul_of_nonneg_left (le_of_lt p2_gt) (le_of_lt p1_pos)
     replace lock := le_trans lock key; clear key
@@ -101,7 +100,7 @@ lemma continuousAt_mul_top_pos {a : ℝ} (h : 0 < a) :
   . simp
   . simp [h]
 
-lemma continuousAt_mul_top_ne_zero {a : ℝ} (h : a ≠ 0) :
+private lemma continuousAt_mul_top_ne_zero {a : ℝ} (h : a ≠ 0) :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) (⊤, a) := by
   rcases (lt_or_gt_of_ne h) with a_neg | a_pos
   . exact neg_neg (a : EReal) ▸ continuousAt_mul_symm2 (continuousAt_mul_top_pos (neg_pos.2 a_neg))
@@ -114,22 +113,17 @@ theorem continuousAt_mul {p : EReal × EReal} (h₁ : p.1 ≠ 0 ∨ p.2 ≠ ⊥)
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) p := by
   rcases p with ⟨x, y⟩
   induction x using EReal.rec <;> induction y using EReal.rec
-  . rw [← EReal.neg_top]
-    exact continuousAt_mul_symm3 continuousAt_mul_top_top
-  . simp only [ne_eq, not_true_eq_false, EReal.coe_eq_zero, false_or] at h₃; clear h₁ h₂ h₄
-    rw [← EReal.neg_top]
+  . exact continuousAt_mul_symm3 continuousAt_mul_top_top
+  . simp only [ne_eq, not_true_eq_false, EReal.coe_eq_zero, false_or] at h₃
     exact continuousAt_mul_symm1 (continuousAt_mul_top_ne_zero h₃)
-  . rw [← EReal.neg_top]
-    exact continuousAt_mul_symm1 continuousAt_mul_top_top
-  . simp only [ne_eq, EReal.coe_eq_zero, not_true_eq_false, or_false] at h₁; clear h₂ h₃ h₄
-    rw [← EReal.neg_top]
+  . exact EReal.neg_top ▸ continuousAt_mul_symm1 continuousAt_mul_top_top
+  . simp only [ne_eq, EReal.coe_eq_zero, not_true_eq_false, or_false] at h₁
     exact continuousAt_mul_symm2 (continuousAt_mul_swap (continuousAt_mul_top_ne_zero h₁))
   . exact continuousAt_mul_coe_coe _ _
-  . simp only [ne_eq, EReal.coe_eq_zero, not_true_eq_false, or_false] at h₂; clear h₁ h₃ h₄
+  . simp only [ne_eq, EReal.coe_eq_zero, not_true_eq_false, or_false] at h₂
     exact continuousAt_mul_swap (continuousAt_mul_top_ne_zero h₂)
-  . rw [← EReal.neg_top]
-    exact continuousAt_mul_symm2 continuousAt_mul_top_top
-  . simp only [ne_eq, not_true_eq_false, EReal.coe_eq_zero, false_or] at h₄; clear h₁ h₂ h₃
+  . exact continuousAt_mul_symm2 continuousAt_mul_top_top
+  . simp only [ne_eq, not_true_eq_false, EReal.coe_eq_zero, false_or] at h₄
     exact continuousAt_mul_top_ne_zero h₄
   . exact continuousAt_mul_top_top
 

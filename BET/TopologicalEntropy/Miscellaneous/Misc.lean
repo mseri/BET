@@ -41,6 +41,7 @@ theorem uniformContinuous_ite {X : Type _} [UniformSpace X] (T : X → X) (n : �
   · exact uniformContinuous_id
   · exact Function.iterate_succ _ _ ▸ UniformContinuous.comp hn h
 
+/- MATHLIB PR: ... -/
 /-Suggested: Mathlib.Order.Monotone.Basic, Mathlib.Algebra.Group.Hom.Defs-/
 theorem prod_map_ite {X Y : Type _} (S : X → X) (T : Y → Y) (n : ℕ) :
     (Prod.map S T)^[n] = Prod.map S^[n] T^[n] := by
@@ -49,6 +50,7 @@ theorem prod_map_ite {X Y : Type _} (S : X → X) (T : Y → Y) (n : ℕ) :
   · rw [Function.iterate_succ, hn, Prod.map_comp_map, ← Function.iterate_succ,
       ← Function.iterate_succ]
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14096 -/
 /-Suggested: Mathlib.Data.Prod.Basic-/
 theorem prod_map_comp_swap {X : Type _} (f g : X → X) :
     Prod.map f g ∘ Prod.swap = Prod.swap ∘ Prod.map g f := rfl

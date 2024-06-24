@@ -6,6 +6,8 @@ Author: Damien Thomine, Pietro Monticone
 import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
 import Mathlib.Topology.Instances.EReal
 
+-- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14019
+
 /-!
 # Extended nonnegative real logarithm
 We define `log` as an extension of the logarithm of a positive real

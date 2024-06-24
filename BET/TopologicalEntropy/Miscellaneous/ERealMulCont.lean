@@ -3,8 +3,9 @@ Copyright (c) 2024 Damien Thomine. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Author: Damien Thomine, Pietro Monticone
 -/
+import Mathlib.Analysis.RCLike.Basic
+import Mathlib.Data.Complex.Abs
 import Mathlib.Topology.Instances.EReal
-import BET.TopologicalEntropy.Miscellaneous.ERealDiv
 
 /-!
 # Continuity of the multiplication on EReal
@@ -130,3 +131,4 @@ theorem continuousAt_mul {p : EReal × EReal} (h₁ : p.1 ≠ 0 ∨ p.2 ≠ ⊥)
 end ERealMulCont
 
 #lint
+#minimize_imports

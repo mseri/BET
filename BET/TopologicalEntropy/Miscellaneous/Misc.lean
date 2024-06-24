@@ -1,7 +1,7 @@
+import Mathlib.Order.LiminfLimsup
 import Mathlib.Data.ENat.Basic
 import Mathlib.Data.Real.EReal
-import Mathlib.Order.Filter.CountableInter
-import Mathlib.Topology.Instances.EReal
+import Mathlib.Topology.UniformSpace.Basic
 
 /-!
 # Miscellaneous lemmas
@@ -18,6 +18,7 @@ EReal (`autoparam`...) but still make proofs more cumbersome than they should be
 
 namespace Misc
 
+-- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14019
 theorem ENat.top_pow {n : ℕ} (n_pos : 0 < n) : (⊤ : ℕ∞)^n = ⊤ := by
   apply @Nat.le_induction 1 (fun m : ℕ ↦ fun _ : 1 ≤ m ↦ (⊤ : ℕ∞) ^ m = ⊤) (pow_one ⊤)
   · intro m _ h
@@ -28,16 +29,13 @@ theorem ENat.top_pow {n : ℕ} (n_pos : 0 < n) : (⊤ : ℕ∞)^n = ⊤ := by
                      _ = ⊤         := WithTop.top_mul_top
   · exact n_pos
 
-#find_home! ENat.top_pow
-
+-- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14066
 theorem uniformContinuous_ite {X : Type _} [UniformSpace X] (T : X → X) (n : ℕ)
     (h : UniformContinuous T) :
     UniformContinuous T^[n] := by
   induction' n with n hn
   · exact uniformContinuous_id
   · exact Function.iterate_succ _ _ ▸ UniformContinuous.comp hn h
-
-#find_home! uniformContinuous_ite
 
 theorem prod_map_ite {X Y : Type _} (S : X → X) (T : Y → Y) (n : ℕ) :
     (Prod.map S T)^[n] = Prod.map S^[n] T^[n] := by

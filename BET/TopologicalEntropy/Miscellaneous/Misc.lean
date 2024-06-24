@@ -77,6 +77,7 @@ theorem WithBot.eq_bot_iff_forall {α : Type _} [Preorder α] {x : WithBot α} :
     specialize h y
     exact ne_of_lt h (Eq.symm hy)
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14102 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 theorem EReal.top_add_ne_bot {x : EReal} (h : x ≠ ⊥) : ⊤ + x = ⊤ := by
   induction x using EReal.rec

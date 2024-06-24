@@ -85,10 +85,12 @@ theorem EReal.top_add_ne_bot {x : EReal} (h : x ≠ ⊥) : ⊤ + x = ⊤ := by
   · exact EReal.top_add_coe _
   · exact EReal.top_add_top
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14102 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 theorem EReal.ne_bot_add_top {x : EReal} (h : x ≠ ⊥) : x + ⊤ = ⊤ := by
   rw [add_comm, EReal.top_add_ne_bot h]
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14102 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 theorem EReal.add_pos {a b : EReal} (ha : 0 < a) (hb : 0 < b) : 0 < a + b := by
   induction' a using EReal.rec with a
@@ -100,6 +102,7 @@ theorem EReal.add_pos {a b : EReal} (ha : 0 < a) (hb : 0 < b) : 0 < a + b := by
   · rw [EReal.top_add_ne_bot (Ne.symm (ne_of_lt (lt_trans EReal.bot_lt_zero hb)))]
     exact ha
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14102 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 theorem EReal.mul_pos {a b : EReal} (ha : 0 < a) (hb : 0 < b) : 0 < a * b := by
   induction' a using EReal.rec with a

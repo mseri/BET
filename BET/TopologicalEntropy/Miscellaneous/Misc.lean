@@ -1,7 +1,7 @@
+import Mathlib.Order.LiminfLimsup
 import Mathlib.Data.ENat.Basic
 import Mathlib.Data.Real.EReal
-import Mathlib.Order.Filter.CountableInter
-import Mathlib.Topology.Instances.EReal
+import Mathlib.Topology.UniformSpace.Basic
 
 /-!
 # Miscellaneous lemmas
@@ -20,7 +20,7 @@ EReal (`autoparam`...) but still make proofs more cumbersome than they should be
 
 namespace Misc
 
-/-Suggested: Mathlib.Data.ENat.Basic-/
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14019 -/
 theorem ENat.top_pow {n : ℕ} (n_pos : 0 < n) : (⊤ : ℕ∞)^n = ⊤ := by
   apply @Nat.le_induction 1 (fun m : ℕ ↦ fun _ : 1 ≤ m ↦ (⊤ : ℕ∞) ^ m = ⊤) (pow_one ⊤)
   · intro m _ h
@@ -31,6 +31,8 @@ theorem ENat.top_pow {n : ℕ} (n_pos : 0 < n) : (⊤ : ℕ∞)^n = ⊤ := by
                      _ = ⊤         := WithTop.top_mul_top
   · exact n_pos
 
+
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14066 -/
 /-Suggested: Mathlib.Topology.UniformSpace.Basic-/
 theorem uniformContinuous_ite {X : Type _} [UniformSpace X] (T : X → X) (n : ℕ)
     (h : UniformContinuous T) :

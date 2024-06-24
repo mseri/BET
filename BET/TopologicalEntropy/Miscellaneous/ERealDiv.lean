@@ -14,7 +14,6 @@ as the multiplication by the coercion of its inverse. It is an instance of divis
 
 This file may be completed as wished, it is still quite incomplete.
 -/
-
 namespace ERealDiv
 
 open Misc
@@ -140,3 +139,4 @@ theorem EReal.div_right_distrib_of_nneg {a b : EReal} {c : ENNReal} (h : 0 ≤ a
 end ERealDiv
 
 #lint
+#minimize_imports

@@ -55,6 +55,7 @@ theorem prod_map_ite {X Y : Type _} (S : X → X) (T : Y → Y) (n : ℕ) :
 theorem prod_map_comp_swap {X : Type _} (f g : X → X) :
     Prod.map f g ∘ Prod.swap = Prod.swap ∘ Prod.map g f := rfl
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14169 -/
 /-Suggested: Mathlib.Order.WithBot-/
 theorem WithTop.eq_top_iff_forall {α : Type _} [Preorder α] {x : WithTop α} :
     x = ⊤ ↔ ∀ y : α, y < x := by
@@ -66,6 +67,7 @@ theorem WithTop.eq_top_iff_forall {α : Type _} [Preorder α] {x : WithTop α} :
     specialize h y
     exact ne_of_lt h hy
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14169 -/
 /-Suggested: Mathlib.Order.WithBot-/
 theorem WithBot.eq_bot_iff_forall {α : Type _} [Preorder α] {x : WithBot α} :
     x = ⊥ ↔ ∀ y : α, x < y := by

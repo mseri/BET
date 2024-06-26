@@ -197,6 +197,7 @@ theorem EReal.le_iff_le_forall_real_gt (x y : EReal) :
 
 open Filter
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 /--The theorem `Filter.liminf_le_liminf` uses two hypotheses (that some sequences are bounded
   under/above). These two hypotheses are always satisfied in EReal.
@@ -204,6 +205,7 @@ open Filter
 theorem EReal_liminf_le_liminf {α : Type _} {f : Filter α} {u v : α → EReal} (h : u ≤ᶠ[f] v) :
     liminf u f ≤ liminf v f := liminf_le_liminf h
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 /--The theorem `Filter.limsup_le_limsup` uses two hypotheses (that some sequences are bounded
   under/above). These two hypotheses are always satisfied in EReal.
@@ -211,6 +213,7 @@ theorem EReal_liminf_le_liminf {α : Type _} {f : Filter α} {u v : α → EReal
 theorem EReal_limsup_le_limsup {α : Type _} {f : Filter α} {u v : α → EReal} (h : u ≤ᶠ[f] v) :
     limsup u f ≤ limsup v f := limsup_le_limsup h
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.limsup_add_le_lt₂ {α : Type _} {f : Filter α} {u v : α → EReal} {a b : EReal}
   (ha : limsup u f < a) (hb : limsup v f < b) :
@@ -224,6 +227,7 @@ theorem EReal.limsup_add_le_lt₂ {α : Type _} {f : Filter α} {u v : α → ER
   simp only [Pi.add_apply, and_imp]
   exact fun ux_lt_a vx_lt_b ↦ add_le_add (le_of_lt ux_lt_a) (le_of_lt vx_lt_b)
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.limsup_add_bot_ne_top {α : Type _} {f : Filter α} {u : α → EReal} {v : α → EReal}
     (h : limsup u f = ⊥) (h' : limsup v f ≠ ⊤) :
@@ -238,6 +242,7 @@ theorem EReal.limsup_add_bot_ne_top {α : Type _} {f : Filter α} {u : α → ER
   rw [h, ← EReal.coe_sub x y]
   exact EReal.bot_lt_coe (x-y)
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.limsup_add_le_add_limsup {α : Type _} {f : Filter α} {u v : α → EReal}
     (h : limsup u f ≠ ⊥ ∨ limsup v f ≠ ⊤) (h' : limsup u f ≠ ⊤ ∨ limsup v f ≠ ⊥) :
@@ -295,8 +300,8 @@ by
   rw [ ← EReal.sInf_neg, ← Set.image_comp]
   congr-/
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
-
 theorem EReal.ge_iff_le_forall_real_lt (x y : EReal) : y ≤ x ↔ ∀ (z : ℝ), (z < y) → (z ≤ x) := by
   constructor
   · intros h z z_lt_y
@@ -327,6 +332,7 @@ theorem EReal.ge_iff_le_forall_real_lt (x y : EReal) : y ≤ x ↔ ∀ (z : ℝ)
         exact not_le_of_lt (lt_add_one x) h
     · exact le_top
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 lemma EReal.liminf_add_ge_gt₂ {α : Type _} {f : Filter α} {u v : α → EReal} {a b : EReal}
     (ha : a < liminf u f) (hb : b < liminf v f) :
@@ -341,6 +347,7 @@ lemma EReal.liminf_add_ge_gt₂ {α : Type _} {f : Filter α} {u v : α → ERea
   simp only [Pi.add_apply, and_imp]
   exact fun ux_lt_a vx_lt_b ↦ add_le_add (le_of_lt ux_lt_a) (le_of_lt vx_lt_b)
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 lemma EReal.liminf_add_top_ne_bot {α : Type _} {f : Filter α} {u : α → EReal} {v : α → EReal}
     (h : liminf u f = ⊤) (h' : liminf v f ≠ ⊥) :
@@ -355,6 +362,7 @@ lemma EReal.liminf_add_top_ne_bot {α : Type _} {f : Filter α} {u : α → ERea
   rw [h, ← EReal.coe_sub x y]
   exact EReal.coe_lt_top (x-y)
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.add_liminf_le_liminf_add {α : Type _} {f : Filter α} {u v : α → EReal}
     (h : liminf u f ≠ ⊥ ∨ liminf v f ≠ ⊤) (h' : liminf u f ≠ ⊤ ∨ liminf v f ≠ ⊥) :
@@ -387,6 +395,7 @@ theorem EReal.add_liminf_le_liminf_add {α : Type _} {f : Filter α} {u v : α �
   norm_cast
   linarith
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.limsup_le_iff {α : Type _} {f : Filter α} {u : α → EReal} {b : EReal} :
     limsup u f ≤ b ↔ ∀ c : ℝ, b < c → ∀ᶠ a : α in f, u a ≤ c := by
@@ -406,6 +415,7 @@ theorem EReal.limsup_le_iff {α : Type _} {f : Filter α} {u : α → EReal} {b 
       rw [← @Filter.limsup_const EReal α _ f _ (c : EReal)]
       exact limsup_le_limsup h
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.limsup_le_const_forall {α : Type _} {f : Filter α} {u : α → EReal} {b : EReal}
     (h : ∀ a : α, u a ≤ b) :
@@ -413,6 +423,7 @@ theorem EReal.limsup_le_const_forall {α : Type _} {f : Filter α} {u : α → E
   apply EReal.limsup_le_iff.2
   exact fun c b_lt_c ↦ eventually_of_forall (fun a : α ↦ le_trans (h a) (le_of_lt b_lt_c))
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.const_le_limsup_forall {α : Type _} {f : Filter α} [NeBot f] {u : α → EReal}
     {b : EReal} (h : ∀ a : α, b ≤ u a) :
@@ -420,6 +431,7 @@ theorem EReal.const_le_limsup_forall {α : Type _} {f : Filter α} [NeBot f] {u 
   rw [← @Filter.limsup_const EReal α _ f _ b]
   exact EReal_limsup_le_limsup (eventually_of_forall h)
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.liminf_le_const_forall {α : Type _} {f : Filter α} [NeBot f] {u : α → EReal}
     {b : EReal} (h : ∀ a : α, u a ≤ b) :
@@ -427,6 +439,7 @@ theorem EReal.liminf_le_const_forall {α : Type _} {f : Filter α} [NeBot f] {u 
   rw [← @Filter.liminf_const EReal α _ f _ b]
   exact EReal_liminf_le_liminf (eventually_of_forall h)
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.const_le_liminf_forall {α : Type _} {f : Filter α} {u : α → EReal} {b : EReal}
     (h : ∀ a : α, b ≤ u a) :
@@ -436,6 +449,7 @@ theorem EReal.const_le_liminf_forall {α : Type _} {f : Filter α} {u : α → E
   · rw [← @Filter.liminf_const EReal α _ f _ b]
     exact EReal_liminf_le_liminf (eventually_of_forall h)
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.limsup_max {α : Type _} {f : Filter α} {u v : α → EReal} :
     limsup (fun a ↦ max (u a) (v a)) f = max (limsup u f) (limsup v f) := by

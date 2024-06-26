@@ -113,6 +113,7 @@ theorem EReal.mul_pos {a b : EReal} (ha : 0 < a) (hb : 0 < b) : 0 < a * b := by
     · rw [mul_comm, EReal.top_mul_of_pos ha]; exact hb
   · rw [EReal.top_mul_of_pos hb]; exact ha
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14125 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 @[simp]
 theorem EReal.add_sub_cancel_right {a : EReal} {b : Real} : a + b - b = a := by
@@ -121,6 +122,7 @@ theorem EReal.add_sub_cancel_right {a : EReal} {b : Real} : a + b - b = a := by
   · norm_cast; linarith
   · rw [EReal.top_add_ne_bot (EReal.coe_ne_bot b), EReal.top_sub_coe]
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14125 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 theorem EReal.right_distrib_of_nneg {a b c : EReal} (ha : 0 ≤ a) (hb : 0 ≤ b) :
     (a + b) * c = a * c + b * c := by
@@ -158,12 +160,14 @@ theorem EReal.right_distrib_of_nneg {a b c : EReal} (ha : 0 ≤ a) (hb : 0 ≤ b
     · rw [EReal.mul_top_of_pos a_pos, EReal.mul_top_of_pos b_pos,
       EReal.mul_top_of_pos (EReal.add_pos a_pos b_pos), EReal.top_add_top]
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14125 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 theorem EReal.left_distrib_of_nneg {a b c : EReal} (ha : 0 ≤ a) (hb : 0 ≤ b) :
     c * (a + b) = c * a + c * b := by
-  nth_rewrite 1 [mul_comm]; nth_rewrite 2 [mul_comm]; nth_rewrite 3 [mul_comm];
+  nth_rewrite 1 [mul_comm]; nth_rewrite 2 [mul_comm]; nth_rewrite 3 [mul_comm]
   exact EReal.right_distrib_of_nneg ha hb
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14125 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 theorem EReal.le_iff_le_forall_real_gt (x y : EReal) :
     y ≤ x ↔ ∀ (z : ℝ), (x < z) → (y ≤ z) := by

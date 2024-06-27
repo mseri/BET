@@ -41,14 +41,16 @@ theorem uniformContinuous_ite {X : Type _} [UniformSpace X] (T : X → X) (n : �
   · exact uniformContinuous_id
   · exact Function.iterate_succ _ _ ▸ UniformContinuous.comp hn h
 
-/- MATHLIB PR: ______ -/
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14194 -/
 /-Suggested: Mathlib.Order.Monotone.Basic, Mathlib.Algebra.Group.Hom.Defs-/
 theorem prod_map_ite {X Y : Type _} (S : X → X) (T : Y → Y) (n : ℕ) :
     (Prod.map S T)^[n] = Prod.map S^[n] T^[n] := by
   induction' n with n hn
-  · rw [Function.iterate_zero, Function.iterate_zero, Function.iterate_zero, Prod.map_id]
-  · rw [Function.iterate_succ, hn, Prod.map_comp_map, ← Function.iterate_succ,
+  case zero => rw [Function.iterate_zero, Function.iterate_zero, Function.iterate_zero, Prod.map_id]
+  case succ => rw [Function.iterate_succ, hn, Prod.map_comp_map, ← Function.iterate_succ,
       ← Function.iterate_succ]
+
+#find_home! prod_map_ite
 
 /- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14096 -/
 /-Suggested: Mathlib.Data.Prod.Basic-/

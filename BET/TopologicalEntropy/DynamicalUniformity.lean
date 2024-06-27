@@ -5,6 +5,7 @@ Authors: Damien Thomine, Pietro Monticone
 -/
 import Mathlib.Tactic
 import Mathlib.Topology.UniformSpace.Compact
+import Mathlib.Dynamics.PeriodicPts
 import BET.TopologicalEntropy.Miscellaneous.Misc
 
 /-!
@@ -16,6 +17,8 @@ replaced by (what I called) dynamical uniformities.
 
 The nomenclature may be changed.
 -/
+
+#check Function.iterate_prod_map
 
 namespace DynamicalUniformity
 
@@ -46,7 +49,7 @@ theorem dynamical_of_uni_is_uni {X : Type _} [UniformSpace X] {T : X → X}
   rw [this]; clear this
   apply (Filter.biInter_mem (Set.finite_Ico 0 n)).2
   intro k _
-  rw [prod_map_ite T T k]
+  rw [Function.iterate_prod_map T T k]
   exact uniformContinuous_def.1 (uniformContinuous_ite T k h) U U_uni
 
 theorem dynamical_of_rfl_is_rfl {X : Type _} (T : X → X) {U : Set (X × X)}
@@ -88,7 +91,7 @@ theorem dynamical_of_open_is_open {X : Type _} [TopologicalSpace X] {T : X → X
   apply Set.Finite.isOpen_biInter (Set.finite_Ico 0 n)
   intro k _
   apply continuous_def.1 _ U U_open
-  rw [prod_map_ite]
+  rw [Function.iterate_prod_map]
   apply Continuous.prod_map
   repeat' exact Continuous.iterate T_cont k
 
@@ -138,7 +141,7 @@ theorem preimage_of_dynamical_uni {X Y : Type _} {S : X → X} {T : Y → Y} {φ
   rw [Set.preimage_iInter₂]
   apply Set.iInter₂_congr
   intros k k_lt_n; clear k_lt_n
-  rw [← Set.preimage_comp, ← Set.preimage_comp, prod_map_ite S S k, prod_map_ite T T k,
+  rw [← Set.preimage_comp, ← Set.preimage_comp, Function.iterate_prod_map S S k, Function.iterate_prod_map T T k,
     Prod.map_comp_map, Prod.map_comp_map, (Function.Semiconj.iterate_right h k).comp_eq]
 
 /--Notation for the product of two uniform neighborhoods.-/

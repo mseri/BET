@@ -11,9 +11,10 @@ import Mathlib.Analysis.Normed.Field.Basic
 We define a division of an extended real `EReal`.
 
 This file may be completed as wished, it is still quite incomplete.
-
-MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14224
 -/
+
+-- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14224
+
 
 /- Instance of LinearOrderedSemifield?-/
 

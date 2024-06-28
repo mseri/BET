@@ -7,6 +7,8 @@ import Mathlib.Tactic
 import Mathlib.Data.Real.EReal
 import BET.TopologicalEntropy.Miscellaneous.Misc
 
+/-MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14224-/
+
 /-!
 # Division of extended reals by extended nonnegative reals
 We define a division of an extended real `EReal` by an extended nonnegative real `ENNReal`
@@ -23,8 +25,6 @@ Division of an extended real (EReal) by an extended nonnegative real (ENNReal). 
 [0, ∞], coercion to [-∞,+∞], and multiplication in [-∞,+∞].--/
 noncomputable def EReal.divENNReal : EReal → ENNReal → EReal :=
   fun (a : EReal) (b : ENNReal) ↦ a * b⁻¹
-
-#find_home! EReal.divENNReal
 
 noncomputable instance EReal.ENNReal.instHDiv : HDiv EReal ENNReal EReal where
   hDiv := EReal.divENNReal
@@ -92,8 +92,6 @@ theorem EReal.div_mul {a : EReal} {b c : ENNReal} (h : b ≠ 0 ∨ c ≠ ⊤) (h
     b⁻¹ * c⁻¹ = (b * c)⁻¹
   · rw [← this, mul_assoc]; norm_cast
   · exact Eq.symm (ENNReal.mul_inv h h')
-
-#find_home! EReal.div_mul
 
 theorem EReal.div_left_mono (b : ENNReal) : Monotone fun a : EReal ↦ a / b := by
   intro a a' h

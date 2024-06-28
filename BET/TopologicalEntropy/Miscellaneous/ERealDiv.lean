@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2024 Damien Thomine. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Author: Damien Thomine, Pietro Monticone
+Authors: Damien Thomine, Pietro Monticone
 -/
 import Mathlib.Tactic
 import Mathlib.Data.Real.EReal
@@ -23,6 +23,8 @@ Division of an extended real (EReal) by an extended nonnegative real (ENNReal). 
 [0, ∞], coercion to [-∞,+∞], and multiplication in [-∞,+∞].--/
 noncomputable def EReal.divENNReal : EReal → ENNReal → EReal :=
   fun (a : EReal) (b : ENNReal) ↦ a * b⁻¹
+
+#find_home! EReal.divENNReal
 
 noncomputable instance EReal.ENNReal.instHDiv : HDiv EReal ENNReal EReal where
   hDiv := EReal.divENNReal
@@ -91,6 +93,8 @@ theorem EReal.div_mul {a : EReal} {b c : ENNReal} (h : b ≠ 0 ∨ c ≠ ⊤) (h
   · rw [← this, mul_assoc]; norm_cast
   · exact Eq.symm (ENNReal.mul_inv h h')
 
+#find_home! EReal.div_mul
+
 theorem EReal.div_left_mono (b : ENNReal) : Monotone fun a : EReal ↦ a / b := by
   intro a a' h
   apply mul_le_mul_of_nonneg_right h
@@ -112,9 +116,7 @@ theorem EReal.div_left_strictMono {b : ENNReal} (h : b ≠ 0) (h' : b ≠ ⊤) :
       @EReal.mul_inv_cancel c b h h']
 
 theorem EReal.div_left_strictMono' {a a' : EReal} {b : ENNReal} (h₁ : b ≠ 0) (h₂ : b ≠ ⊤)
-    (h₃ : a < a') :
-    a / b < a' / b :=
-  EReal.div_left_strictMono h₁ h₂ h₃
+    (h₃ : a < a') : a / b < a' / b := EReal.div_left_strictMono h₁ h₂ h₃
 
 theorem EReal.le_div_iff_mul_le {a c : EReal} {b : ENNReal} (h : b ≠ 0) (h' : b ≠ ⊤) :
     a ≤ c / b ↔ a * b ≤ c := by

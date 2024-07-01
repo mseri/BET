@@ -170,7 +170,7 @@ theorem EReal.le_iff_le_forall_real_gt (x y : EReal) :
   constructor
   · exact fun h z x_lt_z ↦ le_trans h (le_of_lt x_lt_z)
   · intro h
-    induction' x with x
+    induction x
     · apply le_of_eq
       apply (EReal.eq_bot_iff_forall_lt y).2
       intro z
@@ -178,7 +178,7 @@ theorem EReal.le_iff_le_forall_real_gt (x y : EReal) :
       apply lt_of_le_of_lt h
       rw [EReal.coe_lt_coe_iff]
       exact sub_one_lt z
-    · induction' y with y
+    · induction y
       · exact bot_le
       · norm_cast
         norm_cast at h
@@ -186,7 +186,8 @@ theorem EReal.le_iff_le_forall_real_gt (x y : EReal) :
         rcases exists_between (lt_of_not_le x_lt_y) with ⟨z, x_lt_z, z_lt_y⟩
         specialize h z x_lt_z
         exact not_le_of_lt z_lt_y h
-      · exfalso
+      case h_top x =>
+        exfalso
         specialize h (x+1) (EReal.coe_lt_coe_iff.2 (lt_add_one x))
         exact not_le_of_lt (EReal.coe_lt_top (x+1)) h
     · exact le_top

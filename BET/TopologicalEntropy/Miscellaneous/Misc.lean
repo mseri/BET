@@ -125,29 +125,29 @@ theorem EReal.right_distrib_of_nneg {a b c : EReal} (ha : 0 ≤ a) (hb : 0 ≤ b
   · simp
   rcases eq_or_lt_of_le hb with (rfl | b_pos)
   · simp
-  clear ha hb
   rcases lt_trichotomy c 0 with (c_neg | rfl | c_pos)
-  · induction' c with c
+  · induction c
     · rw [EReal.mul_bot_of_pos a_pos, EReal.mul_bot_of_pos b_pos,
         EReal.mul_bot_of_pos (EReal.add_pos a_pos b_pos), EReal.add_bot ⊥]
-    · induction' a with a
+    · induction a
       · exfalso; exact not_lt_bot a_pos
-      · induction' b with b
-        · norm_cast
-        · norm_cast; exact right_distrib a b c
-        · norm_cast
+      · induction b
+        case h_bot => norm_cast
+        case h_real c a b => norm_cast; exact right_distrib a b c
+        case h_top a =>
+          norm_cast
           rw [EReal.ne_bot_add_top (EReal.coe_ne_bot a), EReal.top_mul_of_neg c_neg, EReal.add_bot]
       · rw [EReal.top_add_ne_bot (ne_bot_of_gt b_pos), EReal.top_mul_of_neg c_neg, EReal.bot_add]
     · exfalso; exact not_top_lt c_neg
   · simp
   · induction c
     · exfalso; exact not_lt_bot c_pos
-    · induction' a with a
+    · induction a
       · exfalso; exact not_lt_bot a_pos
-      · induction' b with b
-        · norm_cast
-        case h_real c => norm_cast; exact right_distrib a b c
-        case h_top c  =>
+      · induction b
+        case h_bot => norm_cast
+        case h_real c a b => norm_cast; exact right_distrib a b c
+        case h_top c a =>
           norm_cast
           rw [EReal.ne_bot_add_top (EReal.coe_ne_bot a), EReal.top_mul_of_pos c_pos,
             EReal.ne_bot_add_top (EReal.coe_ne_bot (a*c))]
@@ -304,7 +304,7 @@ theorem EReal.ge_iff_le_forall_real_lt (x y : EReal) : y ≤ x ↔ ∀ (z : ℝ)
   · intros h z z_lt_y
     exact le_trans (le_of_lt z_lt_y) h
   · intro h
-    induction' x with x
+    induction x
     · apply le_of_eq
       apply (EReal.eq_bot_iff_forall_lt y).2
       intro z
@@ -315,7 +315,7 @@ theorem EReal.ge_iff_le_forall_real_lt (x y : EReal) : y ≤ x ↔ ∀ (z : ℝ)
       apply h (lt_of_lt_of_le _ z_le_y)
       norm_cast
       exact sub_one_lt z
-    · induction' y with y
+    · induction y
       · exact bot_le
       · norm_cast
         norm_cast at h
@@ -323,7 +323,8 @@ theorem EReal.ge_iff_le_forall_real_lt (x y : EReal) : y ≤ x ↔ ∀ (z : ℝ)
         rcases exists_between (lt_of_not_le x_lt_y) with ⟨z, ⟨x_lt_z, z_lt_y⟩⟩
         specialize h z z_lt_y
         exact not_le_of_lt x_lt_z h
-      · exfalso
+      case h_top x =>
+        exfalso
         specialize h (x+1) (EReal.coe_lt_top (x+1))
         norm_cast at h
         exact not_le_of_lt (lt_add_one x) h

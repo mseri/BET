@@ -51,10 +51,10 @@ theorem inv_def' {T : X → X} {F : Set X} (F_inv : IsInvariant T F) {x : X} (h 
 
 theorem iter_of_inv_in_inv {T : X → X} {F : Set X} (F_inv : IsInvariant T F) (n : ℕ) :
     F ⊆ T^[n] ⁻¹' F := by
-  induction' n with n hn
-  . rw [iterate_zero T, Set.preimage_id]
-  . rw [iterate_succ T _, Set.preimage_comp]
-    exact Set.Subset.trans F_inv (Set.preimage_mono hn)
+  induction n
+  case zero => rw [iterate_zero T, Set.preimage_id]
+  case succ hn => exact iterate_succ T _ ▸ Set.preimage_comp ▸
+    Set.Subset.trans F_inv (Set.preimage_mono hn)
 
 theorem iter_of_inv_in_inv' {T : X → X} {F : Set X} (h : IsInvariant T F) (n : ℕ) {x : X}
     (h' : x ∈ F) :

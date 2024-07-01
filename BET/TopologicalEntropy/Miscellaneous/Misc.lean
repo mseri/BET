@@ -73,7 +73,7 @@ theorem WithBot.eq_bot_iff_forall {α : Type _} [Preorder α] {x : WithBot α} :
 /- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14102 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 theorem EReal.top_add_ne_bot {x : EReal} (h : x ≠ ⊥) : ⊤ + x = ⊤ := by
-  induction x using EReal.rec
+  induction x
   · exfalso; exact h (Eq.refl ⊥)
   · exact EReal.top_add_coe _
   · exact EReal.top_add_top
@@ -86,9 +86,9 @@ theorem EReal.ne_bot_add_top {x : EReal} (h : x ≠ ⊥) : x + ⊤ = ⊤ := by
 /- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14102 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 theorem EReal.add_pos {a b : EReal} (ha : 0 < a) (hb : 0 < b) : 0 < a + b := by
-  induction' a using EReal.rec with a
+  induction' a with a
   · exfalso; exact not_lt_bot ha
-  · induction' b using EReal.rec with b
+  · induction' b with b
     · exfalso; exact not_lt_bot hb
     · norm_cast at *; exact Left.add_pos ha hb
     · exact EReal.ne_bot_add_top (Ne.symm (ne_of_lt (lt_trans EReal.bot_lt_zero ha))) ▸ hb
@@ -98,9 +98,9 @@ theorem EReal.add_pos {a b : EReal} (ha : 0 < a) (hb : 0 < b) : 0 < a + b := by
 /- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14102 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 theorem EReal.mul_pos {a b : EReal} (ha : 0 < a) (hb : 0 < b) : 0 < a * b := by
-  induction' a using EReal.rec with a
+  induction' a with a
   · exfalso; exact not_lt_bot ha
-  · induction' b using EReal.rec with b
+  · induction' b with b
     · exfalso; exact not_lt_bot hb
     · norm_cast at *; exact Left.mul_pos ha hb
     · rw [mul_comm, EReal.top_mul_of_pos ha]; exact hb
@@ -110,7 +110,7 @@ theorem EReal.mul_pos {a b : EReal} (ha : 0 < a) (hb : 0 < b) : 0 < a * b := by
 /-Suggested: Mathlib.Data.Real.EReal-/
 @[simp]
 theorem EReal.add_sub_cancel_right {a : EReal} {b : Real} : a + b - b = a := by
-  induction' a using EReal.rec with a
+  induction' a with a
   · rw [EReal.bot_add b, EReal.bot_sub b]
   · norm_cast; linarith
   · rw [EReal.top_add_ne_bot (EReal.coe_ne_bot b), EReal.top_sub_coe]
@@ -125,12 +125,12 @@ theorem EReal.right_distrib_of_nneg {a b c : EReal} (ha : 0 ≤ a) (hb : 0 ≤ b
   · simp
   clear ha hb
   rcases lt_trichotomy c 0 with (c_neg | rfl | c_pos)
-  · induction' c using EReal.rec with c
+  · induction' c with c
     · rw [EReal.mul_bot_of_pos a_pos, EReal.mul_bot_of_pos b_pos,
         EReal.mul_bot_of_pos (EReal.add_pos a_pos b_pos), EReal.add_bot ⊥]
-    · induction' a using EReal.rec with a
+    · induction' a with a
       · exfalso; exact not_lt_bot a_pos
-      · induction' b using EReal.rec with b
+      · induction' b with b
         · norm_cast
         · norm_cast; exact right_distrib a b c
         · norm_cast
@@ -138,11 +138,11 @@ theorem EReal.right_distrib_of_nneg {a b c : EReal} (ha : 0 ≤ a) (hb : 0 ≤ b
       · rw [EReal.top_add_ne_bot (ne_bot_of_gt b_pos), EReal.top_mul_of_neg c_neg, EReal.bot_add]
     · exfalso; exact not_top_lt c_neg
   · simp
-  · induction' c using EReal.rec with c
+  · induction' c with c
     · exfalso; exact not_lt_bot c_pos
-    · induction' a using EReal.rec with a
+    · induction' a with a
       · exfalso; exact not_lt_bot a_pos
-      · induction' b using EReal.rec with b
+      · induction' b with b
         · norm_cast
         · norm_cast; exact right_distrib a b c
         · norm_cast
@@ -167,7 +167,7 @@ theorem EReal.le_iff_le_forall_real_gt (x y : EReal) :
   constructor
   · exact fun h z x_lt_z ↦ le_trans h (le_of_lt x_lt_z)
   · intro h
-    induction' x using EReal.rec with x
+    induction' x with x
     · apply le_of_eq
       apply (EReal.eq_bot_iff_forall_lt y).2
       intro z
@@ -175,7 +175,7 @@ theorem EReal.le_iff_le_forall_real_gt (x y : EReal) :
       apply lt_of_le_of_lt h
       rw [EReal.coe_lt_coe_iff]
       exact sub_one_lt z
-    · induction' y using EReal.rec with y
+    · induction' y with y
       · exact bot_le
       · norm_cast
         norm_cast at h
@@ -300,7 +300,7 @@ theorem EReal.ge_iff_le_forall_real_lt (x y : EReal) : y ≤ x ↔ ∀ (z : ℝ)
   · intros h z z_lt_y
     exact le_trans (le_of_lt z_lt_y) h
   · intro h
-    induction' x using EReal.rec with x
+    induction' x with x
     · apply le_of_eq
       apply (EReal.eq_bot_iff_forall_lt y).2
       intro z
@@ -311,7 +311,7 @@ theorem EReal.ge_iff_le_forall_real_lt (x y : EReal) : y ≤ x ↔ ∀ (z : ℝ)
       apply h (lt_of_lt_of_le _ z_le_y)
       norm_cast
       exact sub_one_lt z
-    · induction' y using EReal.rec with y
+    · induction' y with y
       · exact bot_le
       · norm_cast
         norm_cast at h

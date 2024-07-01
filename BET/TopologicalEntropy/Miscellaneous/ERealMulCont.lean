@@ -107,6 +107,7 @@ private lemma continuousAt_mul_top_ne_zero {a : ℝ} (h : a ≠ 0) :
   . exact neg_neg (a : EReal) ▸ continuousAt_mul_symm2 (continuousAt_mul_top_pos (neg_pos.2 a_neg))
   . exact continuousAt_mul_top_pos a_pos
 
+/- Suggested file : [Mathlib.Topology.Instances.EReal]. -/
 /-- The multiplication on `EReal` is continuous except at indeterminacies
   (i.e. whenever one value is zero and the other infinite). -/
 theorem continuousAt_mul {p : EReal × EReal} (h₁ : p.1 ≠ 0 ∨ p.2 ≠ ⊥)

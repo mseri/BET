@@ -113,7 +113,7 @@ theorem continuousAt_mul {p : EReal × EReal} (h₁ : p.1 ≠ 0 ∨ p.2 ≠ ⊥)
     (h₂ : p.1 ≠ 0 ∨ p.2 ≠ ⊤) (h₃ : p.1 ≠ ⊥ ∨ p.2 ≠ 0) (h₄ : p.1 ≠ ⊤ ∨ p.2 ≠ 0) :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) p := by
   rcases p with ⟨x, y⟩
-  induction x using EReal.rec <;> induction y using EReal.rec
+  induction x <;> induction y
   . exact continuousAt_mul_symm3 continuousAt_mul_top_top
   . simp only [ne_eq, not_true_eq_false, EReal.coe_eq_zero, false_or] at h₃
     exact continuousAt_mul_symm1 (continuousAt_mul_top_ne_zero h₃)

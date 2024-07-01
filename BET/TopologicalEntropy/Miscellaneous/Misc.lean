@@ -142,12 +142,12 @@ theorem EReal.right_distrib_of_nneg {a b c : EReal} (ha : 0 ≤ a) (hb : 0 ≤ b
   · simp
   · induction c
     · exfalso; exact not_lt_bot c_pos
-    · induction a
+    · induction' a with a
       · exfalso; exact not_lt_bot a_pos
-      · induction b
-        case h_bot => norm_cast
-        · norm_cast; exact right_distrib a b c
-        case h_top a c =>
+      · induction' b with b
+        · norm_cast
+        case h_real c => norm_cast; exact right_distrib a b c
+        case h_top c  =>
           norm_cast
           rw [EReal.ne_bot_add_top (EReal.coe_ne_bot a), EReal.top_mul_of_pos c_pos,
             EReal.ne_bot_add_top (EReal.coe_ne_bot (a*c))]

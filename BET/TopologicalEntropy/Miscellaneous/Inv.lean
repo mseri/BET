@@ -18,6 +18,8 @@ This file may be completed as wished, it is still quite incomplete.
 
 /- Instance of LinearOrderedSemifield?-/
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14224 -/
+
 namespace EReal
 
 open EReal ENNReal Misc SignType

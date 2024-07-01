@@ -37,9 +37,9 @@ theorem ENat.top_pow {n : ℕ} (n_pos : 0 < n) : (⊤ : ℕ∞)^n = ⊤ := by
 theorem uniformContinuous_ite {X : Type _} [UniformSpace X] (T : X → X) (n : ℕ)
     (h : UniformContinuous T) :
     UniformContinuous T^[n] := by
-  induction' n with n hn
-  · exact uniformContinuous_id
-  · exact Function.iterate_succ _ _ ▸ UniformContinuous.comp hn h
+  induction n
+  case zero => exact uniformContinuous_id
+  case succ hn => exact Function.iterate_succ _ _ ▸ UniformContinuous.comp hn h
 
 /- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14096 -/
 /-Suggested: Mathlib.Data.Prod.Basic-/
@@ -86,21 +86,23 @@ theorem EReal.ne_bot_add_top {x : EReal} (h : x ≠ ⊥) : x + ⊤ = ⊤ := by
 /- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14102 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 theorem EReal.add_pos {a b : EReal} (ha : 0 < a) (hb : 0 < b) : 0 < a + b := by
-  induction' a with a
-  · exfalso; exact not_lt_bot ha
-  · induction' b with b
-    · exfalso; exact not_lt_bot hb
-    · norm_cast at *; exact Left.add_pos ha hb
-    · exact EReal.ne_bot_add_top (Ne.symm (ne_of_lt (lt_trans EReal.bot_lt_zero ha))) ▸ hb
-  · rw [EReal.top_add_ne_bot (Ne.symm (ne_of_lt (lt_trans EReal.bot_lt_zero hb)))]
+  induction a
+  case h_bot => exfalso; exact not_lt_bot ha
+  case h_real =>
+    induction b
+    case h_bot => exfalso; exact not_lt_bot hb
+    case h_real => norm_cast at *; exact Left.add_pos ha hb
+    case h_top => exact EReal.ne_bot_add_top (Ne.symm (ne_of_lt (lt_trans EReal.bot_lt_zero ha))) ▸ hb
+  case h_top =>
+    rw [EReal.top_add_ne_bot (Ne.symm (ne_of_lt (lt_trans EReal.bot_lt_zero hb)))]
     exact ha
 
 /- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14102 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 theorem EReal.mul_pos {a b : EReal} (ha : 0 < a) (hb : 0 < b) : 0 < a * b := by
-  induction' a with a
+  induction a
   · exfalso; exact not_lt_bot ha
-  · induction' b with b
+  · induction b
     · exfalso; exact not_lt_bot hb
     · norm_cast at *; exact Left.mul_pos ha hb
     · rw [mul_comm, EReal.top_mul_of_pos ha]; exact hb
@@ -110,7 +112,7 @@ theorem EReal.mul_pos {a b : EReal} (ha : 0 < a) (hb : 0 < b) : 0 < a * b := by
 /-Suggested: Mathlib.Data.Real.EReal-/
 @[simp]
 theorem EReal.add_sub_cancel_right {a : EReal} {b : Real} : a + b - b = a := by
-  induction' a with a
+  induction a
   · rw [EReal.bot_add b, EReal.bot_sub b]
   · norm_cast; linarith
   · rw [EReal.top_add_ne_bot (EReal.coe_ne_bot b), EReal.top_sub_coe]
@@ -138,14 +140,15 @@ theorem EReal.right_distrib_of_nneg {a b c : EReal} (ha : 0 ≤ a) (hb : 0 ≤ b
       · rw [EReal.top_add_ne_bot (ne_bot_of_gt b_pos), EReal.top_mul_of_neg c_neg, EReal.bot_add]
     · exfalso; exact not_top_lt c_neg
   · simp
-  · induction' c with c
+  · induction c
     · exfalso; exact not_lt_bot c_pos
-    · induction' a with a
+    · induction a
       · exfalso; exact not_lt_bot a_pos
-      · induction' b with b
-        · norm_cast
+      · induction b
+        case h_bot => norm_cast
         · norm_cast; exact right_distrib a b c
-        · norm_cast
+        case h_top a c =>
+          norm_cast
           rw [EReal.ne_bot_add_top (EReal.coe_ne_bot a), EReal.top_mul_of_pos c_pos,
             EReal.ne_bot_add_top (EReal.coe_ne_bot (a*c))]
       · rw [EReal.top_add_ne_bot (ne_bot_of_gt b_pos), EReal.top_mul_of_pos c_pos,

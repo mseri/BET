@@ -82,9 +82,10 @@ theorem sign_mul_inv_abs (a : EReal) : (sign a) * (a.abs : EReal)⁻¹ = a⁻¹ 
       exact abs_of_pos a_pos
 
 theorem sign_mul_inv_abs' (a : EReal) : (sign a) * ((a.abs⁻¹ : ℝ≥0∞) : EReal) = a⁻¹ := by
-  induction' a with a
-  · simp
-  · rcases lt_trichotomy a 0 with (a_neg | rfl | a_pos)
+  induction a
+  case h_bot | h_top => simp
+  case h_real a =>
+    rcases lt_trichotomy a 0 with (a_neg | rfl | a_pos)
     · rw [sign_coe, _root_.sign_neg a_neg, coe_neg_one, neg_one_mul, abs_def a,
         ← ofReal_inv_of_pos (abs_pos_of_neg a_neg), coe_ennreal_ofReal,
         max_eq_left (inv_nonneg.2 (abs_nonneg a)), ← coe_neg |a|⁻¹, ← coe_inv a, abs_of_neg a_neg,
@@ -95,39 +96,40 @@ theorem sign_mul_inv_abs' (a : EReal) : (sign a) * ((a.abs⁻¹ : ℝ≥0∞) : 
           max_eq_left (inv_nonneg.2 (abs_nonneg a)), ← coe_inv a]
       congr
       exact abs_of_pos a_pos
-  · simp
 
 /-! ## Inversion and positivity -/
 
 theorem inv_nonneg_of_nonneg {a : EReal} (h : 0 ≤ a) : 0 ≤ a⁻¹ := by
-  induction' a with a
-  · simp
-  · rw [← coe_inv a, EReal.coe_nonneg, inv_nonneg]
+  induction a
+  case h_bot | h_top => simp
+  case h_real a =>
+    rw [← coe_inv a, EReal.coe_nonneg, inv_nonneg]
     exact EReal.coe_nonneg.1 h
-  · simp
 
 theorem inv_nonpos_of_nonpos {a : EReal} (h : a ≤ 0) : a⁻¹ ≤ 0 := by
-  induction' a with a
-  · simp
-  · rw [← coe_inv a, EReal.coe_nonpos, inv_nonpos]
+  induction a
+  case h_bot | h_top => simp
+  case h_real a =>
+    rw [← coe_inv a, EReal.coe_nonpos, inv_nonpos]
     exact EReal.coe_nonpos.1 h
-  · simp
 
 theorem inv_pos_of_ntop_pos {a : EReal} (h : 0 < a) (h' : a ≠ ⊤) : 0 < a⁻¹ := by
-  induction' a with a
-  · exact (not_lt_bot h).rec
-  · rw [← coe_inv a]
+  induction a
+  case h_bot => exact (not_lt_bot h).rec
+  case h_real a =>
+    rw [← coe_inv a]
     norm_cast at *
     exact inv_pos_of_pos h
-  · exact (h' (Eq.refl ⊤)).rec
+  case h_top => exact (h' (Eq.refl ⊤)).rec
 
 theorem inv_neg_of_nbot_neg {a : EReal} (h : a < 0) (h' : a ≠ ⊥) : a⁻¹ < 0 := by
-  induction' a with a
-  · exact (h' (Eq.refl ⊥)).rec
-  · rw [← coe_inv a]
+  induction a
+  case h_bot => exact (h' (Eq.refl ⊥)).rec
+  case h_real a =>
+    rw [← coe_inv a]
     norm_cast at *
     exact inv_lt_zero.2 h
-  · exact (not_top_lt h).rec
+  case h_top => exact (not_top_lt h).rec
 
 /-! ### Division -/
 

@@ -415,7 +415,7 @@ theorem EReal.limsup_le_iff {α : Type _} {f : Filter α} {u : α → EReal} {b 
 
 /- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
-theorem EReal.limsup_le_const_forall {α : Type _} {f : Filter α} {u : α → EReal} {b : EReal}
+theorem EReal.limsup_le_const_forall_le {α : Type _} {f : Filter α} {u : α → EReal} {b : EReal}
     (h : ∀ a : α, u a ≤ b) :
     limsup u f ≤ b := by
   apply EReal.limsup_le_iff.2
@@ -423,7 +423,7 @@ theorem EReal.limsup_le_const_forall {α : Type _} {f : Filter α} {u : α → E
 
 /- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
-theorem EReal.const_le_limsup_forall {α : Type _} {f : Filter α} [NeBot f] {u : α → EReal}
+theorem EReal.const_le_limsup_forall_le {α : Type _} {f : Filter α} [NeBot f] {u : α → EReal}
     {b : EReal} (h : ∀ a : α, b ≤ u a) :
     b ≤ limsup u f := by
   rw [← @Filter.limsup_const EReal α _ f _ b]
@@ -431,7 +431,7 @@ theorem EReal.const_le_limsup_forall {α : Type _} {f : Filter α} [NeBot f] {u 
 
 /- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
-theorem EReal.liminf_le_const_forall {α : Type _} {f : Filter α} [NeBot f] {u : α → EReal}
+theorem EReal.liminf_le_const_forall_le {α : Type _} {f : Filter α} [NeBot f] {u : α → EReal}
     {b : EReal} (h : ∀ a : α, u a ≤ b) :
     liminf u f ≤ b := by
   rw [← @Filter.liminf_const EReal α _ f _ b]
@@ -439,7 +439,7 @@ theorem EReal.liminf_le_const_forall {α : Type _} {f : Filter α} [NeBot f] {u 
 
 /- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
-theorem EReal.const_le_liminf_forall {α : Type _} {f : Filter α} {u : α → EReal} {b : EReal}
+theorem EReal.const_le_liminf_forall_le {α : Type _} {f : Filter α} {u : α → EReal} {b : EReal}
     (h : ∀ a : α, b ≤ u a) :
     b ≤ liminf u f := by
   rcases eq_or_neBot f with (rfl | _)

@@ -37,22 +37,16 @@ theorem ENat.top_pow {n : ℕ} (n_pos : 0 < n) : (⊤ : ℕ∞)^n = ⊤ := by
 theorem uniformContinuous_ite {X : Type _} [UniformSpace X] (T : X → X) (n : ℕ)
     (h : UniformContinuous T) :
     UniformContinuous T^[n] := by
-  induction' n with n hn
-  · exact uniformContinuous_id
-  · exact Function.iterate_succ _ _ ▸ UniformContinuous.comp hn h
+  induction n
+  case zero => exact uniformContinuous_id
+  case succ hn => exact Function.iterate_succ _ _ ▸ UniformContinuous.comp hn h
 
-/-Suggested: Mathlib.Order.Monotone.Basic, Mathlib.Algebra.Group.Hom.Defs-/
-theorem prod_map_ite {X Y : Type _} (S : X → X) (T : Y → Y) (n : ℕ) :
-    (Prod.map S T)^[n] = Prod.map S^[n] T^[n] := by
-  induction' n with n hn
-  · rw [Function.iterate_zero, Function.iterate_zero, Function.iterate_zero, Prod.map_id]
-  · rw [Function.iterate_succ, hn, Prod.map_comp_map, ← Function.iterate_succ,
-      ← Function.iterate_succ]
-
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14096 -/
 /-Suggested: Mathlib.Data.Prod.Basic-/
 theorem prod_map_comp_swap {X : Type _} (f g : X → X) :
     Prod.map f g ∘ Prod.swap = Prod.swap ∘ Prod.map g f := rfl
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14169 -/
 /-Suggested: Mathlib.Order.WithBot-/
 theorem WithTop.eq_top_iff_forall {α : Type _} [Preorder α] {x : WithTop α} :
     x = ⊤ ↔ ∀ y : α, y < x := by
@@ -64,6 +58,7 @@ theorem WithTop.eq_top_iff_forall {α : Type _} [Preorder α] {x : WithTop α} :
     specialize h y
     exact ne_of_lt h hy
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14169 -/
 /-Suggested: Mathlib.Order.WithBot-/
 theorem WithBot.eq_bot_iff_forall {α : Type _} [Preorder α] {x : WithBot α} :
     x = ⊥ ↔ ∀ y : α, x < y := by
@@ -75,46 +70,54 @@ theorem WithBot.eq_bot_iff_forall {α : Type _} [Preorder α] {x : WithBot α} :
     specialize h y
     exact ne_of_lt h (Eq.symm hy)
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14102 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 theorem EReal.top_add_ne_bot {x : EReal} (h : x ≠ ⊥) : ⊤ + x = ⊤ := by
-  induction x using EReal.rec
+  induction x
   · exfalso; exact h (Eq.refl ⊥)
   · exact EReal.top_add_coe _
   · exact EReal.top_add_top
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14102 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 theorem EReal.ne_bot_add_top {x : EReal} (h : x ≠ ⊥) : x + ⊤ = ⊤ := by
   rw [add_comm, EReal.top_add_ne_bot h]
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14102 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 theorem EReal.add_pos {a b : EReal} (ha : 0 < a) (hb : 0 < b) : 0 < a + b := by
-  induction' a using EReal.rec with a
-  · exfalso; exact not_lt_bot ha
-  · induction' b using EReal.rec with b
-    · exfalso; exact not_lt_bot hb
-    · norm_cast at *; exact Left.add_pos ha hb
-    · exact EReal.ne_bot_add_top (Ne.symm (ne_of_lt (lt_trans EReal.bot_lt_zero ha))) ▸ hb
-  · rw [EReal.top_add_ne_bot (Ne.symm (ne_of_lt (lt_trans EReal.bot_lt_zero hb)))]
+  induction a
+  case h_bot => exfalso; exact not_lt_bot ha
+  case h_real =>
+    induction b
+    case h_bot => exfalso; exact not_lt_bot hb
+    case h_real => norm_cast at *; exact Left.add_pos ha hb
+    case h_top => exact EReal.ne_bot_add_top (Ne.symm (ne_of_lt (lt_trans EReal.bot_lt_zero ha))) ▸ hb
+  case h_top =>
+    rw [EReal.top_add_ne_bot (Ne.symm (ne_of_lt (lt_trans EReal.bot_lt_zero hb)))]
     exact ha
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14102 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 theorem EReal.mul_pos {a b : EReal} (ha : 0 < a) (hb : 0 < b) : 0 < a * b := by
-  induction' a using EReal.rec with a
+  induction a
   · exfalso; exact not_lt_bot ha
-  · induction' b using EReal.rec with b
+  · induction b
     · exfalso; exact not_lt_bot hb
     · norm_cast at *; exact Left.mul_pos ha hb
     · rw [mul_comm, EReal.top_mul_of_pos ha]; exact hb
   · rw [EReal.top_mul_of_pos hb]; exact ha
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14125 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 @[simp]
 theorem EReal.add_sub_cancel_right {a : EReal} {b : Real} : a + b - b = a := by
-  induction' a using EReal.rec with a
+  induction a
   · rw [EReal.bot_add b, EReal.bot_sub b]
   · norm_cast; linarith
   · rw [EReal.top_add_ne_bot (EReal.coe_ne_bot b), EReal.top_sub_coe]
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14125 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 theorem EReal.right_distrib_of_nneg {a b c : EReal} (ha : 0 ≤ a) (hb : 0 ≤ b) :
     (a + b) * c = a * c + b * c := by
@@ -122,29 +125,30 @@ theorem EReal.right_distrib_of_nneg {a b c : EReal} (ha : 0 ≤ a) (hb : 0 ≤ b
   · simp
   rcases eq_or_lt_of_le hb with (rfl | b_pos)
   · simp
-  clear ha hb
   rcases lt_trichotomy c 0 with (c_neg | rfl | c_pos)
-  · induction' c using EReal.rec with c
+  · induction c
     · rw [EReal.mul_bot_of_pos a_pos, EReal.mul_bot_of_pos b_pos,
         EReal.mul_bot_of_pos (EReal.add_pos a_pos b_pos), EReal.add_bot ⊥]
-    · induction' a using EReal.rec with a
+    · induction a
       · exfalso; exact not_lt_bot a_pos
-      · induction' b using EReal.rec with b
-        · norm_cast
-        · norm_cast; exact right_distrib a b c
-        · norm_cast
+      · induction b
+        case h_bot => norm_cast
+        case h_real c a b => norm_cast; exact right_distrib a b c
+        case h_top a =>
+          norm_cast
           rw [EReal.ne_bot_add_top (EReal.coe_ne_bot a), EReal.top_mul_of_neg c_neg, EReal.add_bot]
       · rw [EReal.top_add_ne_bot (ne_bot_of_gt b_pos), EReal.top_mul_of_neg c_neg, EReal.bot_add]
     · exfalso; exact not_top_lt c_neg
   · simp
-  · induction' c using EReal.rec with c
+  · induction c
     · exfalso; exact not_lt_bot c_pos
-    · induction' a using EReal.rec with a
+    · induction a
       · exfalso; exact not_lt_bot a_pos
-      · induction' b using EReal.rec with b
-        · norm_cast
-        · norm_cast; exact right_distrib a b c
-        · norm_cast
+      · induction b
+        case h_bot => norm_cast
+        case h_real c a b => norm_cast; exact right_distrib a b c
+        case h_top c a =>
+          norm_cast
           rw [EReal.ne_bot_add_top (EReal.coe_ne_bot a), EReal.top_mul_of_pos c_pos,
             EReal.ne_bot_add_top (EReal.coe_ne_bot (a*c))]
       · rw [EReal.top_add_ne_bot (ne_bot_of_gt b_pos), EReal.top_mul_of_pos c_pos,
@@ -152,19 +156,21 @@ theorem EReal.right_distrib_of_nneg {a b c : EReal} (ha : 0 ≤ a) (hb : 0 ≤ b
     · rw [EReal.mul_top_of_pos a_pos, EReal.mul_top_of_pos b_pos,
       EReal.mul_top_of_pos (EReal.add_pos a_pos b_pos), EReal.top_add_top]
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14125 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 theorem EReal.left_distrib_of_nneg {a b c : EReal} (ha : 0 ≤ a) (hb : 0 ≤ b) :
     c * (a + b) = c * a + c * b := by
-  nth_rewrite 1 [mul_comm]; nth_rewrite 2 [mul_comm]; nth_rewrite 3 [mul_comm];
+  nth_rewrite 1 [mul_comm]; nth_rewrite 2 [mul_comm]; nth_rewrite 3 [mul_comm]
   exact EReal.right_distrib_of_nneg ha hb
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14125 -/
 /-Suggested: Mathlib.Data.Real.EReal-/
 theorem EReal.le_iff_le_forall_real_gt (x y : EReal) :
     y ≤ x ↔ ∀ (z : ℝ), (x < z) → (y ≤ z) := by
   constructor
   · exact fun h z x_lt_z ↦ le_trans h (le_of_lt x_lt_z)
   · intro h
-    induction' x using EReal.rec with x
+    induction x
     · apply le_of_eq
       apply (EReal.eq_bot_iff_forall_lt y).2
       intro z
@@ -172,7 +178,7 @@ theorem EReal.le_iff_le_forall_real_gt (x y : EReal) :
       apply lt_of_le_of_lt h
       rw [EReal.coe_lt_coe_iff]
       exact sub_one_lt z
-    · induction' y using EReal.rec with y
+    · induction y
       · exact bot_le
       · norm_cast
         norm_cast at h
@@ -180,13 +186,15 @@ theorem EReal.le_iff_le_forall_real_gt (x y : EReal) :
         rcases exists_between (lt_of_not_le x_lt_y) with ⟨z, x_lt_z, z_lt_y⟩
         specialize h z x_lt_z
         exact not_le_of_lt z_lt_y h
-      · exfalso
+      case h_top x =>
+        exfalso
         specialize h (x+1) (EReal.coe_lt_coe_iff.2 (lt_add_one x))
         exact not_le_of_lt (EReal.coe_lt_top (x+1)) h
     · exact le_top
 
 open Filter
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 /--The theorem `Filter.liminf_le_liminf` uses two hypotheses (that some sequences are bounded
   under/above). These two hypotheses are always satisfied in EReal.
@@ -194,6 +202,7 @@ open Filter
 theorem EReal_liminf_le_liminf {α : Type _} {f : Filter α} {u v : α → EReal} (h : u ≤ᶠ[f] v) :
     liminf u f ≤ liminf v f := liminf_le_liminf h
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 /--The theorem `Filter.limsup_le_limsup` uses two hypotheses (that some sequences are bounded
   under/above). These two hypotheses are always satisfied in EReal.
@@ -201,6 +210,7 @@ theorem EReal_liminf_le_liminf {α : Type _} {f : Filter α} {u v : α → EReal
 theorem EReal_limsup_le_limsup {α : Type _} {f : Filter α} {u v : α → EReal} (h : u ≤ᶠ[f] v) :
     limsup u f ≤ limsup v f := limsup_le_limsup h
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.limsup_add_le_lt₂ {α : Type _} {f : Filter α} {u v : α → EReal} {a b : EReal}
   (ha : limsup u f < a) (hb : limsup v f < b) :
@@ -214,6 +224,7 @@ theorem EReal.limsup_add_le_lt₂ {α : Type _} {f : Filter α} {u v : α → ER
   simp only [Pi.add_apply, and_imp]
   exact fun ux_lt_a vx_lt_b ↦ add_le_add (le_of_lt ux_lt_a) (le_of_lt vx_lt_b)
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.limsup_add_bot_ne_top {α : Type _} {f : Filter α} {u : α → EReal} {v : α → EReal}
     (h : limsup u f = ⊥) (h' : limsup v f ≠ ⊤) :
@@ -228,6 +239,7 @@ theorem EReal.limsup_add_bot_ne_top {α : Type _} {f : Filter α} {u : α → ER
   rw [h, ← EReal.coe_sub x y]
   exact EReal.bot_lt_coe (x-y)
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.limsup_add_le_add_limsup {α : Type _} {f : Filter α} {u v : α → EReal}
     (h : limsup u f ≠ ⊥ ∨ limsup v f ≠ ⊤) (h' : limsup u f ≠ ⊤ ∨ limsup v f ≠ ⊥) :
@@ -285,14 +297,14 @@ by
   rw [ ← EReal.sInf_neg, ← Set.image_comp]
   congr-/
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
-
 theorem EReal.ge_iff_le_forall_real_lt (x y : EReal) : y ≤ x ↔ ∀ (z : ℝ), (z < y) → (z ≤ x) := by
   constructor
   · intros h z z_lt_y
     exact le_trans (le_of_lt z_lt_y) h
   · intro h
-    induction' x using EReal.rec with x
+    induction x
     · apply le_of_eq
       apply (EReal.eq_bot_iff_forall_lt y).2
       intro z
@@ -303,7 +315,7 @@ theorem EReal.ge_iff_le_forall_real_lt (x y : EReal) : y ≤ x ↔ ∀ (z : ℝ)
       apply h (lt_of_lt_of_le _ z_le_y)
       norm_cast
       exact sub_one_lt z
-    · induction' y using EReal.rec with y
+    · induction y
       · exact bot_le
       · norm_cast
         norm_cast at h
@@ -311,12 +323,14 @@ theorem EReal.ge_iff_le_forall_real_lt (x y : EReal) : y ≤ x ↔ ∀ (z : ℝ)
         rcases exists_between (lt_of_not_le x_lt_y) with ⟨z, ⟨x_lt_z, z_lt_y⟩⟩
         specialize h z z_lt_y
         exact not_le_of_lt x_lt_z h
-      · exfalso
+      case h_top x =>
+        exfalso
         specialize h (x+1) (EReal.coe_lt_top (x+1))
         norm_cast at h
         exact not_le_of_lt (lt_add_one x) h
     · exact le_top
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 lemma EReal.liminf_add_ge_gt₂ {α : Type _} {f : Filter α} {u v : α → EReal} {a b : EReal}
     (ha : a < liminf u f) (hb : b < liminf v f) :
@@ -331,6 +345,7 @@ lemma EReal.liminf_add_ge_gt₂ {α : Type _} {f : Filter α} {u v : α → ERea
   simp only [Pi.add_apply, and_imp]
   exact fun ux_lt_a vx_lt_b ↦ add_le_add (le_of_lt ux_lt_a) (le_of_lt vx_lt_b)
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 lemma EReal.liminf_add_top_ne_bot {α : Type _} {f : Filter α} {u : α → EReal} {v : α → EReal}
     (h : liminf u f = ⊤) (h' : liminf v f ≠ ⊥) :
@@ -345,6 +360,7 @@ lemma EReal.liminf_add_top_ne_bot {α : Type _} {f : Filter α} {u : α → ERea
   rw [h, ← EReal.coe_sub x y]
   exact EReal.coe_lt_top (x-y)
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.add_liminf_le_liminf_add {α : Type _} {f : Filter α} {u v : α → EReal}
     (h : liminf u f ≠ ⊥ ∨ liminf v f ≠ ⊤) (h' : liminf u f ≠ ⊤ ∨ liminf v f ≠ ⊥) :
@@ -377,6 +393,7 @@ theorem EReal.add_liminf_le_liminf_add {α : Type _} {f : Filter α} {u v : α �
   norm_cast
   linarith
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.limsup_le_iff {α : Type _} {f : Filter α} {u : α → EReal} {b : EReal} :
     limsup u f ≤ b ↔ ∀ c : ℝ, b < c → ∀ᶠ a : α in f, u a ≤ c := by
@@ -396,29 +413,38 @@ theorem EReal.limsup_le_iff {α : Type _} {f : Filter α} {u : α → EReal} {b 
       rw [← @Filter.limsup_const EReal α _ f _ (c : EReal)]
       exact limsup_le_limsup h
 
+/-
+[TODO]:
+
+* Get the more general version of limsup_le_of_le
+* limsup_max : get a version for conditionally complete linear orders (+ autoparam)
+* then: write a version for complete linear orders without the autoparam conditions (for the 4 lemmas),
+to be put in Mathlib.order.LimsupLiminf
+-/
+
 /-Suggested: Mathlib.Topology.Instances.EReal-/
-theorem EReal.limsup_le_const_forall {α : Type _} {f : Filter α} {u : α → EReal} {b : EReal}
+theorem EReal.limsup_le_const_forall_le {α : Type _} {f : Filter α} {u : α → EReal} {b : EReal}
     (h : ∀ a : α, u a ≤ b) :
     limsup u f ≤ b := by
   apply EReal.limsup_le_iff.2
   exact fun c b_lt_c ↦ eventually_of_forall (fun a : α ↦ le_trans (h a) (le_of_lt b_lt_c))
 
 /-Suggested: Mathlib.Topology.Instances.EReal-/
-theorem EReal.const_le_limsup_forall {α : Type _} {f : Filter α} [NeBot f] {u : α → EReal}
+theorem EReal.const_le_limsup_forall_le {α : Type _} {f : Filter α} [NeBot f] {u : α → EReal}
     {b : EReal} (h : ∀ a : α, b ≤ u a) :
     b ≤ limsup u f := by
   rw [← @Filter.limsup_const EReal α _ f _ b]
   exact EReal_limsup_le_limsup (eventually_of_forall h)
 
 /-Suggested: Mathlib.Topology.Instances.EReal-/
-theorem EReal.liminf_le_const_forall {α : Type _} {f : Filter α} [NeBot f] {u : α → EReal}
+theorem EReal.liminf_le_const_forall_le {α : Type _} {f : Filter α} [NeBot f] {u : α → EReal}
     {b : EReal} (h : ∀ a : α, u a ≤ b) :
     liminf u f ≤ b := by
   rw [← @Filter.liminf_const EReal α _ f _ b]
   exact EReal_liminf_le_liminf (eventually_of_forall h)
 
 /-Suggested: Mathlib.Topology.Instances.EReal-/
-theorem EReal.const_le_liminf_forall {α : Type _} {f : Filter α} {u : α → EReal} {b : EReal}
+theorem EReal.const_le_liminf_forall_le {α : Type _} {f : Filter α} {u : α → EReal} {b : EReal}
     (h : ∀ a : α, b ≤ u a) :
     b ≤ liminf u f := by
   rcases eq_or_neBot f with (rfl | _)
@@ -426,6 +452,46 @@ theorem EReal.const_le_liminf_forall {α : Type _} {f : Filter α} {u : α → E
   · rw [← @Filter.liminf_const EReal α _ f _ b]
     exact EReal_liminf_le_liminf (eventually_of_forall h)
 
+-- FROM MATHLIB: Mathlib.Topology.Instances.EReal
+-- lemma limsup_le_const_forall_le {u : α → EReal} {b : EReal} (h : ∀ a : α, u a ≤ b) :
+--     limsup u f ≤ b :=
+--   limsup_le_iff.2 fun _ b_lt_c ↦ eventually_of_forall (fun a : α ↦ le_trans (h a) (le_of_lt b_lt_c))
+
+-- lemma const_le_limsup_forall_le [NeBot f] {u : α → EReal} {b : EReal} (h : ∀ a : α, b ≤ u a) :
+--     b ≤ limsup u f :=
+--   @Filter.limsup_const EReal α _ f _ b ▸ limsup_le_limsup (eventually_of_forall h)
+
+-- lemma liminf_le_const_forall_le [NeBot f] {u : α → EReal} {b : EReal} (h : ∀ a : α, u a ≤ b) :
+--     liminf u f ≤ b :=
+--   @Filter.liminf_const EReal α _ f _ b ▸ liminf_le_liminf (eventually_of_forall h)
+
+-- lemma const_le_liminf_forall_le {u : α → EReal} {b : EReal} (h : ∀ a : α, b ≤ u a) :
+--     b ≤ liminf u f := by
+--   rcases eq_or_neBot f with (rfl | _)
+--   · simp only [liminf_bot, le_top]
+--   · exact @Filter.liminf_const EReal α _ f _ b ▸ liminf_le_liminf (eventually_of_forall h)
+
+-- lemma limsup_max : limsup (fun a ↦ max (u a) (v a)) f = max (limsup u f) (limsup v f) := by
+--   rcases eq_or_neBot f with (rfl | _); simp [limsup_bot]
+--   apply le_antisymm
+--   · apply limsup_le_iff.2
+--     intro b hb
+--     have hu := Filter.eventually_lt_of_limsup_lt (lt_of_le_of_lt (le_max_left _ _) hb)
+--     have hv := Filter.eventually_lt_of_limsup_lt (lt_of_le_of_lt (le_max_right _ _) hb)
+--     apply Filter.mem_of_superset (Filter.inter_mem hu hv)
+--     intro a
+--     simp only [Set.mem_inter_iff, Set.mem_setOf_eq, max_le_iff, and_imp]
+--     exact fun hua hva ↦ ⟨le_of_lt hua, le_of_lt hva⟩
+--   · exact max_le (limsup_le_limsup (eventually_of_forall (fun a : α ↦ le_max_left (u a) (v a))))
+--       (limsup_le_limsup (eventually_of_forall (fun a : α ↦ le_max_right (u a) (v a))))
+
+-- lemma liminf_min : liminf (fun a ↦ min (u a) (v a)) f = min (liminf u f) (liminf v f) := by
+--   rw [← neg_inj, ← max_neg_neg]
+--   simp_rw [← limsup_neg]
+--   convert limsup_max
+--   simp [max_neg_neg]
+
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.limsup_max {α : Type _} {f : Filter α} {u v : α → EReal} :
     limsup (fun a ↦ max (u a) (v a)) f = max (limsup u f) (limsup v f) := by

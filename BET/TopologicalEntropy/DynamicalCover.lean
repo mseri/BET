@@ -4,14 +4,15 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Damien Thomine, Pietro Monticone
 -/
 import BET.TopologicalEntropy.Miscellaneous.Misc
-import BET.TopologicalEntropy.Miscellaneous.ENNRealLog
 import BET.TopologicalEntropy.Miscellaneous.ERealDiv
 import BET.TopologicalEntropy.Miscellaneous.ERealMulCont
 import BET.TopologicalEntropy.InvariantSubset
 import BET.TopologicalEntropy.DynamicalUniformity
+import Mathlib.Analysis.SpecialFunctions.Log.ENNReal
 import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Data.Real.ENatENNReal
 import Mathlib.Topology.UniformSpace.Basic
+
 
 /-!
 # Topological entropy via covers

@@ -14,6 +14,8 @@ is continuous. There are many different cases to consider, so we first prove som
 and leverage as much as possible the symmetries of the multiplication.
 -/
 
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14329 -/
+
 namespace ERealMulCont
 
 private lemma continuousAt_mul_swap {a b : EReal}

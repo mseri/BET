@@ -413,7 +413,15 @@ theorem EReal.limsup_le_iff {α : Type _} {f : Filter α} {u : α → EReal} {b 
       rw [← @Filter.limsup_const EReal α _ f _ (c : EReal)]
       exact limsup_le_limsup h
 
-/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
+/-
+[TODO]:
+
+* Get the more general version of limsup_le_of_le
+* limsup_max : get a version for conditionally complete linear orders (+ autoparam)
+* then: write a version for complete linear orders without the autoparam conditions (for the 4 lemmas),
+to be put in Mathlib.order.LimsupLiminf
+-/
+
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.limsup_le_const_forall_le {α : Type _} {f : Filter α} {u : α → EReal} {b : EReal}
     (h : ∀ a : α, u a ≤ b) :
@@ -421,7 +429,6 @@ theorem EReal.limsup_le_const_forall_le {α : Type _} {f : Filter α} {u : α �
   apply EReal.limsup_le_iff.2
   exact fun c b_lt_c ↦ eventually_of_forall (fun a : α ↦ le_trans (h a) (le_of_lt b_lt_c))
 
-/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.const_le_limsup_forall_le {α : Type _} {f : Filter α} [NeBot f] {u : α → EReal}
     {b : EReal} (h : ∀ a : α, b ≤ u a) :
@@ -429,7 +436,6 @@ theorem EReal.const_le_limsup_forall_le {α : Type _} {f : Filter α} [NeBot f] 
   rw [← @Filter.limsup_const EReal α _ f _ b]
   exact EReal_limsup_le_limsup (eventually_of_forall h)
 
-/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.liminf_le_const_forall_le {α : Type _} {f : Filter α} [NeBot f] {u : α → EReal}
     {b : EReal} (h : ∀ a : α, u a ≤ b) :
@@ -437,7 +443,6 @@ theorem EReal.liminf_le_const_forall_le {α : Type _} {f : Filter α} [NeBot f] 
   rw [← @Filter.liminf_const EReal α _ f _ b]
   exact EReal_liminf_le_liminf (eventually_of_forall h)
 
-/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/
 theorem EReal.const_le_liminf_forall_le {α : Type _} {f : Filter α} {u : α → EReal} {b : EReal}
     (h : ∀ a : α, b ≤ u a) :
@@ -446,6 +451,45 @@ theorem EReal.const_le_liminf_forall_le {α : Type _} {f : Filter α} {u : α �
   · simp only [liminf_bot, le_top]
   · rw [← @Filter.liminf_const EReal α _ f _ b]
     exact EReal_liminf_le_liminf (eventually_of_forall h)
+
+-- FROM MATHLIB: Mathlib.Topology.Instances.EReal
+-- lemma limsup_le_const_forall_le {u : α → EReal} {b : EReal} (h : ∀ a : α, u a ≤ b) :
+--     limsup u f ≤ b :=
+--   limsup_le_iff.2 fun _ b_lt_c ↦ eventually_of_forall (fun a : α ↦ le_trans (h a) (le_of_lt b_lt_c))
+
+-- lemma const_le_limsup_forall_le [NeBot f] {u : α → EReal} {b : EReal} (h : ∀ a : α, b ≤ u a) :
+--     b ≤ limsup u f :=
+--   @Filter.limsup_const EReal α _ f _ b ▸ limsup_le_limsup (eventually_of_forall h)
+
+-- lemma liminf_le_const_forall_le [NeBot f] {u : α → EReal} {b : EReal} (h : ∀ a : α, u a ≤ b) :
+--     liminf u f ≤ b :=
+--   @Filter.liminf_const EReal α _ f _ b ▸ liminf_le_liminf (eventually_of_forall h)
+
+-- lemma const_le_liminf_forall_le {u : α → EReal} {b : EReal} (h : ∀ a : α, b ≤ u a) :
+--     b ≤ liminf u f := by
+--   rcases eq_or_neBot f with (rfl | _)
+--   · simp only [liminf_bot, le_top]
+--   · exact @Filter.liminf_const EReal α _ f _ b ▸ liminf_le_liminf (eventually_of_forall h)
+
+-- lemma limsup_max : limsup (fun a ↦ max (u a) (v a)) f = max (limsup u f) (limsup v f) := by
+--   rcases eq_or_neBot f with (rfl | _); simp [limsup_bot]
+--   apply le_antisymm
+--   · apply limsup_le_iff.2
+--     intro b hb
+--     have hu := Filter.eventually_lt_of_limsup_lt (lt_of_le_of_lt (le_max_left _ _) hb)
+--     have hv := Filter.eventually_lt_of_limsup_lt (lt_of_le_of_lt (le_max_right _ _) hb)
+--     apply Filter.mem_of_superset (Filter.inter_mem hu hv)
+--     intro a
+--     simp only [Set.mem_inter_iff, Set.mem_setOf_eq, max_le_iff, and_imp]
+--     exact fun hua hva ↦ ⟨le_of_lt hua, le_of_lt hva⟩
+--   · exact max_le (limsup_le_limsup (eventually_of_forall (fun a : α ↦ le_max_left (u a) (v a))))
+--       (limsup_le_limsup (eventually_of_forall (fun a : α ↦ le_max_right (u a) (v a))))
+
+-- lemma liminf_min : liminf (fun a ↦ min (u a) (v a)) f = min (liminf u f) (liminf v f) := by
+--   rw [← neg_inj, ← max_neg_neg]
+--   simp_rw [← limsup_neg]
+--   convert limsup_max
+--   simp [max_neg_neg]
 
 /- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14128 -/
 /-Suggested: Mathlib.Topology.Instances.EReal-/

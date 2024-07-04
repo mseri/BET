@@ -21,19 +21,20 @@ EReal (`autoparam`...) but still make proofs more cumbersome than they should be
 namespace Misc
 
 /- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14019 -/
-theorem ENat.top_pow {n : ℕ} (n_pos : 0 < n) : (⊤ : ℕ∞)^n = ⊤ := by
-  apply @Nat.le_induction 1 (fun m : ℕ ↦ fun _ : 1 ≤ m ↦ (⊤ : ℕ∞) ^ m = ⊤) (pow_one ⊤)
-  · intro m _ h
-    calc
-      (⊤ : ℕ∞)^(m + 1) = ⊤^m * ⊤^1 := by rw [pow_add ⊤ m 1]
-                     _ = ⊤ * ⊤^1   := by rw [h]
-                     _ = ⊤ * ⊤     := by rw [pow_one ⊤]
-                     _ = ⊤         := WithTop.top_mul_top
-  · exact n_pos
+-- theorem ENat.top_pow {n : ℕ} (n_pos : 0 < n) : (⊤ : ℕ∞)^n = ⊤ := by
+--   apply @Nat.le_induction 1 (fun m : ℕ ↦ fun _ : 1 ≤ m ↦ (⊤ : ℕ∞) ^ m = ⊤) (pow_one ⊤)
+--   · intro m _ h
+--     calc
+--       (⊤ : ℕ∞)^(m + 1) = ⊤^m * ⊤^1 := by rw [pow_add ⊤ m 1]
+--                      _ = ⊤ * ⊤^1   := by rw [h]
+--                      _ = ⊤ * ⊤     := by rw [pow_one ⊤]
+--                      _ = ⊤         := WithTop.top_mul_top
+--   · exact n_pos
 
 
 /- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14066 -/
 /-Suggested: Mathlib.Topology.UniformSpace.Basic-/
+-- UniformContinuous.iterate
 theorem uniformContinuous_ite {X : Type _} [UniformSpace X] (T : X → X) (n : ℕ)
     (h : UniformContinuous T) :
     UniformContinuous T^[n] := by
@@ -43,6 +44,7 @@ theorem uniformContinuous_ite {X : Type _} [UniformSpace X] (T : X → X) (n : �
 
 /- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14096 -/
 /-Suggested: Mathlib.Data.Prod.Basic-/
+-- map_comp_swap
 theorem prod_map_comp_swap {X : Type _} (f g : X → X) :
     Prod.map f g ∘ Prod.swap = Prod.swap ∘ Prod.map g f := rfl
 

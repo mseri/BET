@@ -424,7 +424,7 @@ theorem mincard_exponential_bound {T : X → X} {F : Set X} (F_inv : IsInvariant
   · rw [mul_zero, mincard_time_zero_of_nonempty T F_nonempty (compRel V V), pow_zero]
   by_cases h : Mincard T F V m = ⊤
   · rw [h]
-    exact le_of_le_of_eq (@le_top ℕ∞ _ _ _) (Eq.symm (Misc.ENat.top_pow n_pos))
+    exact le_of_le_of_eq (@le_top ℕ∞ _ _ _) (Eq.symm (ENat.top_pow n_pos))
   · replace h := lt_top_iff_ne_top.2 h
     rcases (finite_mincard_iff T F V m).1 h with ⟨s, ⟨s_cover, s_mincard⟩⟩
     rcases dyncover_iterate F_inv V_symm n s_cover with ⟨t, ⟨t_cover, t_le_sn⟩⟩

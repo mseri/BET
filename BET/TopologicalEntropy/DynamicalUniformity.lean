@@ -7,6 +7,7 @@ import Mathlib.Tactic
 import Mathlib.Topology.UniformSpace.Compact
 import Mathlib.Dynamics.PeriodicPts
 import BET.TopologicalEntropy.Miscellaneous.Misc
+import Mathlib.Topology.UniformSpace.Basic
 
 /-!
 # Dynamical uniformites
@@ -50,7 +51,7 @@ theorem dynamical_of_uni_is_uni {X : Type _} [UniformSpace X] {T : X → X}
   apply (Filter.biInter_mem (Set.finite_Ico 0 n)).2
   intro k _
   rw [Function.iterate_prod_map T T k]
-  exact uniformContinuous_def.1 (uniformContinuous_ite T k h) U U_uni
+  exact uniformContinuous_def.1 (UniformContinuous.iterate T k h) U U_uni
 
 theorem dynamical_of_rfl_is_rfl {X : Type _} (T : X → X) {U : Set (X × X)}
     (h : idRel ⊆ U) (n : ℕ) :

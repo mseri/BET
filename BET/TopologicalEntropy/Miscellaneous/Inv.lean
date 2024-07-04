@@ -3,10 +3,8 @@ Copyright (c) 2024 Damien Thomine. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Author: Damien Thomine, Pietro Monticone
 -/
-import Mathlib.Tactic
-import Mathlib.Data.Real.EReal
-import Mathlib.Data.Real.Sign
 import BET.TopologicalEntropy.Miscellaneous.Misc
+import Mathlib.Analysis.Normed.Field.Basic
 
 /-!
 # Division of extended reals
@@ -14,6 +12,8 @@ We define a division of an extended real `EReal`.
 
 This file may be completed as wished, it is still quite incomplete.
 -/
+
+-- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14224
 
 /- Instance of LinearOrderedSemifield?-/
 
@@ -41,17 +41,17 @@ theorem coe_inv (x : ℝ) : (x⁻¹ : ℝ) = (x : EReal)⁻¹ := rfl
 @[simp]
 theorem inv_zero : (0 : EReal)⁻¹ = 0 := by
   change (0 : ℝ)⁻¹ = (0 : EReal)
-  simp
+  rw [GroupWithZero.inv_zero, coe_zero]
 
 noncomputable instance : DivInvOneMonoid EReal where
   inv_one := by nth_rw 1 [← coe_one, ← coe_inv 1, _root_.inv_one, coe_one]
 
 theorem inv_neg (a : EReal) : (-a)⁻¹ = -a⁻¹ := by
-  induction' a using EReal.rec with a
-  · simp
-  · rw [← coe_inv a, ← coe_neg a⁻¹, ← coe_neg a, ← coe_inv (-a)]
+  induction a
+  · rw [neg_bot, inv_top, inv_bot, neg_zero]
+  · rw [← coe_inv _, ← coe_neg _⁻¹, ← coe_neg _, ← coe_inv (-_)]
     exact EReal.coe_eq_coe_iff.2 _root_.inv_neg
-  · simp
+  · rw [neg_top, inv_bot, inv_top, neg_zero]
 
 theorem inv_inv {a : EReal} (h : a ≠ ⊥) (h' : a ≠ ⊤) : (a⁻¹)⁻¹ = a := by
   rw [← coe_toReal h' h, ← coe_inv a.toReal, ← coe_inv a.toReal⁻¹, _root_.inv_inv a.toReal]
@@ -60,80 +60,76 @@ theorem mul_inv (a b : EReal) : (a * b)⁻¹ = a⁻¹ * b⁻¹ := by
   induction a, b using EReal.induction₂_symm with
   | top_top | top_zero | top_bot | zero_bot | bot_bot => simp
   | @symm a b h => rw [mul_comm b a, mul_comm b⁻¹ a⁻¹]; exact h
-  | top_pos x x_pos => simp [top_mul_of_pos (EReal.coe_pos.2 x_pos)]
-  | top_neg x x_neg => simp [top_mul_of_neg (EReal.coe_neg'.2 x_neg)]
-  | pos_bot x x_pos => simp [mul_bot_of_pos (EReal.coe_pos.2 x_pos)]
+  | top_pos x x_pos => rw [top_mul_of_pos (EReal.coe_pos.2 x_pos), inv_top, zero_mul]
+  | top_neg x x_neg => rw [top_mul_of_neg (EReal.coe_neg'.2 x_neg), inv_bot, inv_top, zero_mul]
+  | pos_bot x x_pos => rw [mul_bot_of_pos (EReal.coe_pos.2 x_pos), inv_bot, mul_zero]
   | coe_coe x y => rw [← coe_mul, ← coe_inv, _root_.mul_inv, coe_mul, coe_inv, coe_inv]
-  | neg_bot x x_neg => simp [mul_bot_of_neg (EReal.coe_neg'.2 x_neg)]
+  | neg_bot x x_neg => rw [mul_bot_of_neg (EReal.coe_neg'.2 x_neg), inv_top, inv_bot, mul_zero]
 
-/-! ## Inversion and absolute value-/
+/-! ## Inversion and absolute value -/
 
 theorem sign_mul_inv_abs (a : EReal) : (sign a) * (a.abs : EReal)⁻¹ = a⁻¹ := by
-  induction' a using EReal.rec with a
-  · simp
-  · rcases lt_trichotomy a 0 with (a_neg | rfl | a_pos)
-    · rw [sign_coe, _root_.sign_neg a_neg, coe_neg_one, neg_one_mul, ← inv_neg]
-      congr
-      rw [abs_def a, coe_ennreal_ofReal, max_eq_left (abs_nonneg a), ← coe_neg |a|]
-      congr
-      rw [abs_of_neg a_neg, neg_neg]
-    · simp
+  induction a
+  case h_bot | h_top => simp
+  case h_real a =>
+    rcases lt_trichotomy a 0 with (a_neg | rfl | a_pos)
+    · rw [sign_coe, _root_.sign_neg a_neg, coe_neg_one, neg_one_mul, ← inv_neg, abs_def a,
+        coe_ennreal_ofReal, max_eq_left (abs_nonneg a), ← coe_neg |a|, abs_of_neg a_neg, neg_neg]
+    · rw [coe_zero, sign_zero, SignType.coe_zero, abs_zero, coe_ennreal_zero, inv_zero, mul_zero]
     · rw [sign_coe, _root_.sign_pos a_pos, SignType.coe_one, one_mul]
-      congr
-      rw [abs_def a, coe_ennreal_ofReal, max_eq_left (abs_nonneg a)]
+      simp only [abs_def a, coe_ennreal_ofReal, ge_iff_le, abs_nonneg, max_eq_left]
       congr
       exact abs_of_pos a_pos
-  · simp
 
 theorem sign_mul_inv_abs' (a : EReal) : (sign a) * ((a.abs⁻¹ : ℝ≥0∞) : EReal) = a⁻¹ := by
-  induction' a using EReal.rec with a
-  · simp
-  · rcases lt_trichotomy a 0 with (a_neg | rfl | a_pos)
-    · rw [sign_coe, _root_.sign_neg a_neg, coe_neg_one, neg_one_mul]
-      rw [abs_def a, ← ofReal_inv_of_pos (abs_pos_of_neg a_neg), coe_ennreal_ofReal,
-        max_eq_left (inv_nonneg.2 (abs_nonneg a)), ← coe_neg |a|⁻¹, ← coe_inv a]
-      congr
-      rw [abs_of_neg a_neg, ← _root_.inv_neg, neg_neg]
+  induction a
+  case h_bot | h_top => simp
+  case h_real a =>
+    rcases lt_trichotomy a 0 with (a_neg | rfl | a_pos)
+    · rw [sign_coe, _root_.sign_neg a_neg, coe_neg_one, neg_one_mul, abs_def a,
+        ← ofReal_inv_of_pos (abs_pos_of_neg a_neg), coe_ennreal_ofReal,
+        max_eq_left (inv_nonneg.2 (abs_nonneg a)), ← coe_neg |a|⁻¹, ← coe_inv a, abs_of_neg a_neg,
+        ← _root_.inv_neg, neg_neg]
     · simp
-    · rw [sign_coe, _root_.sign_pos a_pos, SignType.coe_one, one_mul]
-      congr
-      rw [abs_def a, ← ofReal_inv_of_pos (abs_pos_of_pos a_pos), coe_ennreal_ofReal,
-        max_eq_left (inv_nonneg.2 (abs_nonneg a)), ← coe_inv a]
+    · rw [sign_coe, _root_.sign_pos a_pos, SignType.coe_one, one_mul, abs_def a,
+        ← ofReal_inv_of_pos (abs_pos_of_pos a_pos), coe_ennreal_ofReal,
+          max_eq_left (inv_nonneg.2 (abs_nonneg a)), ← coe_inv a]
       congr
       exact abs_of_pos a_pos
-  · simp
 
-/-! ## Inversion and positivity-/
+/-! ## Inversion and positivity -/
 
 theorem inv_nonneg_of_nonneg {a : EReal} (h : 0 ≤ a) : 0 ≤ a⁻¹ := by
-  induction' a using EReal.rec with a
-  · simp
-  · rw [← coe_inv a, EReal.coe_nonneg, inv_nonneg]
+  induction a
+  case h_bot | h_top => simp
+  case h_real a =>
+    rw [← coe_inv a, EReal.coe_nonneg, inv_nonneg]
     exact EReal.coe_nonneg.1 h
-  · simp
 
 theorem inv_nonpos_of_nonpos {a : EReal} (h : a ≤ 0) : a⁻¹ ≤ 0 := by
-  induction' a using EReal.rec with a
-  · simp
-  · rw [← coe_inv a, EReal.coe_nonpos, inv_nonpos]
+  induction a
+  case h_bot | h_top => simp
+  case h_real a =>
+    rw [← coe_inv a, EReal.coe_nonpos, inv_nonpos]
     exact EReal.coe_nonpos.1 h
-  · simp
 
 theorem inv_pos_of_ntop_pos {a : EReal} (h : 0 < a) (h' : a ≠ ⊤) : 0 < a⁻¹ := by
-  induction' a using EReal.rec with a
-  · exact (not_lt_bot h).rec
-  · rw [← coe_inv a]
+  induction a
+  case h_bot => exact (not_lt_bot h).rec
+  case h_real a =>
+    rw [← coe_inv a]
     norm_cast at *
     exact inv_pos_of_pos h
-  · exact (h' (Eq.refl ⊤)).rec
+  case h_top => exact (h' (Eq.refl ⊤)).rec
 
 theorem inv_neg_of_nbot_neg {a : EReal} (h : a < 0) (h' : a ≠ ⊥) : a⁻¹ < 0 := by
-  induction' a using EReal.rec with a
-  · exact (h' (Eq.refl ⊥)).rec
-  · rw [← coe_inv a]
+  induction a
+  case h_bot => exact (h' (Eq.refl ⊥)).rec
+  case h_real a =>
+    rw [← coe_inv a]
     norm_cast at *
     exact inv_lt_zero.2 h
-  · exact (not_top_lt h).rec
+  case h_top => exact (not_top_lt h).rec
 
 /-! ### Division -/
 
@@ -167,7 +163,7 @@ theorem bot_div_nontop_pos {a : EReal} (h : 0 < a) (h' : a ≠ ⊤) : ⊥ / a = 
 theorem bot_div_nonbot_neg {a : EReal} (h : a < 0) (h' : a ≠ ⊥) : ⊥ / a = ⊤ :=
   bot_mul_of_neg (inv_neg_of_nbot_neg h h')
 
-/-! ## Division and multiplication-/
+/-! ## Division and multiplication -/
 
 theorem div_self {a : EReal} (h₁ : a ≠ ⊥) (h₂ : a ≠ ⊤) (h₃ : a ≠ 0) : a / a = 1 := by
   rw [← coe_toReal h₂ h₁] at h₃ ⊢
@@ -200,13 +196,13 @@ theorem mul_div_mul_cancel {a b c : EReal} (h₁ : c ≠ ⊥) (h₂ : c ≠ ⊤)
   congr
   exact mul_div_cancel h₁ h₂ h₃
 
-/-! ## Distributivity-/
+/-! ## Distributivity -/
 
 theorem div_right_distrib_of_nneg {a b c : EReal} (h : 0 ≤ a) (h' : 0 ≤ b) :
     (a + b) / c = (a / c) + (b / c) :=
-  EReal.right_distrib_of_nonneg h h'
+  EReal.right_distrib_of_nneg h h'
 
-/-! ## Division and order-/
+/-! ## Division and order s-/
 
 theorem monotone_div_right_of_nonneg {b : EReal} (h : 0 ≤ b) : Monotone fun a ↦ a / b :=
   fun _ _ h' ↦ mul_le_mul_of_nonneg_right h' (inv_nonneg_of_nonneg h)
@@ -281,3 +277,4 @@ theorem div_nonneg_of_nonpos_of_nonpos {a b : EReal} (h : a ≤ 0) (h' : b ≤ 0
 end EReal
 
 #lint
+#minimize_imports

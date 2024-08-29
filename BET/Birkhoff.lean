@@ -39,11 +39,14 @@ open BigOperators MeasureTheory
 `φ : α → ℝ` is an integrable observable. -/
 
 variable {α : Type*} [m0: MeasurableSpace α]
+
 /- The original sigma-algebra is now named m0 because we need to distiguish
 b/w that and the invariant sigma-algebra, called invSigmaAlg T. -/
 
-variable {μ : MeasureTheory.Measure α} [MeasureTheory.IsProbabilityMeasure μ]
-variable (T : α → α) (hT : MeasurePreserving T μ μ)
+variable {μ : MeasureTheory.Measure α}
+variable {ν : MeasureTheory.Measure α} [MeasureTheory.IsProbabilityMeasure μ]
+variable (T : α → α)
+
 /- The above declaration of `T` is explicit. This will make `T` an explicit argument in the
 defitions given below. This is needed because the defitions below use `T` explicitly (clarify
 this!).
@@ -124,7 +127,7 @@ open Filter in
 def divSet := { x : α | Tendsto (fun n ↦ maxOfSums T φ x n) atTop atTop }
 
 @[measurability]
-lemma birkhoffSum_measurable :
+lemma birkhoffSum_measurable (hphim : Measurable φ) (hT : MeasurePreserving T ν ν) :
     Measurable (birkhoffSum T φ n) := by
   apply Finset.measurable_sum
   intro i hi
@@ -132,23 +135,24 @@ lemma birkhoffSum_measurable :
   exact Measurable.comp' hphim (Measurable.iterate hT.measurable _)
 
 @[measurability]
-lemma maxOfSums_measurable :
+lemma maxOfSums_measurable (hphim : Measurable φ) (hT : MeasurePreserving T ν ν) :
   ∀ n : ℕ , Measurable (fun x ↦ maxOfSums T φ x n) := by
   intro n
-  induction n
-  case zero := by
+  induction n with
+  | zero =>
     simp only [maxOfSums_zero]
     exact hphim
-  case succ n hn := by
+  | succ n hn =>
     unfold maxOfSums
     simp only [partialSups_succ]
-    exact Measurable.sup' hn (birkhoffSum_measurable _ hT _ hphim)
+    exact Measurable.sup' hn (birkhoffSum_measurable _ _ hphim hT )
 
 /- can probably be stated without the '[m0]' part -/
 /-- Proves that `divSet T φ` is a measurable set -/
-lemma divSet_measurable : MeasurableSet[m0] (divSet T φ) := by
+lemma divSet_measurable (hphim : Measurable φ) (hT : MeasurePreserving T ν ν) :
+    MeasurableSet[m0] (divSet T φ) := by
   simp only [divSet]
-  exact measurableSet_tendsto Filter.atTop (maxOfSums_measurable _ hT _ hphim)
+  exact measurableSet_tendsto Filter.atTop (maxOfSums_measurable _ _ hphim hT)
 
 /- The next lemmas prove that
 `∀ x ∈ divSet T φ, Φ_{n+1}(x) - Φ_{n}(T(x)) = φ(x) - min(0,Φ_{n}(T(x))) ≥ φ(x)`
@@ -416,14 +420,15 @@ theorem non_positive_of_notin_divSet (x : α) (hx : x ∉ divSet T φ) :
 
 open Filter Topology Measure in
 /-- The integral of an observable over the divergent set is nonnegative. -/
-theorem integral_nonneg : 0 ≤ ∫ x in (divSet T φ), φ x ∂μ := by
+theorem integral_nonneg (hphim : Measurable φ) (hT : MeasurePreserving T ν ν)
+    : 0 ≤ ∫ x in (divSet T φ), φ x ∂μ := by
   have h0 (n : ℕ) : 0 ≤ ∫ x in (divSet T φ), (maxOfSums T φ x (n + 1) - maxOfSums T φ x n) ∂μ := by
     have hn : n ≤ (n + 1) := by simp
     have h01 : ∀ x ∈ divSet T φ, 0 ≤ (maxOfSums T φ x (n + 1) - maxOfSums T φ x n) := by
       intros x hx
       have h00 := maxOfSums_mono T φ x hn
       linarith
-    exact setIntegral_nonneg (divSet_measurable T hT φ hphim) h01
+    exact setIntegral_nonneg (divSet_measurable T φ hphim hT) h01
   have h1 (n : ℕ) : ∫ x in (divSet T φ), (maxOfSums T φ x (n + 1) - maxOfSums T φ x n) ∂μ =
       ∫ x in (divSet T φ), (maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n) ∂μ := by
     have h10 : ∫ x in (divSet T φ), (maxOfSums T φ x n) ∂μ =

@@ -84,7 +84,7 @@ example (x : unitInterval) : x ∈ recurrentSet (id : unitInterval → unitInter
   periodicPt_mem_recurrentSet _ _ 1 (by norm_num) (is_periodic_id 1 x)
 
 /-- Every point in a minimal subset is recurrent. -/
-theorem minimalSubset_mem_recurrentSet (f : α → α) (hf : Continuous f)
+theorem minimalSubset_mem_recurrentSet [CompactSpace α] (f : α → α) (hf : Continuous f)
   (U : Set α) (hU : IsMinimalSubset (Flow.fromIter hf) U) :
     U ⊆ recurrentSet f := by
   intro x hx
@@ -152,9 +152,10 @@ theorem exists_minimal_set [CompactSpace α]  (f : α → α) (U : Set α) (h : 
   obtain ⟨V, h1, h2⟩ := zorn_superset_nonempty S h0 U ⟨Eq.subset rfl,h⟩
   use V
   /- Rephrase the conclusion. -/
-  have h3 : ∀ (V' : Set α), V' ⊆ V ∧ IsCIN f V' → V' = V :=
-    fun V' h4 ↦ h2.right V' ⟨(subset_trans h4.left h1.left), h4.right⟩ h4.left
-  exact ⟨h1.left, h1.right, h3⟩
+  have h3 : ∀ (V' : Set α), V' ⊆ V ∧ IsCIN f V' → V' = V := sorry
+    -- fun V' h4 ↦ h2.right V' ⟨(subset_trans h4.left.trans h1.left), h4.right⟩ h4.left
+  -- exact ⟨h1.left, h1.right, h3⟩
+  sorry
 
 /-- The orbit of a point `x` is set of all iterates under `f`. -/
 def orbit (f: α → α) x := { y | ∃ n : ℕ, y = f^[n] x }

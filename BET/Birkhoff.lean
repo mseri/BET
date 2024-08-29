@@ -152,7 +152,7 @@ lemma maxOfSums_measurable (hphim : Measurable φ) (hT : MeasurePreserving T ν 
 lemma divSet_measurable (hphim : Measurable φ) (hT : MeasurePreserving T ν ν) :
     MeasurableSet[m0] (divSet T φ) := by
   simp only [divSet]
-  refine measurableSet_tendsto Filter.atTop (maxOfSums_measurable _ _ hphim hT)
+  exact measurableSet_tendsto Filter.atTop (maxOfSums_measurable _ _ hphim hT)
 
 /- The next lemmas prove that
 `∀ x ∈ divSet T φ, Φ_{n+1}(x) - Φ_{n}(T(x)) = φ(x) - min(0,Φ_{n}(T(x))) ≥ φ(x)`

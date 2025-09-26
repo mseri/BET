@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install elan
         run: |
@@ -63,7 +63,7 @@ jobs:
 
       - name: Open PR if the updated lean build was successful
         if: steps.build-lean.outcome == 'success'
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           title: "Updates available and ready to merge."
           body: "To do: add useful details here..."

@@ -42,9 +42,10 @@ theorem ShiftOS_apply' {A : Type _} (u : ℕ → A) (n : ℕ) :
 
 theorem ShiftOS_ite (A : Type _) (k : ℕ) :
     (ShiftOS A)^[k] = fun (u : ℕ → A) ↦ (fun n : ℕ ↦ u (n+k)) := by
-  induction' k with k hk
-  . simp only [iterate_zero, add_zero]; rfl
-  . ext u n
+  induction k
+  case zero => simp only [iterate_zero, add_zero]; rfl
+  case succ k hk =>
+    ext u n
     rw [iterate_succ, (Commute.iterate_self (ShiftOS A) k).comp_eq, comp_apply, hk,
       ShiftOS_apply (fun n : ℕ ↦ u (n+k))]
     simp [add_assoc n 1 k, add_comm 1 k]

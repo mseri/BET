@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2024 Damien Thomine. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Author: Damien Thomine, Pietro Monticone
+Authors: Damien Thomine, Pietro Monticone
 -/
 import Mathlib.Analysis.RCLike.Basic
 import Mathlib.Data.Complex.Abs
@@ -13,6 +13,8 @@ Outside of indeterminacies `(0, ±∞)` and `(±∞, 0)`, the multiplication on 
 is continuous. There are many different cases to consider, so we first prove some special cases
 and leverage as much as possible the symmetries of the multiplication.
 -/
+
+/- MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14329 -/
 
 namespace ERealMulCont
 
@@ -107,13 +109,14 @@ private lemma continuousAt_mul_top_ne_zero {a : ℝ} (h : a ≠ 0) :
   . exact neg_neg (a : EReal) ▸ continuousAt_mul_symm2 (continuousAt_mul_top_pos (neg_pos.2 a_neg))
   . exact continuousAt_mul_top_pos a_pos
 
+/- Suggested file : [Mathlib.Topology.Instances.EReal]. -/
 /-- The multiplication on `EReal` is continuous except at indeterminacies
   (i.e. whenever one value is zero and the other infinite). -/
 theorem continuousAt_mul {p : EReal × EReal} (h₁ : p.1 ≠ 0 ∨ p.2 ≠ ⊥)
     (h₂ : p.1 ≠ 0 ∨ p.2 ≠ ⊤) (h₃ : p.1 ≠ ⊥ ∨ p.2 ≠ 0) (h₄ : p.1 ≠ ⊤ ∨ p.2 ≠ 0) :
     ContinuousAt (fun p : EReal × EReal ↦ p.1 * p.2) p := by
   rcases p with ⟨x, y⟩
-  induction x using EReal.rec <;> induction y using EReal.rec
+  induction x <;> induction y
   . exact continuousAt_mul_symm3 continuousAt_mul_top_top
   . simp only [ne_eq, not_true_eq_false, EReal.coe_eq_zero, false_or] at h₃
     exact continuousAt_mul_symm1 (continuousAt_mul_top_ne_zero h₃)

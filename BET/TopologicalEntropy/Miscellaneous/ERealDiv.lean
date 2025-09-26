@@ -1,11 +1,13 @@
 /-
 Copyright (c) 2024 Damien Thomine. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Author: Damien Thomine, Pietro Monticone
+Authors: Damien Thomine, Pietro Monticone
 -/
 import Mathlib.Tactic
 import Mathlib.Data.Real.EReal
 import BET.TopologicalEntropy.Miscellaneous.Misc
+
+/-MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14224-/
 
 /-!
 # Division of extended reals by extended nonnegative reals
@@ -112,9 +114,7 @@ theorem EReal.div_left_strictMono {b : ENNReal} (h : b ≠ 0) (h' : b ≠ ⊤) :
       @EReal.mul_inv_cancel c b h h']
 
 theorem EReal.div_left_strictMono' {a a' : EReal} {b : ENNReal} (h₁ : b ≠ 0) (h₂ : b ≠ ⊤)
-    (h₃ : a < a') :
-    a / b < a' / b :=
-  EReal.div_left_strictMono h₁ h₂ h₃
+    (h₃ : a < a') : a / b < a' / b := EReal.div_left_strictMono h₁ h₂ h₃
 
 theorem EReal.le_div_iff_mul_le {a c : EReal} {b : ENNReal} (h : b ≠ 0) (h' : b ≠ ⊤) :
     a ≤ c / b ↔ a * b ≤ c := by

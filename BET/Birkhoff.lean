@@ -72,8 +72,7 @@ def invSigmaAlg : MeasurableSpace α where
   measurableSet_compl := fun h ⟨hinit1, hinit2⟩ ↦ ⟨MeasurableSet.compl hinit1, congrArg compl hinit2⟩
   measurableSet_iUnion := by
     -- now we explicitly want s, so we need to intro it
-    intro s
-    intro hinit
+    intro s hinit
     constructor
     · have hi1st : ∀ i, MeasurableSet (s i) := fun i ↦(hinit i).left
       exact MeasurableSet.iUnion hi1st
@@ -101,10 +100,12 @@ def maxOfSums (x : α) : OrderHom ℕ ℝ :=
      sup' (range (n + 1)) (nonempty_range_succ) (fun k ↦ birkhoffSum T φ (k + 1) x)
    Note that maxOfSums T φ x n corresponds to Φ_{n+1} in our notates -/
 
+omit m0 in
 lemma maxOfSums_zero : maxOfSums T φ x 0 = φ x := by
   unfold maxOfSums
   simp [partialSups_zero, zero_add, birkhoffSum_one']
 
+omit m0 in
 /-- `n ↦ maxOfSums T φ x n` is `Monotone`. -/
 theorem maxOfSums_mono (x : α) : Monotone (fun n ↦ maxOfSums T φ x n) := by
   unfold maxOfSums
@@ -116,6 +117,7 @@ theorem maxOfSums_succ_le (x : α) (n : ℕ) : (maxOfSums T φ x n) ≤ (maxOfSu
   exact OrderHom.apply_mono (by rfl) (Nat.le_add_right n 1)
 -/
 
+omit m0 in
 /-- `maxOfSums` is monotonic (humanly readable version). -/
 theorem maxOfSums_le_le (x : α) (m n : ℕ) (hmn : m ≤ n) :
     (maxOfSums T φ x m) ≤ (maxOfSums T φ x n) := by
@@ -131,7 +133,7 @@ lemma birkhoffSum_measurable (hphim : Measurable φ) (hT : MeasurePreserving T �
   apply Finset.measurable_sum
   intro i hi
   simp only [Finset.mem_range] at hi
-  exact Measurable.comp' hphim (Measurable.iterate hT.measurable _)
+  exact Measurable.fun_comp hphim (Measurable.iterate hT.measurable _)
 
 @[measurability]
 lemma maxOfSums_measurable (hphim : Measurable φ) (hT : MeasurePreserving T ν ν) :
@@ -159,11 +161,13 @@ lemma divSet_measurable (hphim : Measurable φ) (hT : MeasurePreserving T ν ν)
 `∀ x ∈ divSet T φ, Φ_{n+1}(x) - Φ_{n}(T(x)) = φ(x) - min(0,Φ_{n}(T(x))) ≥ φ(x)`
 decreases to `φ(x)`. -/
 
+omit m0 in
 lemma birkhoffSum_succ_image (n : ℕ) (x : α) :
       birkhoffSum T φ n (T x) = birkhoffSum T φ (n + 1) x - φ x := by
     simp [birkhoffSum_add T φ n 1 x, eq_add_of_sub_eq' (birkhoffSum_apply_sub_birkhoffSum T φ n x),
       birkhoffSum_one', add_sub (birkhoffSum T φ n x) (φ (T^[n] x)) (φ x)]
 
+omit m0 in
 /- Would expect this to be in `Mathlib/Data/Finset/Lattice`.
 Or perhaps there is already an easier way to extract it from mathlib? -/
 lemma sup'_eq_iff_le {s : Finset β} [SemilatticeSup α] (H : s.Nonempty) (f : β → α) (hs : a ∈ s) :
@@ -174,6 +178,7 @@ lemma sup'_eq_iff_le {s : Finset β} [SemilatticeSup α] (H : s.Nonempty) (f : �
 lemma map_range_Nonempty (n : ℕ) : (Finset.map (addLeftEmbedding 1)
     (Finset.range (n + 1))).Nonempty := by simp
 
+omit m0 in
 open Finset in
 /- modified from mathlib to make f explicit - isn't the version in mathlib inconvenient? -/
 lemma comp_sup'_eq_sup'_comp_alt [SemilatticeSup α] [SemilatticeSup γ] {s : Finset β}
@@ -181,6 +186,7 @@ lemma comp_sup'_eq_sup'_comp_alt [SemilatticeSup α] [SemilatticeSup γ] {s : Fi
     (g : α → γ) (g_sup : ∀ x y, g (x ⊔ y) = g x ⊔ g y) : g (s.sup' H f) = s.sup' H (g ∘ f) := by
   refine H.cons_induction ?_ ?_ <;> intros <;> simp [*]
 
+omit m0 in
 open Finset in
 /-- A convenient equality for `maxOfSums` (called Claim 1 in the blueprint proof). -/
 theorem claim1 (n : ℕ) (x : α) :
@@ -213,7 +219,7 @@ theorem claim1 (n : ℕ) (x : α) :
   -- case when max is the first term
   have h35 : ∀ k ∈ range (n + 1 + 1), birkhoffSum T φ (k + 1) x ≤ birkhoffSum T φ 1 x := by
     have h41 : 0 ∈ (range (n + 1 + 1)) := mem_range.mpr (Nat.add_pos_right (n + 1) Nat.le.refl)
-    have h11 := sup'_eq_iff_le nonempty_range_succ (fun k ↦ birkhoffSum T φ (k + 1) x) h41
+    have h11 := sup'_eq_iff_le nonempty_range_add_one (fun k ↦ birkhoffSum T φ (k + 1) x) h41
     simp at h11
     simp
     refine' h11.mp _
@@ -237,7 +243,7 @@ theorem claim1 (n : ℕ) (x : α) :
     rw [partialSups_eq_sup'_range]
     simp only [sup'_le_iff, mem_range]
     intros k hk
-    rw [Nat.lt_succ] at hk
+    rw [Nat.lt_succ_iff] at hk
     refine h3 (k + 1) (Nat.add_le_add hk Nat.le.refl)
   have h5 : min 0 (maxOfSums T φ (T x) n) = maxOfSums T φ (T x) n := min_eq_right h4
   linarith
@@ -248,8 +254,8 @@ theorem claim1 (n : ℕ) (x : α) :
     rw [hcr]
     unfold maxOfSums
     have h4 (k : ℕ) (_ : k ∈ range (n + 1)) := birkhoffSum_succ' T φ (k + 1) x
-    have h5 := sup'_congr nonempty_range_succ rfl h4
-    have h7 := comp_sup'_eq_sup'_comp_alt (nonempty_range_succ : (range (n + 1)).Nonempty)
+    have h5 := sup'_congr nonempty_range_add_one rfl h4
+    have h7 := comp_sup'_eq_sup'_comp_alt (nonempty_range_add_one : (range (n + 1)).Nonempty)
       (fun k ↦ birkhoffSum T φ (k + 1) (T x)) (fun a ↦ (φ x) + a ) (fun a b ↦ add_sup a b (φ x))
     simp at h7
     simp at h5
@@ -268,6 +274,7 @@ theorem claim1 (n : ℕ) (x : α) :
     linarith
   simp [min_eq_left h8, h1]
 
+omit m0 in
 open Filter in
 /- Eventual equality - variant with assumption on `T x`. -/
 theorem diff_evenutally_of_divSet' (x : α) (hx : (T x) ∈ divSet T φ ):
@@ -292,6 +299,7 @@ theorem diff_evenutally_of_divSet' (x : α) (hx : (T x) ∈ divSet T φ ):
   rw [hk m hm, sub_zero] at h3
   exact h3
 
+omit m0 in
 open Filter in
 /- Eventual equality - variant with assumption on `x`. -/
 theorem diff_evenutally_of_divSet (x : α) (hx : x ∈ divSet T φ):
@@ -331,6 +339,7 @@ theorem diff_evenutally_of_divSet (x : α) (hx : x ∈ divSet T φ):
   rw [hk m hm, sub_zero] at h3
   exact h3
 
+omit m0 in
 open Filter in
 /-- `divSet T φ` is invariant (a.k.a. Claim 2 in the blueprint proof). -/
 theorem divSet_inv : T⁻¹' (divSet T φ) = (divSet T φ) := by
@@ -374,6 +383,7 @@ theorem divSet_inv : T⁻¹' (divSet T φ) = (divSet T φ) := by
       ------------------------------------------------------------------------------------------
     exact Tendsto.congr' h2' (tendsto_atTop_add_const_right atTop (- φ x) hx')
 
+omit m0 in
 /-- The convenient formula involving the difference of two `maxOfSum`'s is decreasing, i.e., its
 opposite is `Monotone` (framed formula in the bluepront proof). -/
 lemma diff_Monotone (x : α) : Monotone (fun n ↦ -(maxOfSums T φ x (n + 1) - maxOfSums T φ (T x) n)) := by
@@ -390,6 +400,7 @@ lemma diff_Monotone (x : α) : Monotone (fun n ↦ -(maxOfSums T φ x (n + 1) - 
   -- exact exact maxOfSums_mono T φ (T x) hnm
   · exact Or.inr <| maxOfSums_mono T φ (T x) hnm
 
+omit m0 in
 lemma bounded_birkhoffSum_of_notin_divSet (x : α) (hx : x ∉ divSet T φ) :
     ∃ B : ℝ, ∀ n, birkhoffSum T φ n x ≤ B := by
   have := Filter.tendsto_atTop_atTop_of_monotone (maxOfSums_mono T φ x) |>.mt hx

@@ -39,8 +39,9 @@ def nonWanderingSet (f : α → α) : Set α :=
 
 variable [CompactSpace α] (f : α → α) (hf : Continuous f)
 
+omit [CompactSpace α] in
 /-- Periodic points belong to the non-wandering set -/
-theorem periodicPt_is_nonWandering (x : α) (n : ℕ) (nnz : n ≠ 0) (pp : IsPeriodicPt f n x) :
+theorem periodicPt_is_nonWandering (x : α) (n : ℕ) (_nnz : n ≠ 0) (pp : IsPeriodicPt f n x) :
     x ∈ nonWanderingSet f := by
   intro U hUx _
   use n
@@ -51,6 +52,7 @@ theorem periodicPt_is_nonWandering (x : α) (n : ℕ) (nnz : n ≠ 0) (pp : IsPe
   unfold IsFixedPt at pp
   use x
 
+omit [TopologicalSpace α] [CompactSpace α] in
 lemma periodicPt_arbitrary_large_time (N : ℕ) (m : ℕ) (hm : 0 < m) (x : α)
     (hx : IsPeriodicPt f m x) :
     ∀ U : Set α, x ∈ U → ∃ (n : ℕ), N ≤ n ∧ f^[n] x ∈ U := by
@@ -61,6 +63,7 @@ lemma periodicPt_arbitrary_large_time (N : ℕ) (m : ℕ) (hm : 0 < m) (x : α)
     exact hUx
 
 -- This one should be in mathlib if it is not already there
+omit [TopologicalSpace α] [CompactSpace α] in
 lemma inter_subset_empty_of_inter_empty (A : Set α) (B : Set α) (C : Set α) (D : Set α) :
 (A ⊆ C) → (B ⊆ D) → (C ∩ D = ∅) → (A ∩ B = ∅) :=
   fun hAC hBD hCD ↦ subset_empty_iff.mp (hCD ▸ inter_subset_inter hAC hBD)
@@ -112,6 +115,7 @@ theorem nonWandering_nonempty [hα : Nonempty α] : Set.Nonempty (nonWanderingSe
 def recurrentSet {α : Type*} [TopologicalSpace α] (f : α → α) : Set α :=
   { x | x ∈ ω⁺ (fun n ↦ f^[n]) {x} }
 
+omit [CompactSpace α] in
 /-- Periodic points belong to the recurrent set. -/
 theorem periodicPt_mem_recurrentSet (x : α) (n : ℕ) (nnz : n ≠ 0) (hx : IsPeriodicPt f n x) :
     x ∈ recurrentSet f := by
@@ -144,10 +148,12 @@ noncomputable def doubling_map (x : unitInterval) : unitInterval :=
 
 def orbit_atTop (f : α → α) (x : α) : Filter α := Filter.map (fun n ↦ f^[n] x) atTop
 
+omit [CompactSpace α] in
 lemma orbit_atTop_eq_mapClusterPt (f : α → α) (x : α) :
   MapClusterPt x atTop (fun n ↦ f^[n] x) = ClusterPt x (orbit_atTop f x) := by
   rw [orbit_atTop, MapClusterPt]
 
+omit [CompactSpace α] in
 theorem recurrentSet_iff_clusterPt (x : α) :
     x ∈ recurrentSet f ↔ ClusterPt x (orbit_atTop f x) := by
   constructor

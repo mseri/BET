@@ -6,6 +6,8 @@ This project was initiated at the [Machine-Checked Mathematics Workshop](https:/
 
 Developed with @mseri, @marcolenci and Guillaume Dubach, under the support and supervision of Sébastien Gouëzel.
 
+In the meantime, another proof of the Birkhoff's ergodic theorem has been formalized in Lean 4: see <https://github.com/lucasvreis/BirkhoffErgodicThm>
+
 ## How to use
 
 Make sure that Lean 4 is installed, if not, [start here](https://leanprover-community.github.io/).

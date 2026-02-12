@@ -57,9 +57,10 @@ section Topological_Dynamics
 
 variable {α : Type*} [TopologicalSpace α]
 
-/-- The non-wandering set of `f` is the set of points which return arbitrarily close after some iterate. -/
+/-- The non-wandering set of `f` is the set of points which return arbitrarily close after
+arbitrarily large iterates. -/
 def nonWanderingSet (f : α → α) : Set α :=
-  {x | ∀ U : Set α, x ∈ U -> IsOpen U -> ∃ N : ℕ, (f^[N] '' U) ∩ U |>.Nonempty }
+  {x | ∀ U : Set α, x ∈ U → IsOpen U → ∀ N : ℕ, ∃ n : ℕ, N ≤ n ∧ (f^[n] '' U ∩ U).Nonempty }
 
 /-! ### Lemmas requiring only TopologicalSpace -/
 
@@ -70,14 +71,10 @@ variable (f : α → α)
 /-- Periodic points belong to the non-wandering set -/
 theorem periodicPt_is_nonWandering (x : α) (n : ℕ) (_nnz : n ≠ 0) (pp : IsPeriodicPt f n x) :
     x ∈ nonWanderingSet f := by
-  intro U hUx _
-  use n
-  refine ⟨x, ?_⟩
-  rw [mem_inter_iff]
-  apply And.intro _ hUx
-  unfold IsPeriodicPt at pp
-  unfold IsFixedPt at pp
-  use x
+  intro U hUx _ N
+  obtain ⟨m, hm_ge, hm_mem⟩ :=
+    periodicPt_arbitrary_large_time f N n (Nat.pos_of_ne_zero _nnz) x pp U hUx
+  exact ⟨m, hm_ge, f^[m] x, ⟨⟨x, hUx, rfl⟩, hm_mem⟩⟩
 
 /-- The recurrent set is the set of points that are recurrent, i.e. that belong to their omega-limit set. -/
 def recurrentSet {α : Type*} [TopologicalSpace α] (f : α → α) : Set α :=
@@ -132,28 +129,37 @@ theorem nonWanderingSet_isClosed : IsClosed (nonWanderingSet f) := by
   intro x hx
   simp only [Set.mem_compl_iff, nonWanderingSet, Set.mem_setOf_eq] at hx
   push_neg at hx
-  obtain ⟨U, hUx, hUopen, hU⟩ := hx
+  obtain ⟨U, hUx, hUopen, N₀, hU⟩ := hx
   refine ⟨U, ?_, hUopen, hUx⟩
   intro y hyU
   simp only [Set.mem_compl_iff, nonWanderingSet, Set.mem_setOf_eq]
   intro hy
-  obtain ⟨N, hN⟩ := hy U hyU hUopen
-  exact absurd (hU N) hN.ne_empty
+  obtain ⟨n, hn_ge, hn_ne⟩ := hy U hyU hUopen N₀
+  exact absurd hn_ne (Set.not_nonempty_iff_eq_empty.mpr (hU n hn_ge))
 
 /-- The omega-limit set of any point is contained in the non-wandering set. -/
 theorem omegaLimit_is_nonWandering (x : α) : (ω⁺ (fun n ↦ f^[n]) ({x})) ⊆ (nonWanderingSet f) := by
-  intro y hy U hUy hUopen
+  intro y hy U hUy hUopen N
   rw [mem_omegaLimit_iff_frequently] at hy
   simp only [Set.singleton_inter_nonempty, Set.mem_preimage, Filter.frequently_atTop] at hy
   have hUnhds : U ∈ nhds y := hUopen.mem_nhds hUy
   obtain ⟨n₁, _, hn₁⟩ := hy U hUnhds 0
-  obtain ⟨n₂, hn₂, hn₂U⟩ := hy U hUnhds (n₁ + 1)
-  refine ⟨n₂ - n₁, f^[n₂] x, ?_, hn₂U⟩
-  exact ⟨f^[n₁] x, hn₁, by rw [← Function.iterate_add_apply]; congr 1; omega⟩
+  obtain ⟨n₂, hn₂, hn₂U⟩ := hy U hUnhds (n₁ + N)
+  refine ⟨n₂ - n₁, ?_, f^[n₂] x, ?_, hn₂U⟩
+  · omega
+  · exact ⟨f^[n₁] x, hn₁, by rw [← Function.iterate_add_apply]; congr 1; omega⟩
 
 /-- The recurrent set is included in the non-wandering set -/
 theorem recurrentSet_is_nonWandering : recurrentSet f ⊆ (nonWanderingSet f) :=
   fun _ ↦ fun hz ↦ omegaLimit_is_nonWandering _ _ (mem_setOf_eq ▸ hz)
+
+/-- If `x` belongs to the non-wandering set, there are points `y` arbitrarily close to `x`
+and arbitrarily large times for which `f^[n] y` comes back close to `x`. -/
+theorem closed_arbitrary_large_time (N : ℕ) (x : α) (hx : x ∈ nonWanderingSet f)
+  (U : Set α) (hUx : x ∈ U) (hUopen : IsOpen U) :
+    ∃ y : α, ∃ n : ℕ, y ∈ U ∧ f^[n] y ∈ U ∧ N + 1 < n := by
+  obtain ⟨n, hn_ge, z, ⟨y, hyU, hfy⟩, hzU⟩ := hx U hUx hUopen (N + 2)
+  exact ⟨y, n, hyU, hfy ▸ hzU, by omega⟩
 
 end TopologicalOnly
 
@@ -163,23 +169,6 @@ variable [CompactSpace α] (f : α → α) (hf : Continuous f)
 
 /-- The set of points which are not periodic of any period. -/
 def IsNotPeriodicPt (f : α → α)  (x : α) := ∀ n : ℕ, 0 < n → ¬IsPeriodicPt f n x
-
-/-- If `x` belongs to the non-wandering set, there are points `y` arbitrarily close to `x`
-and arbitrarily large times for which `f^[n] y` comes back close to `x`. -/
-theorem closed_arbitrary_large_time (N : ℕ) (x : α) (hx : x ∈ nonWanderingSet f)
-  (U : Set α) (hUx : x ∈ U) (hUopen : IsOpen U) :
-    ∃ y : α, ∃ n : ℕ, y ∈ U ∧ f^[n] y ∈ U ∧ N + 1 < n := by
-  obtain ⟨n, y, hyn, hUy⟩ := hx U hUx hUopen
-  use y
-  use n
-  have fnyU : f^[n] y ∈ U := by
-    sorry
-  refine ⟨hUy, fnyU, ?_⟩
-  sorry
-
-/- Show that the non-wandering set of `f` is closed. -/
-theorem nonWanderingSet_isClosed : IsClosed (nonWanderingSet f) := by
-  sorry
 
 /-- The non-wandering set of `f` is compact. -/
 theorem nonWanderingSet_isCompact : IsCompact (nonWanderingSet f : Set α) :=

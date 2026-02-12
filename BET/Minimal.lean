@@ -32,6 +32,24 @@ open MeasureTheory Filter Function Set
 open scoped omegaLimit
 set_option autoImplicit false
 
+section Orbit
+
+variable {α : Type*}
+
+/-- The orbit of a point `x` is set of all iterates under `f`. -/
+def orbit (f: α → α) x := { y | ∃ n : ℕ, y = f^[n] x }
+
+/-- The orbit of a point is invariant. -/
+theorem orbit_inv (f: α → α) (x : α) : IsInvariant (fun n x ↦ f^[n] x) (orbit f x) := by
+  intro n y h0
+  choose m h1 using h0
+  -- here we show that f^[n] y = f^[n + m] x
+  use n + m
+  rw [h1]
+  exact (iterate_add_apply f n m x).symm
+
+end Orbit
+
 variable {α : Type*}[TopologicalSpace α]
 -- latter properties are required by Flow
 variable {τ : Type*} [AddMonoid τ] [TopologicalSpace τ] [ContinuousAdd τ]
@@ -156,19 +174,6 @@ theorem exists_minimal_set [CompactSpace α]  (f : α → α) (U : Set α) (h : 
     -- fun V' h4 ↦ h2.right V' ⟨(subset_trans h4.left.trans h1.left), h4.right⟩ h4.left
   -- exact ⟨h1.left, h1.right, h3⟩
   sorry
-
-/-- The orbit of a point `x` is set of all iterates under `f`. -/
-def orbit (f: α → α) x := { y | ∃ n : ℕ, y = f^[n] x }
-
-omit [TopologicalSpace α] in
-/-- The orbit of a point is invariant. -/
-theorem orbit_inv (f: α → α) (x : α) : IsInvariant (fun n x ↦ f^[n] x) (orbit f x) := by
-  intro n y h0
-  choose m h1 using h0
-  -- here we show that f^[n] y = f^[n + m] x
-  use n + m
-  rw [h1]
-  exact (iterate_add_apply f n m x).symm
 
 /-- The closure of an orbit is invariant under the dynamics. -/
 theorem closure_orbit_inv (f: α → α) (hf : Continuous f) (x : α) :

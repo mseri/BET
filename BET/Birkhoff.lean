@@ -73,7 +73,6 @@ def invSigmaAlg : MeasurableSpace α where
   measurableSet_iUnion := by
     -- now we explicitly want s, so we need to intro it
     intro s
-    dsimp
     intro hinit
     constructor
     · have hi1st : ∀ i, MeasurableSet (s i) := fun i ↦(hinit i).left
@@ -143,8 +142,10 @@ lemma maxOfSums_measurable (hphim : Measurable φ) (hT : MeasurePreserving T ν 
     simp only [maxOfSums_zero]
     exact hphim
   | succ n hn =>
-    unfold maxOfSums
-    simp only [partialSups_succ]
+    have : ∀ x, maxOfSums T φ x (n + 1) = maxOfSums T φ x n ⊔ birkhoffSum T φ (n + 2) x := by
+      intro x
+      exact partialSups_succ (fun n ↦ birkhoffSum T φ (n + 1) x) n
+    simp_rw [this]
     exact Measurable.sup' hn (birkhoffSum_measurable _ _ hphim hT )
 
 /- can probably be stated without the '[m0]' part -/

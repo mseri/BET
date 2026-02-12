@@ -248,6 +248,6 @@ theorem recurrentSet_nonempty [Nonempty α] [CompactSpace α] (f : α → α) (h
   choose V _ h4 using (exists_minimal_set f univ h1)
   have h5 := h4.cin.nonempty
   -- The minimal set is contained within the recurrent set.
-  rw [minimal_equiv] at h4
+  rw [minimal_equiv f hf] at h4
   have h6 : V ⊆ recurrentSet f := minimalSubset_mem_recurrentSet f hf V h4
   exact Nonempty.mono h6 h5

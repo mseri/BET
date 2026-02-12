@@ -5,7 +5,7 @@ Authors: Guillaume Dubach, Marco Lenci, Sébastien Gouëzel, Marcello Seri, Oliv
 -/
 
 import Mathlib.Tactic
-import Mathlib.Topology.Separation
+import Mathlib.Topology.Separation.Basic
 import Mathlib.Dynamics.OmegaLimit
 import Mathlib.Dynamics.Ergodic.AddCircle
 

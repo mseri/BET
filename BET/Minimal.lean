@@ -38,7 +38,7 @@ variable {τ : Type*} [AddMonoid τ] [TopologicalSpace τ] [ContinuousAdd τ]
 
 /- A subset is minimal if it is nonempty, closed, and every orbit is dense.
 To do: remove invariant, add nonempty. -/
-structure IsMinimalSubset (ϕ : Flow τ α) (U : Set α) : Prop :=
+structure IsMinimalSubset (ϕ : Flow τ α) (U : Set α) : Prop where
   (isClosed : IsClosed U)
   (isInvariant : IsInvariant ϕ.toFun U)
   (isMinimal :  ∀ x : α, DenseRange (fun τ ↦ ϕ τ x))
@@ -98,13 +98,13 @@ theorem minimalSubset_mem_recurrentSet [CompactSpace α] (f : α → α) (hf : C
   -- exact ⟨n + N, le_add_self, (Function.iterate_add_apply _ _ _ _).symm ▸ hball⟩
 
 /-- Is a closed, invariant and nonempty set. -/
-structure IsCIN (f : α → α) (U : Set α) : Prop :=
+structure IsCIN (f : α → α) (U : Set α) : Prop where
   (nonempty : U.Nonempty)
   (closed : IsClosed U)
   (invariant : IsInvariant (fun n x ↦ f^[n] x) U)
 
 /-- A set is minimal if it is closed, invariant and nonempty and no proper subset satisfies these same properties. -/
-structure IsMinimalAlt (f : α → α) (U : Set α) : Prop :=
+structure IsMinimalAlt (f : α → α) (U : Set α) : Prop where
   (cin : IsCIN f U)
   (minimal : ∀ (V : Set α), V ⊆ U ∧ IsCIN f V → V = U)
 
@@ -160,6 +160,7 @@ theorem exists_minimal_set [CompactSpace α]  (f : α → α) (U : Set α) (h : 
 /-- The orbit of a point `x` is set of all iterates under `f`. -/
 def orbit (f: α → α) x := { y | ∃ n : ℕ, y = f^[n] x }
 
+omit [TopologicalSpace α] in
 /-- The orbit of a point is invariant. -/
 theorem orbit_inv (f: α → α) (x : α) : IsInvariant (fun n x ↦ f^[n] x) (orbit f x) := by
   intro n y h0
@@ -176,7 +177,7 @@ theorem closure_orbit_inv (f: α → α) (hf : Continuous f) (x : α) :
   intro n y h0
   have h1 : ContinuousOn f^[n] (closure s) := Continuous.continuousOn (Continuous.iterate hf n)
   have h2 : f^[n] y ∈ f^[n] '' closure s := Exists.intro y { left := h0, right := rfl }
-  exact closure_mono (mapsTo'.mp ((orbit_inv f x) n)) (ContinuousOn.image_closure h1 h2)
+  exact closure_mono (mapsTo_iff_image_subset.mp ((orbit_inv f x) n)) (ContinuousOn.image_closure h1 h2)
 
 -- open Metric in
 -- def everyOrbitDense [MetricSpace α] (f: α → α) (U : Set α) := ∀ (x y : α) (_: x ∈ U) (_: y ∈ U) (ε : ℝ),
@@ -248,6 +249,6 @@ theorem recurrentSet_nonempty [Nonempty α] [CompactSpace α] (f : α → α) (h
   choose V _ h4 using (exists_minimal_set f univ h1)
   have h5 := h4.cin.nonempty
   -- The minimal set is contained within the recurrent set.
-  rw [minimal_equiv] at h4
+  rw [minimal_equiv f hf] at h4
   have h6 : V ⊆ recurrentSet f := minimalSubset_mem_recurrentSet f hf V h4
   exact Nonempty.mono h6 h5

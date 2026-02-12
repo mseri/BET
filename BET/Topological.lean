@@ -126,6 +126,35 @@ theorem recurrentSet_iff_clusterPt (x : α) :
     rw [mem_omegaLimit_singleton_iff_map_cluster_point atTop (fun n ↦ f^[n]) x x]
     exact hcluster
 
+/- Show that the non-wandering set of `f` is closed. -/
+theorem nonWanderingSet_isClosed : IsClosed (nonWanderingSet f) := by
+  rw [← isOpen_compl_iff, isOpen_iff_forall_mem_open]
+  intro x hx
+  simp only [Set.mem_compl_iff, nonWanderingSet, Set.mem_setOf_eq] at hx
+  push_neg at hx
+  obtain ⟨U, hUx, hUopen, hU⟩ := hx
+  refine ⟨U, ?_, hUopen, hUx⟩
+  intro y hyU
+  simp only [Set.mem_compl_iff, nonWanderingSet, Set.mem_setOf_eq]
+  intro hy
+  obtain ⟨N, hN⟩ := hy U hyU hUopen
+  exact absurd (hU N) hN.ne_empty
+
+/-- The omega-limit set of any point is contained in the non-wandering set. -/
+theorem omegaLimit_is_nonWandering (x : α) : (ω⁺ (fun n ↦ f^[n]) ({x})) ⊆ (nonWanderingSet f) := by
+  intro y hy U hUy hUopen
+  rw [mem_omegaLimit_iff_frequently] at hy
+  simp only [Set.singleton_inter_nonempty, Set.mem_preimage, Filter.frequently_atTop] at hy
+  have hUnhds : U ∈ nhds y := hUopen.mem_nhds hUy
+  obtain ⟨n₁, _, hn₁⟩ := hy U hUnhds 0
+  obtain ⟨n₂, hn₂, hn₂U⟩ := hy U hUnhds (n₁ + 1)
+  refine ⟨n₂ - n₁, f^[n₂] x, ?_, hn₂U⟩
+  exact ⟨f^[n₁] x, hn₁, by rw [← Function.iterate_add_apply]; congr 1; omega⟩
+
+/-- The recurrent set is included in the non-wandering set -/
+theorem recurrentSet_is_nonWandering : recurrentSet f ⊆ (nonWanderingSet f) :=
+  fun _ ↦ fun hz ↦ omegaLimit_is_nonWandering _ _ (mem_setOf_eq ▸ hz)
+
 end TopologicalOnly
 
 /-! ### Lemmas requiring CompactSpace -/
@@ -154,30 +183,15 @@ theorem nonWanderingSet_isClosed : IsClosed (nonWanderingSet f) := by
 
 /-- The non-wandering set of `f` is compact. -/
 theorem nonWanderingSet_isCompact : IsCompact (nonWanderingSet f : Set α) :=
-  sorry
+  (nonWanderingSet_isClosed f).isCompact
 
 /-- The omega-limit set of any point is nonempty. -/
 theorem omegaLimit_nonempty (x : α) : Set.Nonempty (ω⁺ (fun n ↦ f^[n]) ({x})) :=
   nonempty_omegaLimit atTop (fun n ↦ f^[n]) {x} (Set.singleton_nonempty x)
 
-/-- The omega-limit set of any point is contained in the non-wandering set. -/
-theorem omegaLimit_is_nonWandering (x : α) : (ω⁺ (fun n ↦ f^[n]) ({x})) ⊆ (nonWanderingSet f) := by
-  unfold nonWanderingSet
-  let A := ω atTop (fun n ↦ f^[n]) {x}
-  let B := {x | ∀ (U : Set α), x ∈ U → IsOpen U → ∃ N, (f^[N] '' U ∩ U).Nonempty}
-  change A ⊆ B
-  refine inter_eq_left.mp ?_
-  have : (f ⁻¹' A) ∩ A ≠ ∅ := by
-    sorry
-  sorry
-
 /-- The non-wandering set is non-empty -/
 theorem nonWandering_nonempty [hα : Nonempty α] : Set.Nonempty (nonWanderingSet f) :=
   Set.Nonempty.mono (omegaLimit_is_nonWandering _ _) (omegaLimit_nonempty f (Nonempty.some hα))
-
-/-- The recurrent set is included in the non-wandering set -/
-theorem recurrentSet_is_nonWandering : recurrentSet f ⊆ (nonWanderingSet f) :=
-  fun _ ↦ fun hz ↦ omegaLimit_is_nonWandering _ _ (mem_setOf_eq ▸ hz)
 
 /- Show that the recurrent set of `f` is nonempty (the math proof is not trivial, maybe better skip this one). -/
 

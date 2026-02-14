@@ -145,9 +145,16 @@ theorem omegaLimit_is_nonWandering (x : α) : (ω⁺ (fun n ↦ f^[n]) ({x})) �
   have hUnhds : U ∈ nhds y := hUopen.mem_nhds hUy
   obtain ⟨n₁, _, hn₁⟩ := hy U hUnhds 0
   obtain ⟨n₂, hn₂, hn₂U⟩ := hy U hUnhds (n₁ + N)
+  -- We constructed `f^[n₁] x` and `f^[n₂] x` both mepping within `U`,
+  -- so that `n₂ - n₁ ≥ N`, we want to now show that `f^[n₂-n₁]` maps
+  -- a point of `U` back into `U`.
   refine ⟨n₂ - n₁, ?_, f^[n₂] x, ?_, hn₂U⟩
-  · omega
-  · exact ⟨f^[n₁] x, hn₁, by rw [← Function.iterate_add_apply]; congr 1; omega⟩
+  · have h : N + n₁ ≤ n₂ := (add_comm N n₁).le.trans hn₂
+    exact Nat.le_sub_of_add_le h
+  -- Show that `f^[n₂] x` is in the orbit of `f^[n₁] x` with the appropeiate time
+  · have hn₁_le : n₁ ≤ n₂ := Nat.le_of_add_right_le hn₂
+    have htriv : n₂ - n₁ + n₁ = n₂ := Nat.sub_add_cancel hn₁_le
+    exact ⟨f^[n₁] x, hn₁, by rw [← Function.iterate_add_apply, htriv]⟩
 
 /-- The recurrent set is included in the non-wandering set -/
 theorem recurrentSet_is_nonWandering : recurrentSet f ⊆ (nonWanderingSet f) :=

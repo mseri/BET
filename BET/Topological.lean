@@ -57,9 +57,10 @@ section Topological_Dynamics
 
 variable {α : Type*} [TopologicalSpace α]
 
-/-- The non-wandering set of `f` is the set of points which return arbitrarily close after some iterate. -/
+/-- The non-wandering set of `f` is the set of points which return arbitrarily close after
+arbitrarily large iterates. -/
 def nonWanderingSet (f : α → α) : Set α :=
-  {x | ∀ U : Set α, x ∈ U -> IsOpen U -> ∃ N : ℕ, (f^[N] '' U) ∩ U |>.Nonempty }
+  {x | ∀ U : Set α, x ∈ U → IsOpen U → ∀ N : ℕ, ∃ n : ℕ, N ≤ n ∧ (f^[n] '' U ∩ U).Nonempty }
 
 /-! ### Lemmas requiring only TopologicalSpace -/
 
@@ -70,14 +71,10 @@ variable (f : α → α)
 /-- Periodic points belong to the non-wandering set -/
 theorem periodicPt_is_nonWandering (x : α) (n : ℕ) (_nnz : n ≠ 0) (pp : IsPeriodicPt f n x) :
     x ∈ nonWanderingSet f := by
-  intro U hUx _
-  use n
-  refine ⟨x, ?_⟩
-  rw [mem_inter_iff]
-  apply And.intro _ hUx
-  unfold IsPeriodicPt at pp
-  unfold IsFixedPt at pp
-  use x
+  intro U hUx _ N
+  obtain ⟨m, hm_ge, hm_mem⟩ :=
+    periodicPt_arbitrary_large_time f N n (Nat.pos_of_ne_zero _nnz) x pp U hUx
+  exact ⟨m, hm_ge, f^[m] x, ⟨⟨x, hUx, rfl⟩, hm_mem⟩⟩
 
 /-- The recurrent set is the set of points that are recurrent, i.e. that belong to their omega-limit set. -/
 def recurrentSet {α : Type*} [TopologicalSpace α] (f : α → α) : Set α :=
@@ -126,6 +123,51 @@ theorem recurrentSet_iff_clusterPt (x : α) :
     rw [mem_omegaLimit_singleton_iff_map_cluster_point atTop (fun n ↦ f^[n]) x x]
     exact hcluster
 
+/- Show that the non-wandering set of `f` is closed. -/
+theorem nonWanderingSet_isClosed : IsClosed (nonWanderingSet f) := by
+  rw [← isOpen_compl_iff, isOpen_iff_forall_mem_open]
+  intro x hx
+  simp only [Set.mem_compl_iff, nonWanderingSet, Set.mem_setOf_eq] at hx
+  push_neg at hx
+  obtain ⟨U, hUx, hUopen, N₀, hU⟩ := hx
+  refine ⟨U, ?_, hUopen, hUx⟩
+  intro y hyU
+  simp only [Set.mem_compl_iff, nonWanderingSet, Set.mem_setOf_eq]
+  intro hy
+  obtain ⟨n, hn_ge, hn_ne⟩ := hy U hyU hUopen N₀
+  exact absurd hn_ne (Set.not_nonempty_iff_eq_empty.mpr (hU n hn_ge))
+
+/-- The omega-limit set of any point is contained in the non-wandering set. -/
+theorem omegaLimit_is_nonWandering (x : α) : (ω⁺ (fun n ↦ f^[n]) ({x})) ⊆ (nonWanderingSet f) := by
+  intro y hy U hUy hUopen N
+  rw [mem_omegaLimit_iff_frequently] at hy
+  simp only [Set.singleton_inter_nonempty, Set.mem_preimage, Filter.frequently_atTop] at hy
+  have hUnhds : U ∈ nhds y := hUopen.mem_nhds hUy
+  obtain ⟨n₁, _, hn₁⟩ := hy U hUnhds 0
+  obtain ⟨n₂, hn₂, hn₂U⟩ := hy U hUnhds (n₁ + N)
+  -- We constructed `f^[n₁] x` and `f^[n₂] x` both mepping within `U`,
+  -- so that `n₂ - n₁ ≥ N`, we want to now show that `f^[n₂-n₁]` maps
+  -- a point of `U` back into `U`.
+  refine ⟨n₂ - n₁, ?_, f^[n₂] x, ?_, hn₂U⟩
+  · have h : N + n₁ ≤ n₂ := (add_comm N n₁).le.trans hn₂
+    exact Nat.le_sub_of_add_le h
+  -- Show that `f^[n₂] x` is in the orbit of `f^[n₁] x` with the appropeiate time
+  · have hn₁_le : n₁ ≤ n₂ := Nat.le_of_add_right_le hn₂
+    have htriv : n₂ - n₁ + n₁ = n₂ := Nat.sub_add_cancel hn₁_le
+    exact ⟨f^[n₁] x, hn₁, by rw [← Function.iterate_add_apply, htriv]⟩
+
+/-- The recurrent set is included in the non-wandering set -/
+theorem recurrentSet_is_nonWandering : recurrentSet f ⊆ (nonWanderingSet f) :=
+  fun _ ↦ fun hz ↦ omegaLimit_is_nonWandering _ _ (mem_setOf_eq ▸ hz)
+
+/-- If `x` belongs to the non-wandering set, there are points `y` arbitrarily close to `x`
+and arbitrarily large times for which `f^[n] y` comes back close to `x`. -/
+theorem closed_arbitrary_large_time (N : ℕ) (x : α) (hx : x ∈ nonWanderingSet f)
+  (U : Set α) (hUx : x ∈ U) (hUopen : IsOpen U) :
+    ∃ y : α, ∃ n : ℕ, y ∈ U ∧ f^[n] y ∈ U ∧ N + 1 < n := by
+  obtain ⟨n, hn_ge, z, ⟨y, hyU, hfy⟩, hzU⟩ := hx U hUx hUopen (N + 2)
+  exact ⟨y, n, hyU, hfy ▸ hzU, by omega⟩
+
 end TopologicalOnly
 
 /-! ### Lemmas requiring CompactSpace -/
@@ -135,49 +177,17 @@ variable [CompactSpace α] (f : α → α) (hf : Continuous f)
 /-- The set of points which are not periodic of any period. -/
 def IsNotPeriodicPt (f : α → α)  (x : α) := ∀ n : ℕ, 0 < n → ¬IsPeriodicPt f n x
 
-/-- If `x` belongs to the non-wandering set, there are points `y` arbitrarily close to `x`
-and arbitrarily large times for which `f^[n] y` comes back close to `x`. -/
-theorem closed_arbitrary_large_time (N : ℕ) (x : α) (hx : x ∈ nonWanderingSet f)
-  (U : Set α) (hUx : x ∈ U) (hUopen : IsOpen U) :
-    ∃ y : α, ∃ n : ℕ, y ∈ U ∧ f^[n] y ∈ U ∧ N + 1 < n := by
-  obtain ⟨n, y, hyn, hUy⟩ := hx U hUx hUopen
-  use y
-  use n
-  have fnyU : f^[n] y ∈ U := by
-    sorry
-  refine ⟨hUy, fnyU, ?_⟩
-  sorry
-
-/- Show that the non-wandering set of `f` is closed. -/
-theorem nonWanderingSet_isClosed : IsClosed (nonWanderingSet f) := by
-  sorry
-
 /-- The non-wandering set of `f` is compact. -/
 theorem nonWanderingSet_isCompact : IsCompact (nonWanderingSet f : Set α) :=
-  sorry
+  (nonWanderingSet_isClosed f).isCompact
 
 /-- The omega-limit set of any point is nonempty. -/
 theorem omegaLimit_nonempty (x : α) : Set.Nonempty (ω⁺ (fun n ↦ f^[n]) ({x})) :=
   nonempty_omegaLimit atTop (fun n ↦ f^[n]) {x} (Set.singleton_nonempty x)
 
-/-- The omega-limit set of any point is contained in the non-wandering set. -/
-theorem omegaLimit_is_nonWandering (x : α) : (ω⁺ (fun n ↦ f^[n]) ({x})) ⊆ (nonWanderingSet f) := by
-  unfold nonWanderingSet
-  let A := ω atTop (fun n ↦ f^[n]) {x}
-  let B := {x | ∀ (U : Set α), x ∈ U → IsOpen U → ∃ N, (f^[N] '' U ∩ U).Nonempty}
-  change A ⊆ B
-  refine inter_eq_left.mp ?_
-  have : (f ⁻¹' A) ∩ A ≠ ∅ := by
-    sorry
-  sorry
-
 /-- The non-wandering set is non-empty -/
 theorem nonWandering_nonempty [hα : Nonempty α] : Set.Nonempty (nonWanderingSet f) :=
   Set.Nonempty.mono (omegaLimit_is_nonWandering _ _) (omegaLimit_nonempty f (Nonempty.some hα))
-
-/-- The recurrent set is included in the non-wandering set -/
-theorem recurrentSet_is_nonWandering : recurrentSet f ⊆ (nonWanderingSet f) :=
-  fun _ ↦ fun hz ↦ omegaLimit_is_nonWandering _ _ (mem_setOf_eq ▸ hz)
 
 /- Show that the recurrent set of `f` is nonempty (the math proof is not trivial, maybe better skip this one). -/
 

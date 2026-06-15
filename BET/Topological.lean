@@ -112,7 +112,7 @@ theorem recurrentSet_iff_clusterPt (x : α) :
   -- we prove =>
   . intro recur_x
     rw [recurrentSet, mem_setOf_eq] at recur_x
-    rw [mem_omegaLimit_singleton_iff_map_cluster_point atTop (fun n ↦ f^[n]) x x] at recur_x
+    rw [mem_omegaLimit_singleton_iff_mapClusterPt atTop (fun n ↦ f^[n]) x x] at recur_x
     rw [orbit_atTop_eq_mapClusterPt] at recur_x
     exact recur_x
   -- we prove <=
@@ -120,7 +120,7 @@ theorem recurrentSet_iff_clusterPt (x : α) :
     rw [recurrentSet]
     rw [mem_setOf_eq]
     rw [←orbit_atTop_eq_mapClusterPt] at hcluster
-    rw [mem_omegaLimit_singleton_iff_map_cluster_point atTop (fun n ↦ f^[n]) x x]
+    rw [mem_omegaLimit_singleton_iff_mapClusterPt atTop (fun n ↦ f^[n]) x x]
     exact hcluster
 
 /- Show that the non-wandering set of `f` is closed. -/
@@ -128,7 +128,7 @@ theorem nonWanderingSet_isClosed : IsClosed (nonWanderingSet f) := by
   rw [← isOpen_compl_iff, isOpen_iff_forall_mem_open]
   intro x hx
   simp only [Set.mem_compl_iff, nonWanderingSet, Set.mem_setOf_eq] at hx
-  push_neg at hx
+  push Not at hx
   obtain ⟨U, hUx, hUopen, N₀, hU⟩ := hx
   refine ⟨U, ?_, hUopen, hUx⟩
   intro y hyU

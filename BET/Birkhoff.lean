@@ -175,7 +175,6 @@ theorem claim1 (n : ℕ) (x : α) :
     have h7 := comp_sup'_eq_sup'_comp_alt (nonempty_range_add_one : (range (n + 1)).Nonempty)
       (fun k ↦ birkhoffSum T φ (k + 1) (T x)) (fun a ↦ (φ x) + a ) (fun a b ↦ add_sup a b (φ x))
     simp at h7
-    simp at h5
     simp_rw [← h7] at h5
     simp_rw [partialSups_eq_sup'_range, ← h5, add_comm]
   -- in this case the min is zero
@@ -205,7 +204,7 @@ theorem diff_evenutally_of_divSet' (x : α) (hx : (T x) ∈ divSet T φ ):
     simp
     obtain ⟨k,hk⟩ := h0
     use k
-  simp only [eventually_atTop, ge_iff_le] at h1
+  simp only [eventually_atTop] at h1
   obtain ⟨k,hk⟩ := h1
   simp
   use k
@@ -236,7 +235,7 @@ theorem diff_evenutally_of_divSet (x : α) (hx : x ∈ divSet T φ):
     have h5 := eq_add_of_sub_eq' (claim1 T φ n x)
     rw [h5] at h3
     by_contra hf
-    push_neg at hf
+    push Not at hf
     have h4 : min 0 (maxOfSums T φ (T x) n) = maxOfSums T φ (T x) n := by
       simp
       apply le_of_lt
@@ -244,7 +243,7 @@ theorem diff_evenutally_of_divSet (x : α) (hx : x ∈ divSet T φ):
     rw [h4] at h5
     simp at h5
     linarith
-  simp only [eventually_atTop, ge_iff_le] at h1
+  simp only [eventually_atTop] at h1
   obtain ⟨k,hk⟩ := h1
   simp
   use k
@@ -262,7 +261,7 @@ theorem divSet_inv : T⁻¹' (divSet T φ) = (divSet T φ) := by
   · intro hx
     have h2' : ∀ᶠ n in atTop, maxOfSums T φ (T x) n = maxOfSums T φ x (n + 1) - φ x := by
       -- there should be a slicker way of rearranging the equality in Tendsto ------------------
-      simp only [eventually_atTop, ge_iff_le]
+      simp only [eventually_atTop]
       have h2 := diff_evenutally_of_divSet' T φ x hx
       simp at h2
       obtain ⟨k, hk⟩ := h2
@@ -316,16 +315,15 @@ lemma diff_Monotone (x : α) : Monotone (fun n ↦ -(maxOfSums T φ x (n + 1) - 
 lemma bounded_birkhoffSum_of_notin_divSet (x : α) (hx : x ∉ divSet T φ) :
     ∃ B : ℝ, ∀ n, birkhoffSum T φ n x ≤ B := by
   have := Filter.tendsto_atTop_atTop_of_monotone (maxOfSums_mono T φ x) |>.mt hx
-  push_neg at this
+  push Not at this
   rcases this with ⟨B, hB⟩
   refine ⟨max B 0, fun n ↦ ?_⟩
   by_cases hn : n = 0
   · rw [hn, birkhoffSum_zero]
     exact le_max_right B 0
   have h_le : birkhoffSum T φ n x ≤ maxOfSums T φ x n := by
-    convert le_partialSups_of_le _ (n.sub_le 1)
-    congr
-    exact (Nat.succ_pred_eq_of_ne_zero hn).symm
+    have h' := le_partialSups_of_le (fun k ↦ birkhoffSum T φ (k + 1) x) (Nat.pred_le n)
+    simpa [maxOfSums, Nat.sub_add_cancel (Nat.one_le_iff_ne_zero.mpr hn)] using h'
   exact h_le.trans <| (hB n).le.trans (le_max_left B 0)
 
 end BirkhoffPure
@@ -364,6 +362,7 @@ This is for two reasons:
 - we used T in the construction of the definition -/
 
 /-- Definition of invarisant sigma-agebra wrt `T`.-/
+@[reducible]
 def invSigmaAlg : MeasurableSpace α where
   MeasurableSet' := fun s ↦ MeasurableSet s ∧ T ⁻¹' s = s -- same as `MeasurableSet' s := MeasurableSet s ∧ T ⁻¹' s = s`
   measurableSet_empty := ⟨MeasurableSet.empty, rfl⟩
@@ -386,7 +385,7 @@ instance : LE (MeasurableSpace α) where le m₁ m₂ := ∀ s, MeasurableSet[m�
 /-- The invariant sigma-algebra of `T` is a subalgebra of the measure space. -/
 lemma leq_InvSigmaAlg_FullAlg : invSigmaAlg T ≤ m0 := fun _ hs ↦ hs.left
 
-@[measurability]
+@[fun_prop]
 lemma birkhoffSum_measurable (hphim : Measurable φ) (hT : MeasurePreserving T ν ν) :
     Measurable (birkhoffSum T φ n) := by
   apply Finset.measurable_sum
@@ -394,7 +393,7 @@ lemma birkhoffSum_measurable (hphim : Measurable φ) (hT : MeasurePreserving T �
   simp only [Finset.mem_range] at hi
   exact Measurable.fun_comp hphim (Measurable.iterate hT.measurable _)
 
-@[measurability]
+@[fun_prop]
 lemma maxOfSums_measurable (hphim : Measurable φ) (hT : MeasurePreserving T ν ν) :
   ∀ n : ℕ , Measurable (fun x ↦ maxOfSums T φ x n) := by
   intro n

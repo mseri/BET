@@ -186,7 +186,7 @@ theorem claim1 (n : ℕ) (x : α) :
       simp at h10
       rw [partialSups_eq_sup'_range]
       norm_num
-      exact h10
+      exact ⟨0, Nat.zero_le _, le_of_eq (congrFun (birkhoffSum_one' T φ) x).symm⟩
     linarith
   simp [min_eq_left h8, h1]
 
@@ -406,7 +406,7 @@ lemma maxOfSums_measurable (hphim : Measurable φ) (hT : MeasurePreserving T ν 
       intro x
       exact partialSups_succ (fun n ↦ birkhoffSum T φ (n + 1) x) n
     simp_rw [this]
-    exact Measurable.sup' hn (birkhoffSum_measurable _ _ hphim hT )
+    exact Measurable.sup hn (birkhoffSum_measurable _ _ hphim hT )
 
 /- can probably be stated without the '[m0]' part -/
 /-- Proves that `divSet T φ` is a measurable set -/

@@ -111,14 +111,14 @@ theorem recurrentSet_iff_clusterPt (x : α) :
   constructor
   -- we prove =>
   . intro recur_x
-    rw [recurrentSet, mem_setOf_eq] at recur_x
+    rw [recurrentSet, Set.mem_ofPred_eq] at recur_x
     rw [mem_omegaLimit_singleton_iff_mapClusterPt atTop (fun n ↦ f^[n]) x x] at recur_x
     rw [orbit_atTop_eq_mapClusterPt] at recur_x
     exact recur_x
   -- we prove <=
   . intro hcluster
     rw [recurrentSet]
-    rw [mem_setOf_eq]
+    rw [Set.mem_ofPred_eq]
     rw [←orbit_atTop_eq_mapClusterPt] at hcluster
     rw [mem_omegaLimit_singleton_iff_mapClusterPt atTop (fun n ↦ f^[n]) x x]
     exact hcluster
@@ -127,12 +127,12 @@ theorem recurrentSet_iff_clusterPt (x : α) :
 theorem nonWanderingSet_isClosed : IsClosed (nonWanderingSet f) := by
   rw [← isOpen_compl_iff, isOpen_iff_forall_mem_open]
   intro x hx
-  simp only [Set.mem_compl_iff, nonWanderingSet, Set.mem_setOf_eq] at hx
+  simp only [Set.mem_compl_iff, nonWanderingSet, Set.mem_ofPred_eq] at hx
   push Not at hx
   obtain ⟨U, hUx, hUopen, N₀, hU⟩ := hx
   refine ⟨U, ?_, hUopen, hUx⟩
   intro y hyU
-  simp only [Set.mem_compl_iff, nonWanderingSet, Set.mem_setOf_eq]
+  simp only [Set.mem_compl_iff, nonWanderingSet, Set.mem_ofPred_eq]
   intro hy
   obtain ⟨n, hn_ge, hn_ne⟩ := hy U hyU hUopen N₀
   exact absurd hn_ne (Set.not_nonempty_iff_eq_empty.mpr (hU n hn_ge))
@@ -158,7 +158,7 @@ theorem omegaLimit_is_nonWandering (x : α) : (ω⁺ (fun n ↦ f^[n]) ({x})) �
 
 /-- The recurrent set is included in the non-wandering set -/
 theorem recurrentSet_is_nonWandering : recurrentSet f ⊆ (nonWanderingSet f) :=
-  fun _ ↦ fun hz ↦ omegaLimit_is_nonWandering _ _ (mem_setOf_eq ▸ hz)
+  fun _ ↦ fun hz ↦ omegaLimit_is_nonWandering _ _ (Set.mem_ofPred_eq ▸ hz)
 
 /-- If `x` belongs to the non-wandering set, there are points `y` arbitrarily close to `x`
 and arbitrarily large times for which `f^[n] y` comes back close to `x`. -/

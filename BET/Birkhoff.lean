@@ -56,7 +56,7 @@ def maxOfSums (x : α) : OrderHom ℕ ℝ :=
 
 lemma maxOfSums_zero : maxOfSums T φ x 0 = φ x := by
   unfold maxOfSums
-  simp [partialSups_zero, zero_add, birkhoffSum_one']
+  simp [partialSups_zero, zero_add]
 
 /-- `n ↦ maxOfSums T φ x n` is `Monotone`. -/
 theorem maxOfSums_mono (x : α) : Monotone (fun n ↦ maxOfSums T φ x n) := by
@@ -143,7 +143,7 @@ theorem claim1 (n : ℕ) (x : α) :
     unfold maxOfSums at hcl
     rw [partialSups_eq_sup'_range] at hcl
     rw [hcl]
-    simp only [birkhoffSum_one']
+    simp only [birkhoffSum_one]
   have h1 : birkhoffSum T φ 1 x = φ x := birkhoffSum_one_apply T φ x
   have h2 : ∀ k, birkhoffSum T φ k (T x) = birkhoffSum T φ (k + 1) x - φ x := by
     intro k
@@ -153,7 +153,7 @@ theorem claim1 (n : ℕ) (x : α) :
     rw [h2]
     rw [h1] at hcl
     simp only [tsub_le_iff_right, zero_add]
-    rw [birkhoffSum_one'] at h35
+    rw [birkhoffSum_one] at h35
     exact h35 k (mem_range_succ_iff.mpr hk)
   have h4 : maxOfSums T φ (T x) n ≤ 0 := by
     unfold maxOfSums
@@ -187,7 +187,7 @@ theorem claim1 (n : ℕ) (x : α) :
       simp at h10
       rw [partialSups_eq_sup'_range]
       norm_num
-      exact ⟨0, Nat.zero_le _, le_of_eq (congrFun (birkhoffSum_one' T φ) x).symm⟩
+      exact ⟨0, Nat.zero_le _, le_of_eq (congrFun (birkhoffSum_one T φ) x).symm⟩
     linarith
   simp [min_eq_left h8, h1]
 

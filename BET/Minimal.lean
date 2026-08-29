@@ -84,7 +84,7 @@ def IsMinimal (f : α → α) (hf: Continuous f) : Prop :=
 theorem recurrentSet_of_minimal_is_all_space [CompactSpace α] [Nonempty α]
     (f : α → α) (hf : Continuous f) (hM : IsMinimal f hf) (x : α) :
     x ∈ recurrentSet f := by
-  rw [recurrentSet, Set.mem_setOf_eq, mem_omegaLimit_iff_frequently]
+  rw [recurrentSet, Set.mem_ofPred_eq, mem_omegaLimit_iff_frequently]
   simp only [Set.singleton_inter_nonempty, Set.mem_preimage, Filter.frequently_atTop]
   intro U hU N
   -- By minimality, every orbit is dense in α
@@ -115,7 +115,7 @@ theorem minimalSubset_mem_recurrentSet [CompactSpace α] (f : α → α) (hf : C
   (U : Set α) (hU : IsMinimalSubset (Flow.fromIter hf) U) :
     U ⊆ recurrentSet f := by
   intro x hxU
-  rw [recurrentSet, Set.mem_setOf_eq, mem_omegaLimit_iff_frequently]
+  rw [recurrentSet, Set.mem_ofPred_eq, mem_omegaLimit_iff_frequently]
   simp only [Set.singleton_inter_nonempty, Set.mem_preimage, Filter.frequently_atTop]
   intro V hV N
   have hfNx : f^[N] x ∈ U := by

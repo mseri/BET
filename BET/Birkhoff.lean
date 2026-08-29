@@ -84,8 +84,8 @@ decreases to `φ(x)`. -/
 
 lemma birkhoffSum_succ_image (n : ℕ) (x : α) :
       birkhoffSum T φ n (T x) = birkhoffSum T φ (n + 1) x - φ x := by
-    simp [birkhoffSum_add T φ n 1 x, eq_add_of_sub_eq' (birkhoffSum_apply_sub_birkhoffSum T φ n x),
-      birkhoffSum_one', add_sub (birkhoffSum T φ n x) (φ (T^[n] x)) (φ x)]
+    rw [birkhoffSum_succ_apply']
+    ring
 
 /- Would expect this to be in `Mathlib/Data/Finset/Lattice`.
 Or perhaps there is already an easier way to extract it from mathlib? -/
@@ -144,7 +144,7 @@ theorem claim1 (n : ℕ) (x : α) :
     rw [partialSups_eq_sup'_range] at hcl
     rw [hcl]
     simp only [birkhoffSum_one']
-  have h1 : birkhoffSum T φ 1 x = φ x := birkhoffSum_one T φ x
+  have h1 : birkhoffSum T φ 1 x = φ x := birkhoffSum_one_apply T φ x
   have h2 : ∀ k, birkhoffSum T φ k (T x) = birkhoffSum T φ (k + 1) x - φ x := by
     intro k
     exact birkhoffSum_succ_image T φ k x
@@ -170,7 +170,8 @@ theorem claim1 (n : ℕ) (x : α) :
   have h1 : maxOfSums T φ x (n + 1) = φ x + maxOfSums T φ (T x) n := by
     rw [hcr]
     unfold maxOfSums
-    have h4 (k : ℕ) (_ : k ∈ range (n + 1)) := birkhoffSum_succ' T φ (k + 1) x
+    have h4 (k : ℕ) (_ : k ∈ range (n + 1)) :=
+      birkhoffSum_succ_apply' T φ (k + 1) x
     have h5 := sup'_congr nonempty_range_add_one rfl h4
     have h7 := comp_sup'_eq_sup'_comp_alt (nonempty_range_add_one : (range (n + 1)).Nonempty)
       (fun k ↦ birkhoffSum T φ (k + 1) (T x)) (fun a ↦ (φ x) + a ) (fun a b ↦ add_sup a b (φ x))

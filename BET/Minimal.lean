@@ -183,7 +183,7 @@ theorem exists_minimal_set [CompactSpace α]  (f : α → α) (U : Set α) (h : 
     have h6 : lb ⊆ U := Subset.trans (sInter_subset_of_mem h8) (h14.left)
     /- We show that `lb` is a lowerbound. -/
     have h12 : ∀ U' ∈ C, lb ⊆ U' := fun U' hu => sInter_subset_of_mem hu
-    exact ⟨mem_sep h6 h5, h12⟩
+    exact ⟨⟨h6, h5⟩, h12⟩
   /- Apply Zorn's lemma. -/
   obtain ⟨V, h1, h2⟩ := zorn_superset_nonempty S h0 U ⟨Eq.subset rfl,h⟩
   use V

@@ -3,140 +3,137 @@ Copyright (c) 2024 Damien Thomine. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Damien Thomine, Pietro Monticone
 -/
-import Mathlib.Tactic
-import Mathlib.Data.Real.EReal
-import BET.TopologicalEntropy.Miscellaneous.Misc
+module
 
-/-MATHLIB PR: https://github.com/leanprover-community/mathlib4/pull/14224-/
+public import Mathlib.Data.EReal.Inv
+public import Mathlib.Basic.ENNReal.Inv
 
 /-!
 # Division of extended reals by extended nonnegative reals
 We define a division of an extended real `EReal` by an extended nonnegative real `ENNReal`
-as the multiplication by the coercion of its inverse. It is an instance of division.
+as multiplication by the coercion of its inverse. An optional scoped instance of division
+is provided.
 
-This file may be completed as wished, it is still quite incomplete.
+`ERealDiv.EReal.divENNReal a b` inverts `b` in `ENNReal` before coercing it to
+`EReal`. Unlike ordinary EReal division, positive numerators divided by zero
+therefore give `⊤`. The optional mixed-division instance is scoped to `ERealDiv`;
+statements use the named operation to avoid ambiguity with ordinary division.
+
+The entropy development uses mathlib's `ExpGrowth` API and no longer needs this
+operation, we could probably drop it.
 -/
+
+@[expose] public section
+
 namespace ERealDiv
 
-open Misc
-
 /--
-Division of an extended real (EReal) by an extended nonnegative real (ENNReal). Defined by inversion in
-[0, ∞], coercion to [-∞,+∞], and multiplication in [-∞,+∞].--/
-noncomputable def EReal.divENNReal : EReal → ENNReal → EReal :=
-  fun (a : EReal) (b : ENNReal) ↦ a * b⁻¹
+Division of an extended real (`EReal`) by an extended nonnegative real (`ENNReal`). Defined by
+inversion in [0, ∞], coercion to [-∞,+∞], and multiplication in [-∞,+∞]. -/
+noncomputable def EReal.divENNReal (a : EReal) (b : ENNReal) : EReal := a * (b⁻¹ : ENNReal)
 
-noncomputable instance EReal.ENNReal.instHDiv : HDiv EReal ENNReal EReal where
+noncomputable scoped instance instHDivERealENNReal : HDiv EReal ENNReal EReal where
   hDiv := EReal.divENNReal
 
-theorem EReal.div_eq_inv_mul {a : EReal} {b : ENNReal} : a / b = b⁻¹ * a := EReal.mul_comm _ _
+/-- Away from a zero denominator, mixed division agrees with ordinary division. -/
+lemma EReal.divENNReal_eq_div (a : EReal) {b : ENNReal} (hb : b ≠ 0) :
+    EReal.divENNReal a b = a / (b : EReal) := by
+  by_cases htop : b = ⊤
+  · simp [htop, EReal.divENNReal]
+  lift b to NNReal using htop
+  have hb' : b ≠ 0 := by simpa using hb
+  simp only [EReal.divENNReal, div_eq_mul_inv, ← ENNReal.coe_inv hb',
+    EReal.coe_nnreal_eq_coe_real, ← EReal.coe_inv, NNReal.coe_inv]
 
-theorem EReal.mul_div {a b : EReal} {c : ENNReal} : a * (b / c) = (a * b) / c := by
-  change a * (b * c⁻¹) = (a * b) * c⁻¹
-  rw [mul_assoc]
+lemma EReal.div_eq_inv_mul {a : EReal} {b : ENNReal} :
+    EReal.divENNReal a b = (b⁻¹ : ENNReal) * a := mul_comm _ _
 
-theorem EReal.mul_div_right {a c : EReal} {b : ENNReal} : (a / b) * c = (a * c) / b := by
-  rw [mul_comm, EReal.mul_div, mul_comm]
+lemma EReal.mul_div {a b : EReal} {c : ENNReal} :
+    a * EReal.divENNReal b c = EReal.divENNReal (a * b) c := (mul_assoc _ _ _).symm
 
-theorem EReal.mul_inv_cancel {a : EReal} {b : ENNReal} (h : b ≠ 0) (h' : b ≠ ⊤) :
-    (a / b) * b = a := by
-  change (a * b⁻¹) * b = a
-  simp [mul_assoc, ← EReal.coe_ennreal_mul, mul_comm b⁻¹ b, ENNReal.mul_inv_cancel h h']
+lemma EReal.mul_div_right {a c : EReal} {b : ENNReal} :
+    EReal.divENNReal a b * c = EReal.divENNReal (a * c) b := by
+  simp only [EReal.divENNReal, mul_right_comm]
 
-@[simp]
-theorem EReal.div_one {a : EReal} : a / (1 : ENNReal) = a := by
-  change a * (1 : ENNReal)⁻¹ = a
-  simp [inv_one, EReal.coe_ennreal_one, mul_one a]
+lemma EReal.mul_inv_cancel {a : EReal} {b : ENNReal} (h : b ≠ 0) (h' : b ≠ ⊤) :
+    EReal.divENNReal a b * b = a := by
+  rw [EReal.divENNReal, mul_assoc, ← EReal.coe_ennreal_mul,
+    ENNReal.inv_mul_cancel h h', EReal.coe_ennreal_one, mul_one]
 
-@[simp]
-theorem EReal.div_top {a : EReal} : a / (⊤ : ENNReal) = 0 := by
-  change a * (⊤ : ENNReal)⁻¹ = 0
-  simp
+@[simp] lemma EReal.div_one {a : EReal} : EReal.divENNReal a 1 = a := by
+  simp [EReal.divENNReal]
 
-theorem EReal.pos_div_zero {a : EReal} (h : 0 < a) : a / (0 : ENNReal) = ⊤ := by
-  change a * (0 : ENNReal)⁻¹ = ⊤
-  rw [ENNReal.inv_zero, EReal.coe_ennreal_top, EReal.mul_top_of_pos h]
+@[simp] lemma EReal.div_top {a : EReal} : EReal.divENNReal a ⊤ = 0 := by
+  simp [EReal.divENNReal]
 
-theorem EReal.neg_div_zero {a : EReal} (h : a < 0) : a / (0 : ENNReal) = ⊥ := by
-  change a * (0 : ENNReal)⁻¹ = ⊥
-  rw [ENNReal.inv_zero, EReal.coe_ennreal_top, EReal.mul_top_of_neg h]
+lemma EReal.pos_div_zero {a : EReal} (h : 0 < a) : EReal.divENNReal a 0 = ⊤ := by
+  simpa only [EReal.divENNReal, ENNReal.inv_zero, EReal.coe_ennreal_top] using
+    EReal.mul_top_of_pos h
 
-@[simp]
-theorem EReal.zero_div {b : ENNReal} : (0 : EReal) / b = 0 :=
-  MulZeroClass.zero_mul (ENNReal.toEReal b⁻¹)
+lemma EReal.neg_div_zero {a : EReal} (h : a < 0) : EReal.divENNReal a 0 = ⊥ := by
+  simpa only [EReal.divENNReal, ENNReal.inv_zero, EReal.coe_ennreal_top] using
+    EReal.mul_top_of_neg h
 
-theorem EReal.top_div_ntop {b : ENNReal} (h : b ≠ ⊤) : (⊤ : EReal) / b = ⊤ := by
-  apply EReal.top_mul_of_pos
-  simp [h]
+@[simp] lemma EReal.zero_div {b : ENNReal} : EReal.divENNReal 0 b = 0 := zero_mul _
 
-theorem EReal.bot_div_ntop {b : ENNReal} (h : b ≠ ⊤) : (⊥ : EReal) / b = ⊥ := by
-  apply EReal.bot_mul_of_pos
-  simp [h]
+lemma EReal.top_div_ntop {b : ENNReal} (h : b ≠ ⊤) : EReal.divENNReal ⊤ b = ⊤ :=
+  EReal.top_mul_of_pos (EReal.coe_ennreal_pos.mpr (ENNReal.inv_pos.mpr h))
 
-theorem EReal.mul_div_mul {a : EReal} {b c : ENNReal} (h : c ≠ 0) (h' : c ≠ ⊤) :
-    (a * c) / (b * c) = a / b := by
-  change (a * c) * (b * c)⁻¹ = a * b⁻¹
-  suffices h : c * (b * c)⁻¹ = b⁻¹
-  · rw [← h, mul_assoc]; norm_cast
-  · calc
-      c * (b * c)⁻¹ = c * (b⁻¹ * c⁻¹) := by rw [ENNReal.mul_inv (Or.inr h') (Or.inr h)]
-                  _ = b⁻¹ * c⁻¹ * c   := mul_comm c (b⁻¹ * c⁻¹)
-                  _ = b⁻¹ * (c⁻¹ * c) := mul_assoc b⁻¹ c⁻¹ c
-                  _ = b⁻¹ * 1         := by rw [ENNReal.inv_mul_cancel h h']
-                  _ = b⁻¹             := mul_one b⁻¹
+lemma EReal.bot_div_ntop {b : ENNReal} (h : b ≠ ⊤) : EReal.divENNReal ⊥ b = ⊥ :=
+  EReal.bot_mul_of_pos (EReal.coe_ennreal_pos.mpr (ENNReal.inv_pos.mpr h))
 
-theorem EReal.div_mul {a : EReal} {b c : ENNReal} (h : b ≠ 0 ∨ c ≠ ⊤) (h' : b ≠ ⊤ ∨ c ≠ 0) :
-    (a / b) / c = a / (b * c) := by
-  change (a * b⁻¹) * c⁻¹ = a * (b * c)⁻¹
-  suffices this :
-    b⁻¹ * c⁻¹ = (b * c)⁻¹
-  · rw [← this, mul_assoc]; norm_cast
-  · exact Eq.symm (ENNReal.mul_inv h h')
+lemma EReal.mul_div_mul {a : EReal} {b c : ENNReal} (h : c ≠ 0) (h' : c ≠ ⊤) :
+    EReal.divENNReal (a * c) (b * c) = EReal.divENNReal a b := by
+  have key : c * (b * c)⁻¹ = b⁻¹ := by
+    rw [ENNReal.mul_inv (Or.inr h') (Or.inr h), mul_left_comm,
+      ENNReal.mul_inv_cancel h h', mul_one]
+  change (a * (c : EReal)) * ((b * c)⁻¹ : ENNReal) = a * (b⁻¹ : ENNReal)
+  rw [mul_assoc, ← EReal.coe_ennreal_mul, key]
 
-theorem EReal.div_left_mono (b : ENNReal) : Monotone fun a : EReal ↦ a / b := by
-  intro a a' h
-  apply mul_le_mul_of_nonneg_right h
-  norm_cast
-  exact bot_le
+lemma EReal.div_mul {a : EReal} {b c : ENNReal} (h : b ≠ 0 ∨ c ≠ ⊤)
+    (h' : b ≠ ⊤ ∨ c ≠ 0) :
+    EReal.divENNReal (EReal.divENNReal a b) c = EReal.divENNReal a (b * c) := by
+  simp only [EReal.divENNReal, ENNReal.mul_inv h h', EReal.coe_ennreal_mul, mul_assoc]
 
-theorem EReal.div_left_mono' {a a' : EReal} (b : ENNReal) (h : a ≤ a') : a / b ≤ a' / b :=
-  EReal.div_left_mono b h
+lemma EReal.div_left_mono (b : ENNReal) : Monotone fun a : EReal => EReal.divENNReal a b :=
+  fun _ _ h => mul_le_mul_of_nonneg_right h (EReal.coe_ennreal_nonneg _)
 
-theorem EReal.div_left_strictMono {b : ENNReal} (h : b ≠ 0) (h' : b ≠ ⊤) :
-    StrictMono fun a : EReal ↦ a / b := by
-  intro a c a_lt_c
-  simp only
-  apply lt_of_le_of_ne
-  · exact EReal.div_left_mono' b (le_of_lt a_lt_c)
-  · intro ab_eq_cb
-    apply ne_of_lt a_lt_c
-    rw [← @EReal.mul_inv_cancel a b h h', ab_eq_cb,
-      @EReal.mul_inv_cancel c b h h']
+lemma EReal.div_left_mono' {a a' : EReal} (b : ENNReal) (h : a ≤ a') :
+    EReal.divENNReal a b ≤ EReal.divENNReal a' b := EReal.div_left_mono b h
 
-theorem EReal.div_left_strictMono' {a a' : EReal} {b : ENNReal} (h₁ : b ≠ 0) (h₂ : b ≠ ⊤)
-    (h₃ : a < a') : a / b < a' / b := EReal.div_left_strictMono h₁ h₂ h₃
+lemma EReal.div_left_strictMono {b : ENNReal} (h : b ≠ 0) (h' : b ≠ ⊤) :
+    StrictMono fun a : EReal => EReal.divENNReal a b := by
+  intro a c hac
+  apply lt_of_le_of_ne (EReal.div_left_mono b hac.le)
+  intro heq
+  change EReal.divENNReal a b = EReal.divENNReal c b at heq
+  apply hac.ne
+  rw [← @EReal.mul_inv_cancel a b h h', heq, EReal.mul_inv_cancel h h']
 
-theorem EReal.le_div_iff_mul_le {a c : EReal} {b : ENNReal} (h : b ≠ 0) (h' : b ≠ ⊤) :
-    a ≤ c / b ↔ a * b ≤ c := by
-  nth_rw 1 [← @EReal.mul_inv_cancel a b h h']
-  exact EReal.mul_div_right ▸ StrictMono.le_iff_le (EReal.div_left_strictMono h h')
+lemma EReal.div_left_strictMono' {a a' : EReal} {b : ENNReal} (h : b ≠ 0) (h' : b ≠ ⊤)
+    (haa' : a < a') : EReal.divENNReal a b < EReal.divENNReal a' b :=
+  EReal.div_left_strictMono h h' haa'
 
-theorem EReal.div_le_iff_le_mul {a c : EReal} {b : ENNReal} (h : b ≠ 0) (h' : b ≠ ⊤) :
-    a / b ≤ c ↔ a ≤ b * c := by
-  nth_rw 1 [← @EReal.mul_inv_cancel c b h h']
-  rw [EReal.mul_div_right, mul_comm c b]
-  exact StrictMono.le_iff_le (EReal.div_left_strictMono h h')
+lemma EReal.le_div_iff_mul_le {a c : EReal} {b : ENNReal} (h : b ≠ 0) (h' : b ≠ ⊤) :
+    a ≤ EReal.divENNReal c b ↔ a * b ≤ c := by
+  rw [EReal.divENNReal_eq_div _ h]
+  exact _root_.EReal.le_div_iff_mul_le (EReal.coe_ennreal_pos.mpr (pos_iff_ne_zero.mpr h))
+    (EReal.coe_ennreal_eq_top_iff.not.mpr h')
 
-theorem EReal.nneg_div {a : EReal} {b : ENNReal} (h : 0 ≤ a) : 0 ≤ a / b :=
-  le_of_eq_of_le (Eq.symm EReal.zero_div) (EReal.div_left_mono b h)
+lemma EReal.div_le_iff_le_mul {a c : EReal} {b : ENNReal} (h : b ≠ 0) (h' : b ≠ ⊤) :
+    EReal.divENNReal a b ≤ c ↔ a ≤ b * c := by
+  rw [EReal.divENNReal_eq_div _ h]
+  exact _root_.EReal.div_le_iff_le_mul (EReal.coe_ennreal_pos.mpr (pos_iff_ne_zero.mpr h))
+    (EReal.coe_ennreal_eq_top_iff.not.mpr h')
 
-theorem EReal.npos_div {a : EReal} {b : ENNReal} (h : a ≤ 0) : a / b ≤ 0 :=
-  le_of_le_of_eq (EReal.div_left_mono b h) EReal.zero_div
+lemma EReal.nneg_div {a : EReal} {b : ENNReal} (h : 0 ≤ a) : 0 ≤ EReal.divENNReal a b :=
+  mul_nonneg h (EReal.coe_ennreal_nonneg _)
 
-theorem EReal.div_right_distrib_of_nneg {a b : EReal} {c : ENNReal} (h : 0 ≤ a) (h' : 0 ≤ b) :
-    (a + b) / c = (a / c) + (b / c) := EReal.right_distrib_of_nneg h h'
+lemma EReal.npos_div {a : EReal} {b : ENNReal} (h : a ≤ 0) : EReal.divENNReal a b ≤ 0 :=
+  mul_nonpos_of_nonpos_of_nonneg h (EReal.coe_ennreal_nonneg _)
+
+lemma EReal.div_right_distrib_of_nneg {a b : EReal} {c : ENNReal} (h : 0 ≤ a) (h' : 0 ≤ b) :
+    EReal.divENNReal (a + b) c = EReal.divENNReal a c + EReal.divENNReal b c :=
+  EReal.right_distrib_of_nonneg h h'
 
 end ERealDiv
-
-#lint
-#minimize_imports

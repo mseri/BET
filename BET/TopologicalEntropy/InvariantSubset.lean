@@ -3,8 +3,10 @@ Copyright (c) 2024 Damien Thomine. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Damien Thomine, Pietro Monticone
 -/
-import Mathlib.Topology.Compactness.Compact
-import Mathlib.Topology.Separation
+module
+
+public import Mathlib.Topology.Compactness.Compact
+public import Mathlib.Topology.Separation.Hausdorff
 
 /-!
 # Invariant subsets
@@ -17,6 +19,8 @@ First exercise I did in Lean3 and then ported. In the end, I use very little of 
 remainder of this project, so it would be reasonable to replace this file by
 any other implementation.
 -/
+
+@[expose] public section
 
 open Function
 
@@ -37,24 +41,21 @@ theorem image_of_orbit_eq_orbit_of_image (x : X) (n : ℕ) :
     use k
     rw [← iterate_add_apply, add_comm, iterate_add_apply, ← h_k, Tnz_eq_y]
   · intro h
-    cases' h with k Tnkx_eq_y
+    rcases h with ⟨k, Tnkx_eq_y⟩
     use (T^[k]) x
     apply And.intro
     . use k
     . rw [← iterate_add_apply, add_comm, iterate_add_apply, Tnkx_eq_y]
 
-/-- A subset F is T-invariant if, for any x ∈ F, T(x) ∈ F. Written with preimages. -/
-def IsInvariant (T : X → X) (F : Set X) : Prop := F ⊆ T ⁻¹' F
+/-- Forward invariance, definitionally equivalent to `Set.MapsTo T F F`.
+This compatibility abbreviation keeps the former preimage-based API. -/
+abbrev IsInvariant (T : X → X) (F : Set X) : Prop := F ⊆ T ⁻¹' F
 
 theorem inv_def' {T : X → X} {F : Set X} (F_inv : IsInvariant T F) {x : X} (h : x ∈ F) :
     T x ∈ F := F_inv h
 
 theorem iter_of_inv_in_inv {T : X → X} {F : Set X} (F_inv : IsInvariant T F) (n : ℕ) :
-    F ⊆ T^[n] ⁻¹' F := by
-  induction n
-  case zero => rw [iterate_zero T, Set.preimage_id]
-  case succ hn => exact iterate_succ T _ ▸ Set.preimage_comp ▸
-    Set.Subset.trans F_inv (Set.preimage_mono hn)
+    F ⊆ T^[n] ⁻¹' F := Set.MapsTo.iterate F_inv n
 
 theorem iter_of_inv_in_inv' {T : X → X} {F : Set X} (h : IsInvariant T F) (n : ℕ) {x : X}
     (h' : x ∈ F) :
@@ -169,7 +170,7 @@ preimage_of_inv_is_inv (Function.Commute.semiconj (Function.Commute.refl T)) h
 /--The orbit of a point is the smallest invariant subset containing this point.-/
 theorem orbit_is_inv (T : X → X) (x : X) : IsInvariant T (orbit T x) := by
   intro y y_in_orbit_x
-  cases' y_in_orbit_x with n TnTx_eq_y
+  rcases y_in_orbit_x with ⟨n, TnTx_eq_y⟩
   use n + 1
   rw [TnTx_eq_y, ← Function.Commute.iterate_self T n x]
   exact Function.iterate_add_apply T n 1 x
@@ -177,7 +178,7 @@ theorem orbit_is_inv (T : X → X) (x : X) : IsInvariant T (orbit T x) := by
 theorem orbit_in_inv {F : Set X} (h : IsInvariant T F) {x : X} (h' : x ∈ F) :
     orbit T x ⊆ F := by
   intro y y_in_orbit
-  cases' y_in_orbit with n Tnx_eq_y
+  rcases y_in_orbit with ⟨n, Tnx_eq_y⟩
   rw [Tnx_eq_y]
   exact (iter_of_inv_in_inv h n) h'
 
@@ -222,12 +223,13 @@ theorem union_of_invclos_is_invclos {T : X → X} {F G : Set X} (h : IsInvariant
 
 
 /-- Closed T-invariant subsets are the closed set of a topology, the topology of invariants.--/
+@[instance_reducible]
 def topologyOfInvariants (T : X → X) : TopologicalSpace X := by
   apply TopologicalSpace.ofClosed {F : Set X | IsInvariantClosed T F} (empty_is_invclos T)
-  · simp only [Set.mem_setOf_eq]
+  · simp only [Set.mem_ofPred_eq]
     intro A h
     exact sInter_of_invclos_is_invclos h
-  · simp only [Set.mem_setOf_eq]
+  · simp only [Set.mem_ofPred_eq]
     intro F F_invclos G G_invclos
     exact union_of_invclos_is_invclos F_invclos G_invclos
 
@@ -306,4 +308,4 @@ theorem image_of_invcomp_is_invcomp {T : X → X} (T_cont : Continuous T) {F : S
 
 end InvariantCompact
 
-#lint
+end InvariantSubset
